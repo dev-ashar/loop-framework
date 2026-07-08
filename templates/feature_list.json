@@ -1,0 +1,17 @@
+{
+  "$schema": "loops/feature_list",
+  "goal": "<one sentence>",
+  "metric": {
+    "name": "<what is measured>",
+    "direction": "maximize | minimize",
+    "verify": "<command that emits a single number>",
+    "baseline": null,
+    "best": null,
+    "target": null
+  },
+  "guard": "<condition that must stay true, e.g. 'tests pass'>",
+  "iterations": { "max": 10, "spent": 0 },
+  "features": [
+    { "id": "f1", "desc": "<testable feature>", "done": false }
+  ]
+}
