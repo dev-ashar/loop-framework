@@ -40,12 +40,15 @@ marketplaces, and rtk hook are preserved). Restore anytime from the printed
 
 | Agent | Model | Job |
 |---|---|---|
+| *orchestrator* | Opus | your session — plan, judge, route, synthesize, decide (inline) |
 | `planner` | Sonnet | vague goal → contract + ordered plan; never writes code |
 | `builder` | Sonnet | implements the plan; forbidden from grading itself |
 | `evaluator` | Sonnet | adversarial — runs the app, grades vs contract, 0–1 + gap |
 | `explorer` | Haiku | read-only find/map/trace |
 
-The rule that makes it work: **the generator never grades its own output.**
+Two rules make it work: **the generator never grades its own output**, and **Opus
+only orchestrates** — the Opus-tier thinking happens inline in your session; every
+subagent runs at the cheapest competent tier. Delegate volume, not judgment.
 
 ## The loop spine (skills + native)
 

@@ -27,11 +27,17 @@ below is a footnote on those five verbs.
 
 ## Routing (the one rule)
 
-Opus orchestrates: plan, judge, synthesize, decide. **Reading source and writing
-code is delegated** — `explorer` (Haiku) to find/map, `builder` (Sonnet) to
-implement, `evaluator` (Sonnet, adversarial) to grade against the contract. Opus
-reading a file inside a loop is a routing failure. Consume agents' structured
-returns; never re-read what they already reported.
+**Opus = this session, and only orchestrates**: plan, judge, synthesize, decide.
+The Opus-tier thinking happens *inline here* — deciding the approach, reading the
+subagents' structured returns, judging them, deciding keep/next/stop. You never
+delegate that thinking to a cheaper model, and you never spin up an Opus subagent
+for it either. What you delegate is **volume**, at the cheapest competent tier:
+`explorer` (Haiku) to find/map, `builder` (Sonnet) to write code, `planner`
+(Sonnet) to draft the contract, `evaluator` (Sonnet, adversarial) to grade against
+the contract. The evaluator runs in its own context only so the builder can't grade
+itself; its honesty comes from the adversarial prompt + testable contract, and you
+review its grade here. Opus reading a file inside a loop is a routing failure —
+consume the structured returns; never re-read what they already reported.
 
 ## The ladder (there is one loop)
 
