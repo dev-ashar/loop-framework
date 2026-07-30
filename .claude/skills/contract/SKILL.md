@@ -32,7 +32,12 @@ the criteria itself.
 
 1. **Boundary.** Ensure `.loops/contract.md` exists (`run.sh init "<goal>"`).
    Dispatch `planner` to fill Goal / Constraints / Non-goals from the goal +
-   codebase (via `explorer`). This is the fixed frame.
+   codebase (via `explorer`). Run `run.sh lesson check "<goal keywords>"` first —
+   a hit tagged `external-data-source` means this ground was already burned once.
+   When the goal names an external API or data source, require a mandatory
+   acceptance criterion of the form "verify <external system>'s exact semantics
+   via a live read-only check before locking" — the direct fix for that repeated
+   mistake. This is the fixed frame.
 
 2. **Propose.** Dispatch the `builder` agent: *"Propose the acceptance checklist
    for this goal — the testable assertions that would prove it's done. Each must be

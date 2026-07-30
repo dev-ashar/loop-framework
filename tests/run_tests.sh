@@ -790,17 +790,369 @@ test_criterion_15() {
 }
 
 # ============================================================================
-# Phase 2 stubs (criteria 16–23)
+# Phase 2 — learning substrate (criteria 16–23)
 # ============================================================================
 
-test_criterion_16() { record_result 16 "FAIL" "not yet implemented (phase 2)"; }
-test_criterion_17() { record_result 17 "FAIL" "not yet implemented (phase 2)"; }
-test_criterion_18() { record_result 18 "FAIL" "not yet implemented (phase 2)"; }
-test_criterion_19() { record_result 19 "FAIL" "not yet implemented (phase 2)"; }
-test_criterion_20() { record_result 20 "FAIL" "not yet implemented (phase 2)"; }
-test_criterion_21() { record_result 21 "FAIL" "not yet implemented (phase 2)"; }
-test_criterion_22() { record_result 22 "FAIL" "not yet implemented (phase 2)"; }
-test_criterion_23() { record_result 23 "FAIL" "not yet implemented (phase 2)"; }
+# Amendment-specific helper for criterion 23: unlike check_anti_negation_guard
+# (which fails if ANY match in the file is negated), this passes if AT LEAST
+# ONE match of PATTERN in FILE survives the ±2-line guard. It reuses
+# check_anti_negation_guard for the actual negation-window logic — it does not
+# reimplement it — by running the guard against each match's own ±2 window in
+# isolation and OR-ing the per-match results.
+check_any_match_survives_guard() {
+  local file="$1"
+  local pattern="$2"
+
+  local total_lines
+  total_lines=$(wc -l < "$file")
+
+  local matches
+  matches=$(grep -nEi "$pattern" "$file" | cut -d: -f1)
+  [ -z "$matches" ] && return 1
+
+  local ln start end window_file
+  window_file=$(fresh_tmp)/guard_window.txt
+  for ln in $matches; do
+    start=$((ln - 2))
+    [ $start -lt 1 ] && start=1
+    end=$((ln + 2))
+    [ $end -gt "$total_lines" ] && end=$total_lines
+    sed -n "${start},${end}p" "$file" > "$window_file"
+    if check_anti_negation_guard "$window_file" "$pattern"; then
+      return 0
+    fi
+  done
+
+  return 1
+}
+
+test_criterion_16() {
+  local d fake_home lessons_file
+  d=$(fresh_tmp)
+  fake_home="$d/home"
+  mkdir -p "$fake_home"
+
+  HOME="$fake_home" bash "$LOOPS_ROOT/install.sh" >/dev/null 2>&1
+  lessons_file="$fake_home/.claude/memory/lessons.jsonl"
+
+  if [ ! -f "$lessons_file" ]; then
+    record_result 16 "FAIL" "lessons.jsonl not created on first install"
+    return
+  fi
+
+  echo '{"category":"seed","mistake":"seed","correction":"seed","source":"","ts":"2026-01-01T00:00:00Z"}' >> "$lessons_file"
+  local count_before count_after
+  count_before=$(wc -l < "$lessons_file" | tr -d ' ')
+
+  HOME="$fake_home" bash "$LOOPS_ROOT/install.sh" >/dev/null 2>&1
+  count_after=$(wc -l < "$lessons_file" | tr -d ' ')
+
+  if [ "$count_before" = "1" ] && [ "$count_after" = "1" ]; then
+    record_result 16 "pass" "lessons.jsonl created idempotently; seeded line survives a second install"
+  else
+    record_result 16 "FAIL" "line count wrong: before=$count_before after=$count_after (want 1/1)"
+  fi
+}
+
+test_criterion_17() {
+  local d fake_home lessons_file
+  d=$(fresh_tmp)
+  fake_home="$d/home"
+  mkdir -p "$fake_home"
+  lessons_file="$fake_home/.claude/memory/lessons.jsonl"
+
+  HOME="$fake_home" "$LOOPS_RUN" lesson record --category "test-cat" \
+    --mistake "the mistake text" --correction "the correction text" >/dev/null 2>&1
+
+  if [ ! -f "$lessons_file" ]; then
+    record_result 17 "FAIL" "lessons.jsonl not created by lesson record"
+    return
+  fi
+
+  local lines last_line cat mistake correction ts src
+  lines=$(wc -l < "$lessons_file" | tr -d ' ')
+  last_line=$(tail -n 1 "$lessons_file")
+  cat=$(printf '%s' "$last_line" | jq -r '.category')
+  mistake=$(printf '%s' "$last_line" | jq -r '.mistake')
+  correction=$(printf '%s' "$last_line" | jq -r '.correction')
+  ts=$(printf '%s' "$last_line" | jq -r '.ts')
+  src=$(printf '%s' "$last_line" | jq -r '.source')
+
+  local fail=""
+  [ "$lines" != "1" ] && fail="$fail lines=$lines(want1)"
+  [ "$cat" != "test-cat" ] && fail="$fail category=$cat"
+  [ "$mistake" != "the mistake text" ] && fail="$fail mistake=$mistake"
+  [ "$correction" != "the correction text" ] && fail="$fail correction=$correction"
+  if [ -z "$ts" ] || [ "$ts" = "null" ]; then fail="$fail ts-missing"; fi
+  [ "$src" != "" ] && fail="$fail source=$src(want empty when --source omitted)"
+
+  if [ -z "$fail" ]; then
+    record_result 17 "pass" "lesson record appends exactly one line, all fields round-trip"
+  else
+    record_result 17 "FAIL" "$fail"
+  fi
+}
+
+test_criterion_18() {
+  local d fake_home
+  d=$(fresh_tmp)
+  fake_home="$d/home"
+  mkdir -p "$fake_home"
+
+  HOME="$fake_home" "$LOOPS_RUN" lesson record --category "widget-parsing" \
+    --mistake "the widget count field returns stale cached values" \
+    --correction "always refetch the widget count live" >/dev/null 2>&1
+
+  # exactly 1 non-stopword token shared with the entry (mistake+category) -> exit 1
+  HOME="$fake_home" "$LOOPS_RUN" lesson check "check the field alignment issue" >/dev/null 2>&1
+  local exit1=$?
+
+  # exactly 2 non-stopword tokens shared -> exit 0
+  HOME="$fake_home" "$LOOPS_RUN" lesson check "look at widget field mapping" >/dev/null 2>&1
+  local exit2=$?
+
+  if [ $exit1 -eq 1 ] && [ $exit2 -eq 0 ]; then
+    record_result 18 "pass" "threshold observable: 1-token overlap exits 1, 2-token overlap exits 0"
+  else
+    record_result 18 "FAIL" "1-token-overlap exit=$exit1(want1) 2-token-overlap exit=$exit2(want0)"
+  fi
+}
+
+test_criterion_19() {
+  local d fake_home
+  d=$(fresh_tmp)
+  fake_home="$d/home"
+  mkdir -p "$fake_home"
+
+  HOME="$fake_home" "$LOOPS_RUN" lesson record --category "external-data-source" \
+    --mistake "assumed cashPnl is net-of-fees in the polymarket PnL API reconcile field, but it is not" \
+    --correction "cashPnl is net PnL after fees; use grossPnl for the gross settlement value" >/dev/null 2>&1
+
+  HOME="$fake_home" "$LOOPS_RUN" lesson record --category "external-data-source" \
+    --mistake "HL-side quantities are always NULL in the reconciliation dump; the exchange fills endpoint has the real values" \
+    --correction "query the exchange fills endpoint directly for HL-side quantities, never trust the reconciliation dump" >/dev/null 2>&1
+
+  local out1 exit1 exit2 exit3
+  out1=$(HOME="$fake_home" "$LOOPS_RUN" lesson check "reconcile the polymarket PnL API cashPnl field" 2>&1)
+  exit1=$?
+
+  HOME="$fake_home" "$LOOPS_RUN" lesson check "rename a CSS variable" >/dev/null 2>&1
+  exit2=$?
+
+  # Hard negative: shares the generic token quantit* with lesson (b) but
+  # nothing of its substance. Must stay quiet.
+  HOME="$fake_home" "$LOOPS_RUN" lesson check "verify the quantity field is correct" >/dev/null 2>&1
+  exit3=$?
+
+  local fail=""
+  [ "$exit1" -ne 0 ] && fail="$fail exit1=$exit1(want0)"
+  echo "$out1" | grep -qF "grossPnl" || fail="$fail correctionA-not-printed"
+  [ "$exit2" -ne 1 ] && fail="$fail exit2=$exit2(want1)"
+  [ "$exit3" -ne 1 ] && fail="$fail exit3=$exit3(want1,hard-negative)"
+
+  if [ -z "$fail" ]; then
+    record_result 19 "pass" "seeded C1 lessons: real query matches, unrelated and hard-negative queries stay quiet"
+  else
+    record_result 19 "FAIL" "$fail"
+  fi
+}
+
+test_criterion_20() {
+  local file="$LOOPS_ROOT/.claude/agents/evaluator.md"
+  local pattern='run\.sh lesson record --category external-data-source'
+
+  if ! grep -qE "$pattern" "$file"; then
+    record_result 20 "FAIL" "pattern not found in evaluator.md"
+    return
+  fi
+
+  if ! check_anti_negation_guard "$file" "$pattern"; then
+    record_result 20 "FAIL" "negation found in ±2 line window around the lesson-record instruction"
+    return
+  fi
+
+  record_result 20 "pass" "evaluator.md instructs recording a lesson on external-data-source, no negation"
+}
+
+test_criterion_21() {
+  local skill_file="$LOOPS_ROOT/.claude/skills/contract/SKILL.md"
+  local boundary_file
+  boundary_file=$(fresh_tmp)/boundary.txt
+  awk '/^1\. \*\*Boundary\.\*\*/, /^2\. \*\*/{if (/^2\. \*\*/) next; print}' "$skill_file" > "$boundary_file"
+
+  # Join wrapped lines into one so a phrase split across a line break by
+  # markdown prose wrapping still matches as a contiguous string.
+  local boundary_joined
+  boundary_joined=$(fresh_tmp)/boundary_joined.txt
+  tr '\n' ' ' < "$boundary_file" | tr -s ' ' > "$boundary_joined"
+
+  local fail=""
+  grep -qE 'run\.sh lesson check' "$boundary_file" || fail="$fail lesson-check-missing"
+  grep -qF 'external-data-source' "$boundary_file" || fail="$fail external-data-source-missing"
+  grep -qF "verify <external system>'s exact semantics via a live read-only check before locking" "$boundary_joined" \
+    || fail="$fail required-criterion-phrase-missing"
+
+  if [ -z "$fail" ] && ! check_anti_negation_guard "$boundary_file" 'run\.sh lesson check'; then
+    fail="lesson-check-negated"
+  fi
+
+  if [ -z "$fail" ]; then
+    record_result 21 "pass" "Boundary step wires lesson check + external-data-source to the mandatory criterion"
+  else
+    record_result 21 "FAIL" "$fail"
+  fi
+}
+
+test_criterion_22() {
+  local file="$LOOPS_ROOT/.claude/agents/planner.md"
+  local pattern='run\.sh lesson check'
+
+  if ! grep -qE "$pattern" "$file"; then
+    record_result 22 "FAIL" "pattern not found in planner.md"
+    return
+  fi
+
+  if ! check_anti_negation_guard "$file" "$pattern"; then
+    record_result 22 "FAIL" "negation found in ±2 line window"
+    return
+  fi
+
+  record_result 22 "pass" "planner.md consults the lesson store, no negation"
+}
+
+# Helper for criterion 23: check adversarial framing in evaluator.md (body-scoped,
+# with special negation exception). Extracts body (after frontmatter closing ---),
+# takes first 15 body lines, and verifies 'broken' and 'prove it' patterns each
+# have at least one match surviving the anti-negation guard, with the literal phrase
+# "not here to be helpful" treated as sanctioned (its "not" is the framing, not a hedge).
+# Returns 0 on pass, 1 on fail.
+check_criterion_23() {
+  local target="$1"
+  local body_file first15 sanitized
+
+  # Extract body: skip frontmatter (first --- to closing ---)
+  body_file=$(fresh_tmp)/c23_body.txt
+  awk 'NR==1 && /^---[[:space:]]*$/ {c=1; next} c==1 && /^---[[:space:]]*$/ {c=2; next} c==2 {print}' "$target" > "$body_file"
+
+  # Take first 15 body lines
+  first15=$(fresh_tmp)/c23_first15.txt
+  head -n 15 "$body_file" > "$first15"
+
+  # Sanitize: replace "not here to be helpful" with a phrase that won't trigger negation guard
+  sanitized=$(fresh_tmp)/c23_sanitized.txt
+  sed 's/not here to be helpful/XXX here to be helpful/gI' "$first15" > "$sanitized"
+
+  # Check both patterns survive the guard using the existing helper
+  check_any_match_survives_guard "$sanitized" 'broken' || return 1
+  check_any_match_survives_guard "$sanitized" 'prove it' || return 1
+  return 0
+}
+
+test_criterion_23() {
+  local real_file="$LOOPS_ROOT/.claude/agents/evaluator.md"
+
+  # Check real file passes
+  if ! check_criterion_23 "$real_file"; then
+    record_result 23 "FAIL" "adversarial framing check fails on real evaluator.md"
+    return
+  fi
+
+  # Sabotage tests on copies: all three must FAIL for criterion 23 to pass
+  local sbx sab_a sab_b sab_c
+  sbx=$(fresh_tmp)/c23_sandbox
+  mkdir -p "$sbx"
+
+  sab_a="$sbx/sab_a.md"
+  sab_b="$sbx/sab_b.md"
+  sab_c="$sbx/sab_c.md"
+
+  # The "opening paragraph" is the first body paragraph that is not blank or a
+  # heading (lines starting with #). State machine: after frontmatter, skip blank
+  # and heading lines until first real paragraph text (state 3=deleting), skip
+  # until blank (state 4=keep remaining content).
+
+  # Sabotage (a): delete the opening paragraph entirely
+  awk '
+    NR==1 && /^---[[:space:]]*$/ {print; c=1; next}
+    c==1 { print; if (/^---[[:space:]]*$/) {c=2}; next }
+    c==2 {
+      if (/^[[:space:]]*$/) { print; next }
+      if (/^#/) { print; next }
+      c=3; next
+    }
+    c==3 {
+      if (/^[[:space:]]*$/) { c=4; next }
+      next
+    }
+    c==4 { print }
+  ' "$real_file" > "$sab_a"
+
+  # Sabotage (b): reword opening paragraph to safe alternative
+  awk '
+    NR==1 && /^---[[:space:]]*$/ {print; c=1; next}
+    c==1 { print; if (/^---[[:space:]]*$/) {c=2}; next }
+    c==2 {
+      if (/^[[:space:]]*$/) { print; next }
+      if (/^#/) { print; next }
+      print "Please review the work carefully and note any issues."
+      c=3; next
+    }
+    c==3 {
+      if (/^[[:space:]]*$/) { print; c=4; next }
+      next
+    }
+    c==4 { print }
+  ' "$real_file" > "$sab_b"
+
+  # Sabotage (c): relocate opening below "## Output"
+  # Capture the opening paragraph text to a temp file (BSD awk doesn't support -v with newlines)
+  local para_file
+  para_file="$sbx/para.txt"
+  awk '
+    NR==1 && /^---[[:space:]]*$/ {c=1; next}
+    c==1 { if (/^---[[:space:]]*$/) {c=2}; next }
+    c==2 {
+      if (/^[[:space:]]*$/) { next }
+      if (/^#/) { next }
+      c=3; print; next
+    }
+    c==3 {
+      if (/^[[:space:]]*$/) { exit }
+      print
+    }
+  ' "$real_file" > "$para_file"
+
+  # sab_a has the paragraph removed; insert it after "## Output"
+  awk '
+    { print }
+    /^## Output/ && !done {
+      print ""
+      while ((getline line < "'"$para_file"'") > 0) {
+        print line
+      }
+      close("'"$para_file"'")
+      print ""
+      done=1
+    }
+  ' "$sab_a" > "$sab_c"
+
+  # Run sabotage checks: each MUST fail for criterion 23 to pass
+  local fail_a fail_b fail_c
+  check_criterion_23 "$sab_a" && fail_a="sab-a-passed(should-fail)"
+  check_criterion_23 "$sab_b" && fail_b="sab-b-passed(should-fail)"
+  check_criterion_23 "$sab_c" && fail_c="sab-c-passed(should-fail)"
+
+  local fail=""
+  [ -n "$fail_a" ] && fail="$fail $fail_a"
+  [ -n "$fail_b" ] && fail="$fail $fail_b"
+  [ -n "$fail_c" ] && fail="$fail $fail_c"
+
+  if [ -z "$fail" ]; then
+    record_result 23 "pass" "adversarial framing survives (body-scoped, first 15 lines, sabotage-proven)"
+  else
+    record_result 23 "FAIL" "sabotage probes failed:$fail"
+  fi
+}
 
 # ============================================================================
 # Phase 3 stubs (criteria 24–33 and 38)
@@ -837,6 +1189,16 @@ SUITE_TMPDIR=$(mktemp -d)
 # Capture initial git status (immutability guard)
 INITIAL_GIT_STATUS=$(cd "$LOOPS_ROOT" && git status --porcelain 2>/dev/null)
 
+# Capture the REAL global lesson store (unstubbed $HOME) — every lesson test
+# above stubs its own $HOME, but this is the guard that proves none of them
+# leaked through to the actual machine-wide store.
+REAL_LESSONS_FILE="$HOME/.claude/memory/lessons.jsonl"
+if [ -f "$REAL_LESSONS_FILE" ]; then
+  INITIAL_LESSONS_CONTENT=$(cat "$REAL_LESSONS_FILE")
+else
+  INITIAL_LESSONS_CONTENT="__ABSENT__"
+fi
+
 # Run all criteria in ascending order; criterion 1 (meta-check) runs first
 test_criterion_1
 for n in $(seq 2 38); do
@@ -847,6 +1209,17 @@ done
 FINAL_GIT_STATUS=$(cd "$LOOPS_ROOT" && git status --porcelain 2>/dev/null)
 if [ "$INITIAL_GIT_STATUS" != "$FINAL_GIT_STATUS" ]; then
   echo "[FAIL] suite mutated the loops repo git status"
+  FAIL_COUNT=$((FAIL_COUNT + 1))
+fi
+
+# Verify the REAL global lesson store is byte-identical
+if [ -f "$REAL_LESSONS_FILE" ]; then
+  FINAL_LESSONS_CONTENT=$(cat "$REAL_LESSONS_FILE")
+else
+  FINAL_LESSONS_CONTENT="__ABSENT__"
+fi
+if [ "$INITIAL_LESSONS_CONTENT" != "$FINAL_LESSONS_CONTENT" ]; then
+  echo "[FAIL] suite mutated the real ~/.claude/memory/lessons.jsonl"
   FAIL_COUNT=$((FAIL_COUNT + 1))
 fi
 

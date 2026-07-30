@@ -16,6 +16,36 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATES="$SCRIPT_DIR/templates"
 LOOPDIR=".loops"
+LESSONS_FILE="$HOME/.claude/memory/lessons.jsonl"
+
+# Stopword list for `lesson check`'s tokenizer (criterion 18): closed-class
+# English function words only — deliberately NOT domain nouns/verbs (those are
+# the actual match signal). Space-padded so `is_stopword` does a whole-word
+# substring test.
+STOPWORDS=" a an the is are was were be been being to of and or in on at for with from by as that this these those it its into over under about if then so but not no nor do does did doesnt dont didnt has have had will would can could should shall may might must i you he she they we us my your his her their our them him "
+
+is_stopword() {
+  case "$STOPWORDS" in
+    *" $1 "*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# Tokenize free text: lowercase, split on non-alphanumerics, drop stopwords and
+# single-character noise, de-dupe. Prints space-separated unique tokens.
+lesson_tokens() {
+  local text="$1" raw tok result=""
+  raw="$(printf '%s' "$text" | tr 'A-Z' 'a-z' | tr -c 'a-z0-9' ' ')"
+  for tok in $raw; do
+    [ ${#tok} -ge 2 ] || continue
+    is_stopword "$tok" && continue
+    case " $result " in
+      *" $tok "*) ;;
+      *) result="$result $tok" ;;
+    esac
+  done
+  printf '%s' "${result# }"
+}
 
 cmd="${1:-status}"
 
@@ -231,8 +261,74 @@ case "$cmd" in
     done
     exit 0
     ;;
+  lesson)
+    subcmd="${2:-}"
+    case "$subcmd" in
+      record)
+        shift 2
+        category="" mistake="" correction="" source_path=""
+        while [ $# -gt 0 ]; do
+          case "$1" in
+            --category) category="$2"; shift 2 ;;
+            --mistake) mistake="$2"; shift 2 ;;
+            --correction) correction="$2"; shift 2 ;;
+            --source) source_path="$2"; shift 2 ;;
+            *) echo "unknown arg: $1"; exit 1 ;;
+          esac
+        done
+        [ -n "$category" ] && [ -n "$mistake" ] && [ -n "$correction" ] || {
+          echo "usage: $0 lesson record --category <cat> --mistake \"<t>\" --correction \"<t>\" [--source <path>]"
+          exit 1
+        }
+        mkdir -p "$(dirname "$LESSONS_FILE")"
+        [ -f "$LESSONS_FILE" ] || touch "$LESSONS_FILE"
+        ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        entry="$(jq -nc \
+          --arg category "$category" \
+          --arg mistake "$mistake" \
+          --arg correction "$correction" \
+          --arg source_path "$source_path" \
+          --arg ts "$ts" \
+          '{category: $category, mistake: $mistake, correction: $correction, source: $source_path, ts: $ts}')"
+        printf '%s\n' "$entry" >> "$LESSONS_FILE"
+        ;;
+      check)
+        query="${3:-}"
+        [ -n "$query" ] || {
+          echo "usage: $0 lesson check \"<free text>\""
+          exit 1
+        }
+        [ -f "$LESSONS_FILE" ] || exit 1
+        q_tokens="$(lesson_tokens "$query")"
+        [ -n "$q_tokens" ] || exit 1
+        matched=0
+        while IFS= read -r line; do
+          [ -n "$line" ] || continue
+          mistake="$(printf '%s' "$line" | jq -r '.mistake // ""' 2>/dev/null || echo "")"
+          category="$(printf '%s' "$line" | jq -r '.category // ""' 2>/dev/null || echo "")"
+          correction="$(printf '%s' "$line" | jq -r '.correction // ""' 2>/dev/null || echo "")"
+          entry_tokens="$(lesson_tokens "$mistake $category")"
+          overlap=0
+          for t in $q_tokens; do
+            case " $entry_tokens " in
+              *" $t "*) overlap=$((overlap+1)) ;;
+            esac
+          done
+          if [ "$overlap" -ge 2 ]; then
+            printf '%s\n' "$correction"
+            matched=1
+          fi
+        done < "$LESSONS_FILE"
+        [ "$matched" -eq 1 ] && exit 0 || exit 1
+        ;;
+      *)
+        echo "usage: $0 lesson {record --category <cat> --mistake \"<t>\" --correction \"<t>\" [--source <path>] | check \"<text>\"}"
+        exit 1
+        ;;
+    esac
+    ;;
   *)
-    echo "usage: $0 {init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>...}"
+    echo "usage: $0 {init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check}}"
     exit 1
     ;;
 esac

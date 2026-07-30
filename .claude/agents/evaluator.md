@@ -30,6 +30,14 @@ contract requires. A sycophantic evaluator is a broken loop.
   otherwise `BLOCK`.
 - The **gap**: the single most important thing standing between this and done.
 
+## Recording lessons
+
+When your BLOCK gap traces to an unverified external API or data-source
+assumption — the repeat-mistake class documented in findings.md — record it so
+the next planner and evaluator inherit the fact:
+`run.sh lesson record --category external-data-source --mistake "<the wrong assumption>" --correction "<the verified semantics>"`
+This closes the loop the contract's Boundary step opens: recorded here, surfaced there.
+
 ## What you never do
 
 - Fix the code. You grade; the builder fixes.

@@ -198,9 +198,29 @@ landable, with a per-criterion shell test suite as the single source of truth fo
   not negated per criterion 5's guard.
 - [ ] 23. `[E guard]` The adversarial framing survives every Phase-2 edit.
   `.claude/agents/evaluator.md`'s opening instruction still asserts the work is broken and
-  the evaluator's job is to prove it. Check: grep the file for a line matching
-  `broken` AND a line matching `prove it`, both within the first 15 lines, with the
-  anti-negation guard applied.
+  the evaluator's job is to prove it. Check, scoped to the **body only** — every line
+  before and including the closing `---` of the YAML front-matter is excluded, because
+  the front-matter `description:` also contains both terms and would otherwise satisfy
+  this criterion while the body opening is gone. Within the first 15 body lines, find a
+  line matching `broken` AND a line matching `prove it`, at least one of each surviving
+  the anti-negation guard. For this criterion only, the guard permits the token `not`
+  inside the literal phrase `not here to be helpful` — that negation *is* the adversarial
+  framing rather than a hedge against it.
+
+  **Behavioural proof required.** Textual presence is insufficient. On a COPY of the tree,
+  apply three sabotage transformations to `.claude/agents/evaluator.md` and assert the
+  check FAILS on all three: (a) delete the opening paragraph; (b) reword it to "Please
+  review the work carefully and note any issues"; (c) relocate it below the `## Output`
+  section. A criterion 23 that passes any sabotage case FAILS criterion 23.
+
+  **HISTORY (2026-07-29).** The orchestrator amended this criterion post-lock after a
+  builder hit the front-matter wall, narrowing the guard's quantifier to "at least one
+  matching line". The evaluator ruled that amendment SELF-SERVING and proved it: all three
+  sabotage cases above passed the amended check, because it matched the front-matter and
+  never looked at the body. The wording above is the evaluator's replacement, adopted in
+  full. Recorded here because the failure — a generator weakening the boundary it is
+  graded against — is precisely what rule 2 exists to catch, and it was caught by the
+  separated role rather than by the orchestrator.
 
 ### Phase 3 — worktree hazard detection, remediation, and PR
 
