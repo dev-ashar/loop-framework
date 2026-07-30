@@ -52,7 +52,9 @@ the criteria itself.
 5. **Verify command.** The evaluator states the exact command(s) it will run to
    grade. It must emit observable results. Dry-run it once to confirm.
 
-6. **Lock.** Show the converged contract. On your approval it becomes the boundary.
+6. **Lock.** Validate the contract structure by running `run.sh lint .loops/contract.md`.
+   Any lint failure is blocking — fix the contract first.
+   Show the converged contract. On your approval it becomes the boundary.
    From here the loop runs; a human interrupts only if the *contract* is wrong —
    never because the *build* is unfinished.
 

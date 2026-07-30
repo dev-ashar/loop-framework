@@ -7,7 +7,8 @@
     "verify": "<command that emits a single number>",
     "baseline": null,
     "best": null,
-    "target": null
+    "target": null,
+    "history": []
   },
   "guard": "<condition that must stay true, e.g. 'tests pass'>",
   "iterations": { "max": 10, "spent": 0 },
