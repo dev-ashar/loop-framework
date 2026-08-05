@@ -186,3 +186,32 @@ Awaiting the single human approval gate.
 ## [2026-08-05 14:48] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
 ## [2026-08-05 14:49] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/log.md
 ## [2026-08-05 14:54] run-loop | phase4: PASS 1.00 at iter3 — scope-check built, merge-worktrees dropped, dispatch table, snapshot guard. luna built, terra graded
+## [2026-08-05 15:10] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-05 15:42] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-08-05 15:43] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-08-05 15:43] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 15:47] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/phase5-parallel.md
+## [2026-08-05 15:48] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/phase5-parallel.md
+## [2026-08-05 00:00] build | extended verify.sh for Phase 5 criteria 5-14 and 18-19
+## [2026-08-05 00:01] build | strengthened Phase 5 verifier usage and fixture checks
+## [2026-08-05 15:58] Write | /Users/devashar/Documents/DS/workspace/loops/lib/agent-wait.sh
+## [2026-08-05 16:03] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-05 16:05] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/engine.sh
+- Fixed CRLF frontmatter parsing and expanded verifier coverage for CRLF plus mutation guards.
+## [2026-08-05 16:17] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/engine.sh
+## [2026-08-05 16:17] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/engine.sh
+## [2026-08-05 16:18] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 16:18] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 16:18] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 16:19] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 16:20] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 16:21] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 16:21] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 16:22] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 16:22] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 16:23] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 16:23] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+2026-08-05 phase 5 builder: exec engine paths and verifier coverage
+## [2026-08-05 16:39] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-08-05 16:39] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-08-05 16:40] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/progress.md

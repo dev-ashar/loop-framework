@@ -1,239 +1,137 @@
-# Contract — Phase 4: parallel builders
+# Contract — Phase 5: engine + model configuration CLI
 
-Run: 2026-08-05 · branch `feat/phase1-foundations` · supersedes the D1–D4 roster
-contract that passed 1.00 at commit `8af2690` (recoverable via
-`git log -p -- .loops/contract.md`, archived at
-`.loops/archive/contract-8af2690.md`). Criteria 5, 11, 12 are sourced near-verbatim
-from the Phase 3/4 draft at `.loops/archive/contract-01d2954.md` (criteria 34, 36,
-37) — do not re-litigate their wording without cause.
-
-Criteria are numbered fresh 1–12. This is a new contract, not a continuation.
+Locked 2026-08-05. Graded by `evaluator` (terra) against this file only.
 
 ## Goal
 
-Let the orchestrator run N `builder` agents concurrently on disjoint file sets
-without collision. Today `run-loop` runs exactly one builder at a time, and that
-is the constraint blocking a 10-agent setup.
+Two new `run.sh` capability groups, built by two builders **running at the same
+time in separate worktrees**:
 
-Four deliverables:
+- `run.sh models` — inspect and change which model each role runs on.
+- `run.sh engine` — choose between Claude Code and OpenCode as the agent engine,
+  and dispatch a role through the chosen one.
 
-- **P1 — Snapshot guard.** Prerequisite for the rest. This loop edits the harness
-  that grades it, so committed-state copies of the files under mutation must exist
-  before any build step, and the verify script must be complete before the
-  evaluator first calls it.
-- **P2 — `scope-check`.** A real `run.sh scope-check` enforcing a per-worktree file
-  allowlist. Confirmed absent from `run.sh` today despite a Phase 3 log line
-  claiming it shipped.
-- **P3 — Merge protocol, right-sized.** `merge-worktrees` is **dropped**; replaced
-  by a documented plain `git merge --no-ff` step the orchestrator runs directly.
-- **P4 — Capability dispatch table.** A table mapping task-kind → agent → tool
-  ceiling → model tier, so the orchestrator stops routing tasks to agents that
-  structurally cannot perform them.
+Phase 5 is also the first real exercise of the parallel-builder gates built in
+Phase 4. The gates must *fire*, not merely exist.
 
-## Established facts (verified, do not re-litigate)
+## File allowlist (scope-check enforced)
 
-- `run.sh` has a `worktree` block at ~330–605 with `check`/`provision`/`fix`/`reap`.
-  Neither `scope-check` nor `merge-worktrees` exists anywhere in it.
-- `.claude/skills/run-loop/SKILL.md` is 77 lines and contains zero mentions of
-  parallel, worktree, isolation, or scope-check. It documents a single-builder loop.
-- `.claude/CLAUDE.md` is exactly **130** lines, the cap the prior contract imposed.
-- Lines 99–130 of CLAUDE.md are the ADHD ruleset, required byte-identical. The
-  reference copy is `.loops/pre-build-claudemd-99-130.txt`.
-- Roster: `builder` → `gpt-5.6-luna-mantle`, `evaluator` → `gpt-5.6-terra-mantle`,
-  `explorer` → `haiku` (no Bash), `planner` → `sonnet` (no Write). HAIP serves
-  neither `gpt-5.6-sol` nor `claude-fable-5`.
-- The prior run's evaluator proof invoked `.loops/verify.sh` before it existed and
-  graded 0.45 on file-not-found. That is the exact defect P1 closes.
-- Native `Agent(isolation: "worktree")` provisions and auto-removes a per-subagent
-  git worktree. It does not merge work back — merging remains the orchestrator's job.
-- `tests/run_tests.sh` is ~2086 lines, 33/37 passing. Not modified by this contract.
+- Builder A may create/modify **`lib/models.sh`** and nothing else.
+- Builder B may create/modify **`lib/engine.sh`** and nothing else.
+- The orchestrator, after both merge, wires two `case` arms into `run.sh`.
 
-## Constraints
-
-- Build may touch only: `run.sh`, `.claude/skills/run-loop/SKILL.md`,
-  `.claude/CLAUDE.md`, `.claude/dispatch.md` (new), and `.loops/` state files.
-- **Loop-state carve-out.** `.loops/` files are exempt from criterion 10's
-  named-file restriction. The restriction binds fully outside `.loops/`.
-- The ADHD ruleset block stays byte-identical to
-  `.loops/pre-build-claudemd-99-130.txt`. **Anchor by content, not line number** —
-  see criterion 3. Adding the dispatch-table link inside `## Routing` shifts every
-  later line down by one, so any fixed `sed -n '99,130p'` assertion is invalid for
-  this run and using one is itself a criterion failure.
-- CLAUDE.md ends at **≤131 lines** — 130 plus exactly one link line. The dispatch
-  table itself lives in `.claude/dispatch.md`, not inline.
-- No criterion may adopt `gpt-5.6-sol` or `claude-fable-5`.
-- No backward-compat shims. Remove obsolete paths outright.
-- No modifying, running, or fixing `tests/run_tests.sh`.
-- No push, deploy, publish, or PR.
-- P1 is a hard prerequisite: no P2/P3/P4 work counts toward the score unless
-  `.loops/pre-build-phase4/` and a complete `.loops/verify.sh` both exist first.
-- Every criterion is mechanically checkable by shell, or explicitly marked
-  evaluator-judgement. No vibes.
+Any path outside a builder's single allowed file is a scope violation and fails
+that builder outright, regardless of code quality.
 
 ## Acceptance criteria
 
-### P1 — snapshot guard (4)
+### Shared interface contract (both builders)
 
-1. `.loops/pre-build-phase4/` contains committed-state copies of `run.sh`, every
-   `.claude/agents/*.md`, and `.claude/skills/run-loop/SKILL.md`, each taken via
-   `git show HEAD:<path>` so they are immune to being read mid-edit. A
-   `SHA256SUMS` manifest is present and `shasum -a 256 -c` passes against it.
-2. `.loops/verify.sh` is complete — not a stub — before the evaluator's first
-   invocation. Its first executable assertion after the shebang/`set` block must be
-   a self-presence guard that exits non-zero with a message distinguishing
-   "verify.sh missing" from a genuine build failure.
-3. **Snapshot-anchored byte identity.** The ADHD block is verified by locating it
-   via its heading anchor (`## Output style`) through end of that section and
-   `diff`ing that span against `.loops/pre-build-claudemd-99-130.txt`. Any check
-   that hardcodes line numbers 99–130 FAILS this criterion, because the link line
-   added in `## Routing` shifts the span. Evaluator judgement.
-4. `.loops/pre-build-phase4/` is treated read-only after creation: nothing in the
-   build rewrites it, and `git diff --name-only` shows no modification to files
-   under it after their initial add.
+1. Each file is a POSIX-`bash` library, **sourced**, not executed. It defines
+   exactly one entrypoint function — `cmd_models` / `cmd_engine` — taking the
+   post-subcommand argv. No top-level side effects at source time: sourcing the
+   file must not read a network, write a file, or print anything.
+2. The file must not contain `set -euo pipefail` (run.sh already sets it) and
+   must not call `exit` from library code paths that a caller may want to
+   recover from — return non-zero instead. Usage errors return 1 or 2.
+3. Secrets never appear in output. `$ANTHROPIC_AUTH_TOKEN` must not be echoed,
+   logged, or written to any file. `grep -c ANTHROPIC_AUTH_TOKEN` on the file may
+   match only in a context that passes the value to `curl -H` — never a `printf`,
+   `echo`, `>>`, or `tee`.
+4. Every subcommand prints a one-line usage string and returns non-zero when
+   called with no args or an unknown subcommand.
 
-### P2 — `scope-check` (1 criterion, 4 required fixtures)
+### D1 — `lib/models.sh` (Builder A)
 
-5. `run.sh scope-check <worktree-path> <base-ref> <allowed-file-list>` exits 0 iff
-   the worktree's **full divergence from `<base-ref>`** is a subset of the allowed
-   list, else exits 1 naming the offending path(s) on stdout. The path set is the
-   union of committed and uncommitted change:
-   `git -C <path> diff --name-only "$(git -C <path> merge-base <base-ref> HEAD)"`
-   plus `git -C <path> ls-files --others --exclude-standard`. A bare
-   `git diff --name-only` is explicitly insufficient and FAILS this criterion: by
-   the time the merge step runs, a parallel builder's work is committed and the
-   working tree is clean, so a working-tree-only diff is empty and the guard is a
-   no-op exactly when it matters. All four fixtures required, each in its own tmp
-   repo + worktree: (a) in-scope **committed** edit → exit 0; (b) out-of-scope
-   **committed** edit → exit 1 naming the path; (c) out-of-scope **uncommitted**
-   edit → exit 1 naming it; (d) out-of-scope **new untracked** file → exit 1
-   naming it.
+5. `cmd_models list` — for each `.claude/agents/*.md`, print `role<TAB>model`,
+   reading the `model:` key from the YAML frontmatter (the block between the
+   first two `---` lines only — a `model:` mention in the prose body must not be
+   picked up). Roles with no `model:` key print `(default)`.
+6. `cmd_models available` — `GET $ANTHROPIC_BASE_URL/v1/models` with header
+   `x-api-key: $ANTHROPIC_AUTH_TOKEN`, print `.data[].id` sorted, one per line.
+   On non-zero curl exit or unparseable body, print a diagnostic to stderr and
+   return non-zero. Must not print the token in the diagnostic.
+7. `cmd_models set <role> <model-id>` — rewrite that role's frontmatter `model:`
+   line in place, preserving every other byte of the file. If the role file has
+   no `model:` key, insert one as the last line of the frontmatter block.
+8. `set` validates: unknown role → non-zero, no write. Model id absent from the
+   live HAIP list → non-zero, no write, **unless** `--force` is passed. Prove the
+   no-write property: the file's sha256 is unchanged after a rejected `set`.
+9. `set` is idempotent — running the same `set` twice leaves the file
+   byte-identical to after the first run.
 
-### P3 — merge protocol (2) — decision: DROP `merge-worktrees`
+### D2 — `lib/engine.sh` (Builder B)
 
-Locked reasoning: the specified subcommand (sequential `git merge --no-ff`, stop at
-first conflict, no auto-abort) is ~15–20 lines of bash that adds no capability the
-orchestrator lacks — it drives Bash directly and can run two commands per branch.
-Native `Agent(isolation: "worktree")` already handles provisioning and cleanup. Per
-rule 8, wrapping the merge too would be harness for its own sake.
+10. Engine state persists in **`.loops/engine`**, a single line, `claude` or
+    `opencode`. Absent file means `claude`. `cmd_engine` creates it only on `set`.
+11. `cmd_engine show` — print the active engine and the resolved binary path.
+12. `cmd_engine set <claude|opencode>` — reject any other value non-zero. Reject
+    with non-zero if the corresponding binary is not on `PATH` (`command -v
+    claude` / `command -v opencode`), and do not write the state file in that
+    case.
+13. `cmd_engine run <role> "<prompt>"` — resolve the role's model from
+    `.claude/agents/<role>.md` frontmatter, then exec the active engine headless:
+    - claude → `claude --model <model> -p "<prompt>"`
+    - opencode → `opencode run -m <model> "<prompt>"`
+    Unknown role → non-zero before spawning anything.
+14. `cmd_engine run --dry-run <role> "<prompt>"` prints the exact argv it would
+    execute, one token per line, and spawns nothing. This is the graded path —
+    the evaluator must be able to verify command construction without burning
+    tokens or requiring network.
 
-6. `run.sh` contains no `merge-worktrees` subcommand. Check:
-   `! grep -q 'merge-worktrees' run.sh`.
-7. The merge step is documented instead: `git merge --no-ff` appears inside the
-   `### Parallel builders` span of `.claude/skills/run-loop/SKILL.md`, within 3
-   lines of the `scope-check` mention, and the span states in prose that the merge
-   stops at the first conflict with the conflicting branch named and no auto-abort.
+### D3 — parallel-run evidence (orchestrator)
 
-### P4 — capability dispatch table (3)
+15. `.loops/phase5-parallel.md` records, from the actual run: the two worktree
+    paths, both builders' start order in a single dispatch, the `scope-check`
+    invocation and exit code for each worktree, and **the integration mechanism
+    actually used**, named positively and backed by pasted output.
 
-8. `.claude/dispatch.md` exists and lists, for each of `explorer`, `planner`,
-   `builder`, `evaluator`, and the orchestrator: its current model tier (`haiku`,
-   `sonnet`, `gpt-5.6-luna-mantle`, `gpt-5.6-terra-mantle`, `opus-5`) and its tool
-   ceiling (`Read/Grep/Glob only`, `Read/Grep/Glob only`, full, full, full).
-9. `.claude/dispatch.md` states the task-kind routing — recon/mapping → `explorer`;
-   contract drafting → `planner`; code edits → `builder`; grading → `evaluator` —
-   and explicitly names the two known-broken routes: that a Bash- or
-   Write-requiring task must not be dispatched to `explorer` or `planner`, naming
-   both agents and both missing tools. Must pass an anti-negation guard: the
-   sentence asserts a routing rule rather than merely negating one. Evaluator
-   judgement.
-10. `.claude/CLAUDE.md` is ≤131 lines, gains exactly one line linking to
-    `.claude/dispatch.md` from within its `## Routing` section, and still contains
-    all five headings: `## The loop`, `## The nine rules`, `## Routing`, an Output
-    style heading, an Engineering principles heading. `git diff --name-only` touches
-    nothing outside the Constraints list (`.loops/` exempt).
+    *Amended, iteration 1.* This criterion originally said "the merge commands
+    used." It presumed a merge. No merge happened or could have: the builders
+    were instructed not to commit, so both worktree branches sat at zero commits
+    ahead of `origin/main` and the two files were untracked in their worktrees.
+    They were integrated with `cp`. The evaluator read the original wording
+    literally and failed the criterion for recording a copy instead of a merge —
+    which would have required either fabricating a merge record or performing a
+    merge purely to satisfy the sentence. Recording the mechanism that actually
+    ran is the point; the specific verb was an assumption baked into the
+    criterion, so the criterion is what changes. The amendment is disclosed here
+    rather than applied silently.
+16. `run.sh scope-check` was actually executed against both worktrees and its
+    output is pasted verbatim. A transcribed or reconstructed result fails this
+    criterion.
+17. At least one **negative** scope-check is demonstrated in the same file: an
+    intentionally out-of-allowlist path is shown being rejected with a non-zero
+    exit. A guard that has only ever returned 0 is not a tested guard.
 
-### Parallel-builders documentation (2)
+### D4 — integration (orchestrator, after merge)
 
-11. `.claude/skills/run-loop/SKILL.md` contains a `### Parallel builders` section
-    stating that when the locked plan has ≥2 builder steps over disjoint file sets,
-    the orchestrator provisions one worktree per step, dispatches that many
-    `builder` agents in a single message, runs `scope-check` per worktree, and
-    merges via `git merge --no-ff` before the evaluator grades. Check: extract the
-    span from `### Parallel builders` to the next `##`/`###` heading; assert
-    `worktree`, `scope-check`, and `git merge --no-ff` all appear inside it.
-12. **Fast-path guard.** The single-builder path is documented as ceremony-free:
-    with exactly one builder step, no worktree is provisioned and `builder` is
-    dispatched in place exactly as today. The guard sentence appears inside the
-    `### Parallel builders` span or within 3 lines after it, and passes the
-    anti-negation guard with one exception — the tokens `not`, `no`, `skip` are
-    permitted in the phrase describing what is *omitted for the single-builder
-    case* (e.g. "no worktree is provisioned"). The guard is applied to a ±2-line
-    window with that phrase masked out. Any negation attaching to the parallel
-    protocol itself FAILS.
+18. `run.sh models` and `run.sh engine` are reachable from the top-level `case`
+    in `run.sh`, and both appear in the bottom `usage:` string.
+19. `bash -n run.sh`, `bash -n lib/models.sh`, `bash -n lib/engine.sh` all pass.
+20. `.loops/verify.sh` is extended to cover criteria 5–14 and 18–19
+    mechanically, and exits non-zero if any fails.
 
-## Verify command
+## Verify
 
-`bash .loops/verify.sh`, which must exist complete per criterion 2 before the
-evaluator runs it. The builder writes it; skeleton:
-
-```bash
-#!/usr/bin/env bash
-set -euo pipefail
-cd /Users/devashar/Documents/DS/workspace/loops
-test -f .loops/verify.sh || { echo "verify.sh missing — contract defect, not build fail" >&2; exit 1; }
-
-# P1
-test -d .loops/pre-build-phase4
-test -s .loops/pre-build-phase4/SHA256SUMS
-( cd .loops/pre-build-phase4 && shasum -a 256 -c SHA256SUMS --status )
-# ADHD block by content anchor, NOT line numbers (criterion 3)
-awk '/^## Output style/,0' .claude/CLAUDE.md | head -32 > /tmp/adhd-now.txt
-diff -q .loops/pre-build-claudemd-99-130.txt /tmp/adhd-now.txt
-
-# P2 — four fixtures, builder wires up tmp repos + worktrees
-#   (a) in-scope committed -> 0  (b) out-of-scope committed -> 1
-#   (c) out-of-scope uncommitted -> 1  (d) out-of-scope untracked -> 1
-
-# P3
-! grep -q 'merge-worktrees' run.sh
-grep -q 'git merge --no-ff' .claude/skills/run-loop/SKILL.md
-
-# P4
-test -s .claude/dispatch.md
-for tok in explorer planner builder evaluator \
-           "gpt-5.6-luna-mantle" "gpt-5.6-terra-mantle" haiku sonnet; do
-  grep -q "$tok" .claude/dispatch.md
-done
-grep -q 'dispatch.md' .claude/CLAUDE.md
-[ "$(wc -l < .claude/CLAUDE.md)" -le 131 ]
-! grep -rq 'gpt-5.6-sol\|claude-fable-5' .claude/
-
-# Parallel builders doc
-grep -q '### Parallel builders' .claude/skills/run-loop/SKILL.md
-
-echo EVALUATOR-JUDGEMENT-REQUIRED: 3 9 12
-echo VERIFY_OK
+```
+bash .loops/verify.sh
 ```
 
-Criteria requiring evaluator judgement rather than the script: 3, 9, 12.
+Mechanical criteria are graded by running that script, not by reading the code.
+Criteria 3, 9, and 12 additionally require evaluator judgement.
 
-## Out of scope
+## Constraints
 
-- Building `merge-worktrees` (decided: dropped, P3).
-- Archived criterion 38 — staging-safety gate on `worktree fix` / `provision --pr`.
-  Real and unbuilt; deferred.
-- The `worktree check` hazard-prefilter gap: it greps literal `/Users/|/home/`, so
-  `/opt/homebrew/...` interpreter paths are invisible to it.
-- `.loops/haip-probe-terra.log`'s non-JSONL separator line (cosmetic).
-- A dedicated explorer proof run to clear its `PROPOSED-NOT-VERIFIED` status.
-- Running, fixing, or modifying `tests/run_tests.sh`.
-- A live end-to-end 10-agent run across real repos. This contract builds and
-  documents the gates; exercising them is the follow-up.
-- Any push, deploy, or publish.
+- No secret values in any repo file. `git grep` for the token value must return
+  zero hits before commit.
+- `.claude/CLAUDE.md` stays ≤131 lines and its `## Output style` block stays
+  byte-identical (anchor by heading-to-next-heading extraction, never by line
+  number or fixed count).
+- No backward-compatibility shims. This is new surface; build it once, correctly.
+- Nothing is pushed, deployed, or published.
 
-## Resolved decisions (contract LOCKED 2026-08-05)
+## Stop condition
 
-- **Dispatch table → `.claude/dispatch.md`**, linked from `## Routing`. CLAUDE.md
-  stays at ≤131 (one link line). Human decision: keep the most-read file thin.
-- **Merge protocol → drop `merge-worktrees`**, replaced by a documented plain
-  `git merge --no-ff` the orchestrator runs. Planner's recommendation, accepted.
-- **Byte identity → content-anchored, not line-anchored.** The link line inside
-  `## Routing` shifts all later lines by one, so `sed -n '99,130p'` would silently
-  compare the wrong span. Criterion 3 forbids line-number anchoring outright. This
-  is an orchestrator amendment to the planner's draft, which had assumed all new
-  content would be appended after line 130.
-- **Snapshot retention → keep `.loops/pre-build-phase4/`** as an audit trail. It is
-  a few KB. Future phases add their own `pre-build-phaseN/`.
-- **Worktree cleanup → auto-delete after a successful merge**, with
-  `run.sh worktree reap --prune` as the fallback for orphans.
-- **Numbering → fresh 1–12.**
+Evaluator returns PASS at ≥0.95 with every mechanical criterion verified by
+running the command, not by reading the code.

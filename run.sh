@@ -95,6 +95,12 @@ case "$cmd" in
         if [ "$history_len" -lt 2 ]; then
           exit 0
         fi
+        # A loop that has reached PASS is finished, not stuck. Flat scores at the
+        # ceiling are the stop condition; only flat scores below it are a stall.
+        last_verdict=$(jq -r '.metric.history[-1].verdict' "$LOOPDIR/feature_list.json")
+        if [ "$last_verdict" = "PASS" ]; then
+          exit 0
+        fi
         last=$(jq '.metric.history[-1].score' "$LOOPDIR/feature_list.json")
         prev=$(jq '.metric.history[-2].score' "$LOOPDIR/feature_list.json")
         # Non-increasing: last <= prev
@@ -201,6 +207,7 @@ case "$cmd" in
           if (/^#{2,4} /) next;  # Heading
           if (/^> /) next;  # Blockquote
           if (/^- \[[ x]\] /) next;  # Checkbox item
+          if (/^[0-9]+\. /) next;  # Numbered criterion
           if (/^  /) next;  # Continuation line (indented >=2 spaces)
           print "lint: line " NR " in acceptance criteria is bare prose: " $0
           exit 1
@@ -326,6 +333,18 @@ case "$cmd" in
         exit 1
         ;;
     esac
+    ;;
+  models)
+    # shellcheck source=lib/models.sh
+    . "$SCRIPT_DIR/lib/models.sh"
+    shift
+    cmd_models "$@"
+    ;;
+  engine)
+    # shellcheck source=lib/engine.sh
+    . "$SCRIPT_DIR/lib/engine.sh"
+    shift
+    cmd_engine "$@"
     ;;
   scope-check)
     worktree_path="${2:-}"
@@ -626,7 +645,7 @@ case "$cmd" in
     esac
     ;;
   *)
-    echo "usage: $0 {init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check} | worktree {check|provision|fix|reap}}"
+    echo "usage: $0 {init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check} | models {list|available|set} | engine {show|set|run} | scope-check <wt> <base> <files> | worktree {check|provision|fix|reap}}"
     exit 1
     ;;
 esac
