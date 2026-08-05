@@ -86,6 +86,11 @@ first_sha="$(shasum -a 256 "$probe" | cut -d' ' -f1)"
 second_sha="$(shasum -a 256 "$probe" | cut -d' ' -f1)"
 [ "$first_sha" = "$second_sha" ] || fail 'c9: repeated set changed bytes'
 
+# Criterion 9 regression: Claude Code short aliases are valid model values.
+(cd "$cli_fixture" && ./run.sh models set bodyprobe sonnet) || fail 'c9: sonnet alias was rejected'
+if (cd "$cli_fixture" && ./run.sh models set bodyprobe not-a-real-model) >/dev/null 2>&1; then fail 'c9: unknown model was accepted'; fi
+(cd "$cli_fixture" && ./run.sh models set bodyprobe forced-model --force) || fail 'c9: failed to restore probe model'
+
 # Criterion 10: engine state is absent by default and persists a selected value.
 rm -f "$cli_fixture/.loops/engine"
 printf '%s\n' '#!/usr/bin/env bash' 'exit 0' > "$fixture_root/claude"
@@ -192,6 +197,48 @@ mutation_status=$?
 set -e
 [ "$mutation_status" -ne 0 ] || fail 'c6: reverted curl handling passed'
 cp "$models_clean" "$cli_fixture/lib/models.sh"
+
+# Regressions: roster lookup is script-relative and empty fixtures fail loudly.
+foreign_output="$(cd "$fixture_root" && git init -q . && bash "$repo_root/run.sh" models list)" || fail 'models list failed from foreign cwd'
+[ -n "$foreign_output" ] || fail 'models list returned empty output from foreign cwd'
+empty_agents="$fixture_root/empty-agents"
+mkdir -p "$empty_agents"
+set +e
+(cd "$fixture_root" && LOOPS_AGENTS_DIR="$empty_agents" bash "$repo_root/run.sh" models list >/dev/null 2>&1)
+empty_status=$?
+set -e
+[ "$empty_status" -ne 0 ] || fail 'empty agent roster succeeded'
+install_home="$fixture_root/install-home"
+mkdir -p "$install_home"
+install_before="$(find "$install_home" -mindepth 1 -print | sort)"
+install_output="$(HOME="$install_home" bash install.sh --dry-run 2>&1)" || fail 'installer dry-run failed'
+printf '%s\n' "$install_output" | grep -Fq "ln -sfn '$repo_root/run.sh' '$install_home/.local/bin/loops'" || fail 'installer dry-run omitted loops symlink'
+install_after="$(find "$install_home" -mindepth 1 -print | sort)"
+[ "$install_before" = "$install_after" ] || fail 'installer dry-run mutated files'
+
+# Symlink invocation resolves the repository source through multiple link levels.
+symlink_root="$fixture_root/symlink-cli"
+symlink_repo="$fixture_root/symlink-repo"
+mkdir -p "$symlink_repo" "$symlink_root/bin"
+git -C "$symlink_repo" init -q -b main
+ln -s "$repo_root/run.sh" "$symlink_root/bin/loops"
+ln -s "$symlink_root/bin/loops" "$symlink_root/bin/loops2"
+(cd "$symlink_repo" && PATH="$symlink_root/bin:$PATH" loops engine show >/dev/null) || fail 'symlink: installed CLI engine show failed'
+symlink_models="$(cd "$symlink_repo" && PATH="$symlink_root/bin:$PATH" loops models list)" || fail 'symlink: installed CLI models list failed'
+[ -n "$symlink_models" ] || fail 'symlink: installed CLI models list was empty'
+(cd "$symlink_repo" && PATH="$symlink_root/bin:$PATH" loops init 'symlink smoke') || fail 'symlink: init failed'
+[ -s "$symlink_repo/.loops/contract.md" ] || fail 'symlink: init did not create contract'
+(cd "$symlink_repo" && PATH="$symlink_root/bin:$PATH" loops2 status >/dev/null) || fail 'symlink: two-level link status failed'
+
+# Init propagates a failed template copy instead of reporting success.
+init_failure="$fixture_root/init-failure"
+mkdir -p "$init_failure/.loops"
+cp "$repo_root/run.sh" "$init_failure/run.sh"
+set +e
+(cd "$init_failure" && ./run.sh init 'copy failure' >/dev/null 2>&1)
+init_status=$?
+set -e
+[ "$init_status" -ne 0 ] || fail 'init: failed template copy returned zero'
 
 # Live path remains operational after the regression checks.
 ./run.sh models available >/dev/null || fail 'c6: live models available failed'

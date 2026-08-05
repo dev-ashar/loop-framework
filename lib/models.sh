@@ -10,8 +10,13 @@ cmd_models() {
         printf 'usage: cmd_models list\n' >&2
         return 2
       fi
-      local agent path role model
-      for path in .claude/agents/*.md; do
+      local agents_dir="${LOOPS_AGENTS_DIR:-$SCRIPT_DIR/.claude/agents}" agent path role model
+      local agent_paths=("$agents_dir"/*.md)
+      if [ ! -f "${agent_paths[0]}" ]; then
+        printf 'cmd_models: no agent roster found in %s\n' "$agents_dir" >&2
+        return 1
+      fi
+      for path in "${agent_paths[@]}"; do
         [ -f "$path" ] || continue
         role=${path##*/}
         role=${role%.md}
@@ -78,7 +83,8 @@ cmd_models() {
           return 2
           ;;
       esac
-      target=".claude/agents/$set_role.md"
+      local agents_dir="${LOOPS_AGENTS_DIR:-$SCRIPT_DIR/.claude/agents}"
+      target="$agents_dir/$set_role.md"
       if [ ! -f "$target" ]; then
         printf 'cmd_models: unknown role %s\n' "$set_role" >&2
         return 1
@@ -100,7 +106,10 @@ cmd_models() {
           printf 'cmd_models: received unparseable model response\n' >&2
           return 1
         fi
-        found=$(printf '%s\n' "$response" | jq -r --arg wanted "$set_model" '.data[].id | select(. == $wanted)')
+        case "$set_model" in
+          haiku|sonnet|opus) found=1 ;;
+          *) found=$(printf '%s\n' "$response" | jq -r --arg wanted "$set_model" '.data[].id | select(. == $wanted)') ;;
+        esac
         if [ -z "$found" ]; then
           printf 'cmd_models: model %s is not available (use --force to override)\n' "$set_model" >&2
           return 1

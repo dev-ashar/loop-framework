@@ -99,8 +99,16 @@ echo
 # ---------------------------------------------------------------- 6. settings merge
 echo "6. Merging settings.json (plugins/marketplaces/rtk preserved)"
 EXISTING="$DEST/settings.json"
-[ -f "$EXISTING" ] || echo '{}' > "${EXISTING}.loops-empty-tmp" 2>/dev/null || true
-SRC="$EXISTING"; [ -f "$EXISTING" ] || SRC="${EXISTING}.loops-empty-tmp"
+if [ ! -f "$EXISTING" ]; then
+  if [ "$DRY" = 1 ]; then
+    SRC="$KIT/settings.json"
+  else
+    echo '{}' > "${EXISTING}.loops-empty-tmp" 2>/dev/null || true
+    SRC="${EXISTING}.loops-empty-tmp"
+  fi
+else
+  SRC="$EXISTING"
+fi
 
 MERGE_JQ='
   .[0] as $e | .[1] as $k |
@@ -139,6 +147,17 @@ else
   run "touch '$LESSONS_FILE'"
   say "created memory/lessons.jsonl"
 fi
+echo
+
+# ---------------------------------------------------------------- 8. CLI
+echo "8. Installing loops CLI"
+run "mkdir -p '$HOME/.local/bin'"
+run "ln -sfn '$SCRIPT_DIR/run.sh' '$HOME/.local/bin/loops'"
+say "→ ~/.local/bin/loops"
+case ":${PATH:-}:" in
+  *":$HOME/.local/bin:"*) ;;
+  *) say "add $HOME/.local/bin to PATH to use the loops command" ;;
+esac
 echo
 
 # ---------------------------------------------------------------- done

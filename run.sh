@@ -13,7 +13,16 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do
+  SOURCE_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  LINK="$(readlink "$SOURCE")"
+  case "$LINK" in
+    /*) SOURCE="$LINK" ;;
+    *) SOURCE="$SOURCE_DIR/$LINK" ;;
+  esac
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 TEMPLATES="$SCRIPT_DIR/templates"
 LOOPDIR=".loops"
 LESSONS_FILE="$HOME/.claude/memory/lessons.jsonl"
@@ -54,7 +63,10 @@ case "$cmd" in
     mkdir -p "$LOOPDIR"
     for f in contract.md progress.md log.md feature_list.json; do
       if [ ! -f "$LOOPDIR/$f" ]; then
-        cp "$TEMPLATES/$f" "$LOOPDIR/$f"
+        if ! cp "$TEMPLATES/$f" "$LOOPDIR/$f"; then
+          echo "failed to create $LOOPDIR/$f" >&2
+          exit 1
+        fi
         echo "created $LOOPDIR/$f"
       else
         echo "kept $LOOPDIR/$f (already exists)"
