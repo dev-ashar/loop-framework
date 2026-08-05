@@ -169,3 +169,20 @@ Awaiting the single human approval gate.
 ## [2026-08-05 14:19] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
 ## [2026-08-05 14:19] fix | iteration-2: re-ran luna proof with Edit (not Write) on pre-created /tmp scratch file per gap-1; hardened .loops/verify.sh with numeric criterion-12 check, D4 model/proof cross-checks (19/20/21), tool_use/tool_result pairing checks on both observed logs, and explicit evaluator-judgement lines for criteria 4/5/10/14/15/18; updated .loops/haip-config.md luna proof description to reflect Edit-based proof
 ## [2026-08-05 14:24] run-loop | iter2: PASS 1.00 — 21/21. luna proof re-run with Edit (earned flip), verify.sh made load-bearing, contract carve-out for .loops state
+## [2026-08-05 14:28] run-loop | phase4 bootstrap: archived roster contract as contract-8af2690.md; negotiating parallel-builder contract on new GPT roster
+## [2026-08-05 14:35] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-05 14:37] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-08-05 14:37] Write | /Users/devashar/Documents/DS/workspace/loops/.claude/dispatch.md
+## [2026-08-05 14:37] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-05 14:37] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-05 14:38] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 00:00] build | phase4 parallel builders deliverables
+## [2026-08-05 14:38] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 14:39] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 00:00] build | phase4 parallel builders deliverables
+## [2026-08-05 00:00] Fix | collapse dispatch-link spacing to meet CLAUDE.md line cap
+## [2026-08-05 00:00] build | iteration 3: anchored ADHD extraction at next section heading and asserted nonzero scope-check rejection fixtures
+## [2026-08-05 14:48] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 14:48] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-05 14:49] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/log.md
+## [2026-08-05 14:54] run-loop | phase4: PASS 1.00 at iter3 — scope-check built, merge-worktrees dropped, dispatch table, snapshot guard. luna built, terra graded

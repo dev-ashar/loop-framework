@@ -1,220 +1,239 @@
-# Contract
+# Contract — Phase 4: parallel builders
 
-Run: 2026-08-05 · branch `feat/phase1-foundations` · prior contract archived at
-`.loops/archive/contract-01d2954.md`
+Run: 2026-08-05 · branch `feat/phase1-foundations` · supersedes the D1–D4 roster
+contract that passed 1.00 at commit `8af2690` (recoverable via
+`git log -p -- .loops/contract.md`, archived at
+`.loops/archive/contract-8af2690.md`). Criteria 5, 11, 12 are sourced near-verbatim
+from the Phase 3/4 draft at `.loops/archive/contract-01d2954.md` (criteria 34, 36,
+37) — do not re-litigate their wording without cause.
+
+Criteria are numbered fresh 1–12. This is a new contract, not a continuation.
 
 ## Goal
 
-Three deliverables:
+Let the orchestrator run N `builder` agents concurrently on disjoint file sets
+without collision. Today `run-loop` runs exactly one builder at a time, and that
+is the constraint blocking a 10-agent setup.
 
-- **D1** — Stop the ADHD ruleset from loading twice per session. CLAUDE.md is the
-  single source of truth; the plugin's always-on SessionStart injection goes away.
-- **D2** — Document and prove out GPT-5.6 access through the already-configured
-  HAIP gateway. No proxy, no install: `ANTHROPIC_BASE_URL` /
-  `ANTHROPIC_AUTH_TOKEN` are already exported from `~/.zshenv`.
-- **D3** — Audit CLAUDE.md against its own rule 8 (delete the harness), and fix
-  the agent-tooling gaps found during this run.
+Four deliverables:
+
+- **P1 — Snapshot guard.** Prerequisite for the rest. This loop edits the harness
+  that grades it, so committed-state copies of the files under mutation must exist
+  before any build step, and the verify script must be complete before the
+  evaluator first calls it.
+- **P2 — `scope-check`.** A real `run.sh scope-check` enforcing a per-worktree file
+  allowlist. Confirmed absent from `run.sh` today despite a Phase 3 log line
+  claiming it shipped.
+- **P3 — Merge protocol, right-sized.** `merge-worktrees` is **dropped**; replaced
+  by a documented plain `git merge --no-ff` step the orchestrator runs directly.
+- **P4 — Capability dispatch table.** A table mapping task-kind → agent → tool
+  ceiling → model tier, so the orchestrator stops routing tasks to agents that
+  structurally cannot perform them.
 
 ## Established facts (verified, do not re-litigate)
 
-- `/Users/devashar/.claude/CLAUDE.md` is a **symlink** to
-  `loops/.claude/CLAUDE.md`. The repo file is the global instruction file.
-- The ADHD ruleset loads twice: CLAUDE.md lines 99–156 (user's tuned ~35-line
-  version), and the plugin SessionStart hook gated on
-  `~/.claude/.i-have-adhd-always`, which emits the full 6848-byte SKILL.md body.
-- A real completion **succeeds** against `gpt-5.6-terra-mantle` through HAIP on
-  both `/v1/messages` (Anthropic shape) and `/v1/chat/completions` (OpenAI
-  shape). Returned text `ok`.
-- HAIP serves: `gpt-5.6-terra-mantle`, `gpt-5.6-luna-mantle`, gpt-5.5(-mantle,
-  -nano), gpt-5.4(-mantle, -nano), gpt-5-mini; claude-opus-5, claude-opus-4-8,
-  claude-opus-4-7, claude-opus-4-6, claude-sonnet-5, claude-haiku-4-5; Gemini
-  3.x flash and flash-lite.
-- HAIP does **not** serve `gpt-5.6-sol`. It does **not** serve `claude-fable-5`.
-- Costs per 1M in/out: Luna $0.20/$1.20 · Terra $2/$12 · Sol $5/$30 ·
-  Haiku 4.5 $1/$5. Luna is cheaper than Haiku.
-- `agents/explorer.md` and `agents/planner.md` both declare
-  `tools: Read, Grep, Glob` — no Bash, no Write. Recon and file-authoring tasks
-  dispatched to them fail silently.
+- `run.sh` has a `worktree` block at ~330–605 with `check`/`provision`/`fix`/`reap`.
+  Neither `scope-check` nor `merge-worktrees` exists anywhere in it.
+- `.claude/skills/run-loop/SKILL.md` is 77 lines and contains zero mentions of
+  parallel, worktree, isolation, or scope-check. It documents a single-builder loop.
+- `.claude/CLAUDE.md` is exactly **130** lines, the cap the prior contract imposed.
+- Lines 99–130 of CLAUDE.md are the ADHD ruleset, required byte-identical. The
+  reference copy is `.loops/pre-build-claudemd-99-130.txt`.
+- Roster: `builder` → `gpt-5.6-luna-mantle`, `evaluator` → `gpt-5.6-terra-mantle`,
+  `explorer` → `haiku` (no Bash), `planner` → `sonnet` (no Write). HAIP serves
+  neither `gpt-5.6-sol` nor `claude-fable-5`.
+- The prior run's evaluator proof invoked `.loops/verify.sh` before it existed and
+  graded 0.45 on file-not-found. That is the exact defect P1 closes.
+- Native `Agent(isolation: "worktree")` provisions and auto-removes a per-subagent
+  git worktree. It does not merge work back — merging remains the orchestrator's job.
+- `tests/run_tests.sh` is ~2086 lines, 33/37 passing. Not modified by this contract.
 
 ## Constraints
 
-- D1 touches only: delete `/Users/devashar/.claude/.i-have-adhd-always`.
-- D2 writes documentation and log artifacts only. It must never write the value
-  of `ANTHROPIC_BASE_URL` or `ANTHROPIC_AUTH_TOKEN` into any repo file. No
-  proxy, no new env file, no install step.
-- D3 touches only `.claude/CLAUDE.md`, `.claude/agents/explorer.md`, and
-  `.claude/agents/planner.md`.
-- D4 touches only `.claude/agents/builder.md`, `.claude/agents/evaluator.md`,
-  `.claude/agents/explorer.md`, and `.loops/haip-config.md`. It may write
-  `.loops/haip-<role>-observed.log` artifacts.
-- D4 may not change any agent's `model:` field unless that tier passed its
-  observed tool-using run. A failed or unrun proof leaves the field untouched.
-- CLAUDE.md lines 99–130 (the ADHD ruleset wording) stay byte-identical.
-- No criterion may adopt `gpt-5.6-sol` as available, or treat "top tier" as
-  decided.
-- No criterion may mark a GPT-tier role reassignment done without an observed
-  tool-using run.
-- No backward-compat shims (CLAUDE.md engineering principles). Remove obsolete
-  paths outright.
-- All edits to CLAUDE.md must be reviewable as a `git diff`.
-- **Loop-state carve-out (amended iteration 1).** Criterion 15 scopes *build
-  product* only. `.loops/` harness-state files — `contract.md`, `log.md`,
-  `progress.md`, `feature_list.json`, `verify.sh`, `pre-build-*`, and the
-  `haip-*` artifacts the contract itself mandates — are exempt from the
-  named-file restriction. Reason: the contract simultaneously required
-  `.loops/verify.sh` to be created and forbade files outside the D1–D4 list,
-  and the orchestrator's own lock-time amendment necessarily edited
-  `contract.md`. That is a defect in the contract's drafting, not in the build.
-  The restriction still binds fully outside `.loops/`.
+- Build may touch only: `run.sh`, `.claude/skills/run-loop/SKILL.md`,
+  `.claude/CLAUDE.md`, `.claude/dispatch.md` (new), and `.loops/` state files.
+- **Loop-state carve-out.** `.loops/` files are exempt from criterion 10's
+  named-file restriction. The restriction binds fully outside `.loops/`.
+- The ADHD ruleset block stays byte-identical to
+  `.loops/pre-build-claudemd-99-130.txt`. **Anchor by content, not line number** —
+  see criterion 3. Adding the dispatch-table link inside `## Routing` shifts every
+  later line down by one, so any fixed `sed -n '99,130p'` assertion is invalid for
+  this run and using one is itself a criterion failure.
+- CLAUDE.md ends at **≤131 lines** — 130 plus exactly one link line. The dispatch
+  table itself lives in `.claude/dispatch.md`, not inline.
+- No criterion may adopt `gpt-5.6-sol` or `claude-fable-5`.
+- No backward-compat shims. Remove obsolete paths outright.
+- No modifying, running, or fixing `tests/run_tests.sh`.
+- No push, deploy, publish, or PR.
+- P1 is a hard prerequisite: no P2/P3/P4 work counts toward the score unless
+  `.loops/pre-build-phase4/` and a complete `.loops/verify.sh` both exist first.
+- Every criterion is mechanically checkable by shell, or explicitly marked
+  evaluator-judgement. No vibes.
 
 ## Acceptance criteria
 
-### D1 — stop double-injection (5)
+### P1 — snapshot guard (4)
 
-1. `test ! -e /Users/devashar/.claude/.i-have-adhd-always`
-2. Both hook copies (`plugins/cache/...` and `plugins/marketplaces/...`), run
-   directly with the flag absent, exit 0 and print 0 bytes.
-3. `jq -e '.enabledPlugins["i-have-adhd@i-have-adhd"] == true'` on
-   `~/.claude/settings.json` — plugin stays installed so `/i-have-adhd` still
-   works on demand.
-4. `skills/i-have-adhd/SKILL.md` unmodified (sha256 matches pre-build snapshot),
-   `disable-model-invocation: true` intact.
-5. CLAUDE.md lines 99–130 byte-identical to pre-build snapshot.
+1. `.loops/pre-build-phase4/` contains committed-state copies of `run.sh`, every
+   `.claude/agents/*.md`, and `.claude/skills/run-loop/SKILL.md`, each taken via
+   `git show HEAD:<path>` so they are immune to being read mid-edit. A
+   `SHA256SUMS` manifest is present and `shasum -a 256 -c` passes against it.
+2. `.loops/verify.sh` is complete — not a stub — before the evaluator's first
+   invocation. Its first executable assertion after the shebang/`set` block must be
+   a self-presence guard that exits non-zero with a message distinguishing
+   "verify.sh missing" from a genuine build failure.
+3. **Snapshot-anchored byte identity.** The ADHD block is verified by locating it
+   via its heading anchor (`## Output style`) through end of that section and
+   `diff`ing that span against `.loops/pre-build-claudemd-99-130.txt`. Any check
+   that hardcodes line numbers 99–130 FAILS this criterion, because the link line
+   added in `## Routing` shifts the span. Evaluator judgement.
+4. `.loops/pre-build-phase4/` is treated read-only after creation: nothing in the
+   build rewrites it, and `git diff --name-only` shows no modification to files
+   under it after their initial add.
 
-### D2 — HAIP-backed GPT-5.6 access (6)
+### P2 — `scope-check` (1 criterion, 4 required fixtures)
 
-6. `.loops/haip-config.md` documents variable **names** (`ANTHROPIC_BASE_URL`,
-   `ANTHROPIC_AUTH_TOKEN`, sourced from `~/.zshenv`), a redacted host, and the
-   full confirmed model list. States explicitly that `gpt-5.6-sol` is NOT
-   served. Check: grep for each required token string.
-7. Hard secret gate: `grep -rF "$ANTHROPIC_AUTH_TOKEN"` across the repo returns
-   0 hits; `git diff` contains no token-shaped secret line.
-8. `.loops/haip-probe-terra.log` and `.loops/haip-probe-luna.log` exist, each
-   from an actually-executed call, non-empty, containing a non-error response
-   body. Terra probed on both API shapes.
-9. `## Tier mapping` section: luna and terra each mapped to a candidate role
-   with its cost line; an explicit "Opus remains orchestrator" sentence; no
-   reference to sol as available.
-10. **Risk-1 gate.** Any role reassignment in criterion 9 has a matching
-    `.loops/haip-<role>-observed.log` showing that agent, under the GPT tier,
-    invoking its declared tools and completing the designated proof task
-    (defined in D4, criterion 18) — distinct from the bare completion probe in 8.
-    Missing this, the mapping entry must carry the literal marker
-    `PROPOSED-NOT-VERIFIED`.
-11. **Risk-2 gate.** `## Context window` section states either an executed,
-    observed effective limit for a non-Anthropic model through HAIP, or the
-    literal string `unverified — assume capped at 200k`.
+5. `run.sh scope-check <worktree-path> <base-ref> <allowed-file-list>` exits 0 iff
+   the worktree's **full divergence from `<base-ref>`** is a subset of the allowed
+   list, else exits 1 naming the offending path(s) on stdout. The path set is the
+   union of committed and uncommitted change:
+   `git -C <path> diff --name-only "$(git -C <path> merge-base <base-ref> HEAD)"`
+   plus `git -C <path> ls-files --others --exclude-standard`. A bare
+   `git diff --name-only` is explicitly insufficient and FAILS this criterion: by
+   the time the merge step runs, a parallel builder's work is committed and the
+   working tree is clean, so a working-tree-only diff is empty and the guard is a
+   no-op exactly when it matters. All four fixtures required, each in its own tmp
+   repo + worktree: (a) in-scope **committed** edit → exit 0; (b) out-of-scope
+   **committed** edit → exit 1 naming the path; (c) out-of-scope **uncommitted**
+   edit → exit 1 naming it; (d) out-of-scope **new untracked** file → exit 1
+   naming it.
 
-### D3 — trim CLAUDE.md + agent-tooling fix (6)
+### P3 — merge protocol (2) — decision: DROP `merge-worktrees`
 
-12. `wc -l .claude/CLAUDE.md` is **≤ 130** (from 156). Every heading in
-    criterion 13 must survive the trim.
-13. These headings survive: `## The loop`, `## The nine rules`, `## Routing`,
-    an `Output style` heading, an `Engineering principles` heading.
-14. CLAUDE.md lines 99–130 byte-identical to pre-build snapshot.
-15. `git diff --name-only` touches only the files named in Constraints.
-16. `agents/explorer.md` gains `Bash` in its `tools:` frontmatter, OR its body
-    gains an explicit sentence stating it cannot inspect binaries, run CLIs, or
-    verify installed-tool behaviour, and that such recon goes elsewhere.
-    `agents/planner.md` likewise gains `Write` or an explicit statement that it
-    cannot persist files and must return content to the orchestrator.
-17. Regression guard: `! grep -rq claude-fable-5 .claude/` — nothing may
-    reference a model HAIP does not serve.
+Locked reasoning: the specified subcommand (sequential `git merge --no-ff`, stop at
+first conflict, no auto-abort) is ~15–20 lines of bash that adds no capability the
+orchestrator lacks — it drives Bash directly and can run two commands per branch.
+Native `Agent(isolation: "worktree")` already handles provisioning and cleanup. Per
+rule 8, wrapping the merge too would be harness for its own sake.
 
-### D4 — roster flip, proof-gated (4)
+6. `run.sh` contains no `merge-worktrees` subcommand. Check:
+   `! grep -q 'merge-worktrees' run.sh`.
+7. The merge step is documented instead: `git merge --no-ff` appears inside the
+   `### Parallel builders` span of `.claude/skills/run-loop/SKILL.md`, within 3
+   lines of the `scope-check` mention, and the span states in prose that the merge
+   stops at the first conflict with the conflicting branch named and no auto-abort.
 
-Target roster: **opus-5 orchestrates** (this session, never delegated) ·
-**terra critiques** (evaluator) · **luna writes all code** (builder) ·
-**haiku finds** (explorer). Each non-orchestrator reassignment is gated on its
-own observed run.
+### P4 — capability dispatch table (3)
 
-18. **Proof task, defined.** For each candidate tier a real subagent run is
-    executed and captured to `.loops/haip-<role>-observed.log`. The run is only
-    a pass if the log shows the agent *invoking its declared tools*, not merely
-    emitting text:
-    - `builder`/luna — must Read an existing repo file, make one scoped Edit to
-      a scratch file under `/tmp`, run one Bash command, and report the result.
-      Log must evidence all three tool types.
-    - `evaluator`/terra — must Read the contract, run the verify script via
-      Bash, and return a numeric 0–1 score with at least one named gap. Log
-      must evidence Read + Bash + a parsable score.
-    A log containing only assistant prose, or a refusal, or a tool call with no
-    result, is a FAIL for that tier.
-19. `agents/builder.md` sets `model: gpt-5.6-luna-mantle` **iff** criterion 18's
-    builder proof passed. Otherwise the file's `model:` is unchanged and
-    `haip-config.md`'s mapping row carries `PROPOSED-NOT-VERIFIED`.
-20. `agents/evaluator.md` sets `model: gpt-5.6-terra-mantle` **iff** criterion
-    18's evaluator proof passed. Same fallback rule as 19.
-21. `agents/explorer.md` keeps an explicitly stated model tier and, per
-    criterion 16, either gains `Bash` or states it cannot do CLI recon. The
-    luna-vs-haiku cost note ($0.20/$1.20 vs $1/$5) is recorded in
-    `haip-config.md` as a decision with a stated reason either way.
+8. `.claude/dispatch.md` exists and lists, for each of `explorer`, `planner`,
+   `builder`, `evaluator`, and the orchestrator: its current model tier (`haiku`,
+   `sonnet`, `gpt-5.6-luna-mantle`, `gpt-5.6-terra-mantle`, `opus-5`) and its tool
+   ceiling (`Read/Grep/Glob only`, `Read/Grep/Glob only`, full, full, full).
+9. `.claude/dispatch.md` states the task-kind routing — recon/mapping → `explorer`;
+   contract drafting → `planner`; code edits → `builder`; grading → `evaluator` —
+   and explicitly names the two known-broken routes: that a Bash- or
+   Write-requiring task must not be dispatched to `explorer` or `planner`, naming
+   both agents and both missing tools. Must pass an anti-negation guard: the
+   sentence asserts a routing rule rather than merely negating one. Evaluator
+   judgement.
+10. `.claude/CLAUDE.md` is ≤131 lines, gains exactly one line linking to
+    `.claude/dispatch.md` from within its `## Routing` section, and still contains
+    all five headings: `## The loop`, `## The nine rules`, `## Routing`, an Output
+    style heading, an Engineering principles heading. `git diff --name-only` touches
+    nothing outside the Constraints list (`.loops/` exempt).
+
+### Parallel-builders documentation (2)
+
+11. `.claude/skills/run-loop/SKILL.md` contains a `### Parallel builders` section
+    stating that when the locked plan has ≥2 builder steps over disjoint file sets,
+    the orchestrator provisions one worktree per step, dispatches that many
+    `builder` agents in a single message, runs `scope-check` per worktree, and
+    merges via `git merge --no-ff` before the evaluator grades. Check: extract the
+    span from `### Parallel builders` to the next `##`/`###` heading; assert
+    `worktree`, `scope-check`, and `git merge --no-ff` all appear inside it.
+12. **Fast-path guard.** The single-builder path is documented as ceremony-free:
+    with exactly one builder step, no worktree is provisioned and `builder` is
+    dispatched in place exactly as today. The guard sentence appears inside the
+    `### Parallel builders` span or within 3 lines after it, and passes the
+    anti-negation guard with one exception — the tokens `not`, `no`, `skip` are
+    permitted in the phrase describing what is *omitted for the single-builder
+    case* (e.g. "no worktree is provisioned"). The guard is applied to a ±2-line
+    window with that phrase masked out. Any negation attaching to the parallel
+    protocol itself FAILS.
 
 ## Verify command
 
-`bash .loops/verify.sh` — created by the builder, containing:
+`bash .loops/verify.sh`, which must exist complete per criterion 2 before the
+evaluator runs it. The builder writes it; skeleton:
 
 ```bash
+#!/usr/bin/env bash
 set -euo pipefail
 cd /Users/devashar/Documents/DS/workspace/loops
+test -f .loops/verify.sh || { echo "verify.sh missing — contract defect, not build fail" >&2; exit 1; }
 
-# D1
-test ! -e "$HOME/.claude/.i-have-adhd-always"
-for h in "$HOME/.claude/plugins/cache/i-have-adhd/i-have-adhd/0.1.0/hooks/always-on.sh" \
-         "$HOME/.claude/plugins/marketplaces/i-have-adhd/hooks/always-on.sh"; do
-  [ -f "$h" ] || continue
-  out=$(sh "$h"); [ -z "$out" ]
+# P1
+test -d .loops/pre-build-phase4
+test -s .loops/pre-build-phase4/SHA256SUMS
+( cd .loops/pre-build-phase4 && shasum -a 256 -c SHA256SUMS --status )
+# ADHD block by content anchor, NOT line numbers (criterion 3)
+awk '/^## Output style/,0' .claude/CLAUDE.md | head -32 > /tmp/adhd-now.txt
+diff -q .loops/pre-build-claudemd-99-130.txt /tmp/adhd-now.txt
+
+# P2 — four fixtures, builder wires up tmp repos + worktrees
+#   (a) in-scope committed -> 0  (b) out-of-scope committed -> 1
+#   (c) out-of-scope uncommitted -> 1  (d) out-of-scope untracked -> 1
+
+# P3
+! grep -q 'merge-worktrees' run.sh
+grep -q 'git merge --no-ff' .claude/skills/run-loop/SKILL.md
+
+# P4
+test -s .claude/dispatch.md
+for tok in explorer planner builder evaluator \
+           "gpt-5.6-luna-mantle" "gpt-5.6-terra-mantle" haiku sonnet; do
+  grep -q "$tok" .claude/dispatch.md
 done
-jq -e '.enabledPlugins["i-have-adhd@i-have-adhd"] == true' "$HOME/.claude/settings.json" >/dev/null
+grep -q 'dispatch.md' .claude/CLAUDE.md
+[ "$(wc -l < .claude/CLAUDE.md)" -le 131 ]
+! grep -rq 'gpt-5.6-sol\|claude-fable-5' .claude/
 
-# D2
-test -s .loops/haip-config.md
-for tok in gpt-5.6-terra-mantle gpt-5.6-luna-mantle gpt-5.6-sol \
-           '## Tier mapping' '## Context window'; do
-  grep -q "$tok" .loops/haip-config.md
-done
-test -s .loops/haip-probe-terra.log
-test -s .loops/haip-probe-luna.log
-if [ -n "${ANTHROPIC_AUTH_TOKEN:-}" ]; then
-  ! grep -rqF "$ANTHROPIC_AUTH_TOKEN" . 2>/dev/null
-fi
+# Parallel builders doc
+grep -q '### Parallel builders' .claude/skills/run-loop/SKILL.md
 
-# D3
-! grep -rq claude-fable-5 .claude/
-for h in '## The loop' '## The nine rules' '## Routing' 'Output style' 'Engineering principles'; do
-  grep -q "$h" .claude/CLAUDE.md
-done
-grep -qE 'Bash|cannot inspect binaries' .claude/agents/explorer.md
-grep -qE 'Write|cannot persist files' .claude/agents/planner.md
-wc -l .claude/CLAUDE.md
-
+echo EVALUATOR-JUDGEMENT-REQUIRED: 3 9 12
 echo VERIFY_OK
 ```
 
-Criteria requiring evaluator judgement rather than the script: 4, 5, 10, 14, 15.
+Criteria requiring evaluator judgement rather than the script: 3, 9, 12.
 
 ## Out of scope
 
-- Patching the i-have-adhd plugin upstream or opening a PR.
-- Any proxy that routes an Anthropic subscription OAuth token (violates
-  Anthropic consumer terms).
-- Requesting that platform add `gpt-5.6-sol` to HAIP (surfaced as a follow-up).
-- Pushing, deploying, or publishing anything.
+- Building `merge-worktrees` (decided: dropped, P3).
+- Archived criterion 38 — staging-safety gate on `worktree fix` / `provision --pr`.
+  Real and unbuilt; deferred.
+- The `worktree check` hazard-prefilter gap: it greps literal `/Users/|/home/`, so
+  `/opt/homebrew/...` interpreter paths are invisible to it.
+- `.loops/haip-probe-terra.log`'s non-JSONL separator line (cosmetic).
+- A dedicated explorer proof run to clear its `PROPOSED-NOT-VERIFIED` status.
+- Running, fixing, or modifying `tests/run_tests.sh`.
+- A live end-to-end 10-agent run across real repos. This contract builds and
+  documents the gates; exercising them is the follow-up.
+- Any push, deploy, or publish.
 
 ## Resolved decisions (contract LOCKED 2026-08-05)
 
-- **Q1 → ≤130 lines**, all criterion-13 headings surviving. Criterion 12.
-- **Q2 → proof task defined in criterion 18**, per-role, tool-invocation
-  evidenced in the log. Prose-only logs fail.
-- **Q3 → Terra accepted** as the top GPT tier available. Sol is recorded as a
-  platform follow-up, not a blocker. This run proceeds.
-
-Amendment note: D4 (criteria 18–21) added at lock time to cover the requested
-roster flip — opus orchestrates, terra critiques, luna codes, haiku explores.
-The Risk-1 gate already in criterion 10 governs it; D4 makes the per-role
-outcome explicit rather than leaving it to prose.
-
-Known redundancy, deliberately kept: criteria 5 and 14 assert the same
-byte-identity on CLAUDE.md lines 99–130. Kept because they gate different
-deliverables (D1's hook removal vs D3's trim) and either could break it
-independently. Collapse only if a future run merges D1 and D3.
+- **Dispatch table → `.claude/dispatch.md`**, linked from `## Routing`. CLAUDE.md
+  stays at ≤131 (one link line). Human decision: keep the most-read file thin.
+- **Merge protocol → drop `merge-worktrees`**, replaced by a documented plain
+  `git merge --no-ff` the orchestrator runs. Planner's recommendation, accepted.
+- **Byte identity → content-anchored, not line-anchored.** The link line inside
+  `## Routing` shifts all later lines by one, so `sed -n '99,130p'` would silently
+  compare the wrong span. Criterion 3 forbids line-number anchoring outright. This
+  is an orchestrator amendment to the planner's draft, which had assumed all new
+  content would be appended after line 130.
+- **Snapshot retention → keep `.loops/pre-build-phase4/`** as an audit trail. It is
+  a few KB. Future phases add their own `pre-build-phaseN/`.
+- **Worktree cleanup → auto-delete after a successful merge**, with
+  `run.sh worktree reap --prune` as the fallback for orphans.
+- **Numbering → fresh 1–12.**

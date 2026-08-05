@@ -327,24 +327,6 @@ case "$cmd" in
         ;;
     esac
     ;;
-  scope-check)
-    worktree_path="${2:-}"
-    base_ref="${3:-}"
-    allowed_csv="${4:-}"
-    [ -n "$worktree_path" ] && [ -n "$base_ref" ] && [ -n "$allowed_csv" ] || { echo "usage: $0 scope-check <worktree-path> <base-ref> <allowed-file-list>" >&2; exit 1; }
-    allowed_set="|$allowed_csv|"
-    merge_base="$(git -C "$worktree_path" merge-base "$base_ref" HEAD)"
-    offending=""
-    while IFS= read -r changed; do
-      [ -n "$changed" ] || continue
-      case "$allowed_set" in *"|$changed|"*) ;; *) offending="$offending$changed\n" ;; esac
-    done < <({ git -C "$worktree_path" diff --name-only "$merge_base"; git -C "$worktree_path" ls-files --others --exclude-standard; } | sort -u)
-    if [ -n "$offending" ]; then
-      printf '%b' "$offending"
-      exit 1
-    fi
-    exit 0
-    ;;
   worktree)
     subcmd="${2:-}"
     shift 2

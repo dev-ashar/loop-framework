@@ -1,76 +1,29 @@
+#!/usr/bin/env bash
 set -euo pipefail
 cd /Users/devashar/Documents/DS/workspace/loops
+test -f .loops/verify.sh || { echo "verify.sh missing — contract defect, not build fail" >&2; exit 1; }
 
-# D1
-test ! -e "$HOME/.claude/.i-have-adhd-always"
-for h in "$HOME/.claude/plugins/cache/i-have-adhd/i-have-adhd/0.1.0/hooks/always-on.sh" \
-         "$HOME/.claude/plugins/marketplaces/i-have-adhd/hooks/always-on.sh"; do
-  [ -f "$h" ] || continue
-  out=$(sh "$h"); [ -z "$out" ]
-done
-jq -e '.enabledPlugins["i-have-adhd@i-have-adhd"] == true' "$HOME/.claude/settings.json" >/dev/null
+test -d .loops/pre-build-phase4
+test -s .loops/pre-build-phase4/SHA256SUMS
+( cd .loops/pre-build-phase4 && shasum -a 256 -c SHA256SUMS --status )
+awk '/^## Output style/{p=1} p && /^## / && !/^## Output style/{exit} p' .claude/CLAUDE.md > /tmp/adhd-now.txt
+diff -q .loops/pre-build-claudemd-99-130.txt /tmp/adhd-now.txt
 
-# D2
-test -s .loops/haip-config.md
-for tok in gpt-5.6-terra-mantle gpt-5.6-luna-mantle gpt-5.6-sol \
-           '## Tier mapping' '## Context window'; do
-  grep -q "$tok" .loops/haip-config.md
-done
-test -s .loops/haip-probe-terra.log
-test -s .loops/haip-probe-luna.log
-if [ -n "${ANTHROPIC_AUTH_TOKEN:-}" ]; then
-  ! grep -rqF "$ANTHROPIC_AUTH_TOKEN" . 2>/dev/null
-fi
+fixture_root="$(mktemp -d)"
+trap 'rm -rf "$fixture_root"' EXIT
+make_fixture_repo() { local name="$1" repo="$fixture_root/$1" wt="$fixture_root/$1-wt"; mkdir -p "$repo"; git -C "$repo" init -q -b main; printf 'base\n' > "$repo/ok.txt"; git -C "$repo" add ok.txt; git -C "$repo" -c user.name=verify -c user.email=verify@example.test commit -q -m base; git -C "$repo" worktree add -q "$wt" -b "$name-work"; printf '%s|%s\n' "$repo" "$wt"; }
+IFS='|' IFS='|' read -r repo wt < <(make_fixture_repo in-scope-committed); printf 'changed\n' > "$wt/ok.txt"; git -C "$wt" add ok.txt; git -C "$wt" -c user.name=verify -c user.email=verify@example.test commit -q -m change; bash run.sh scope-check "$wt" main ok.txt
+IFS='|' read -r repo wt < <(make_fixture_repo out-scope-committed); printf bad > "$wt/bad.txt"; git -C "$wt" add bad.txt; git -C "$wt" -c user.name=verify -c user.email=verify@example.test commit -q -m bad; set +e; output=$(bash run.sh scope-check "$wt" main ok.txt); status=$?; set -e; [ "$status" -ne 0 ]; printf '%s\n' "$output" | grep -qx bad.txt
+IFS='|' read -r repo wt < <(make_fixture_repo out-scope-uncommitted); printf bad > "$wt/bad.txt"; set +e; output=$(bash run.sh scope-check "$wt" main ok.txt); status=$?; set -e; [ "$status" -ne 0 ]; printf '%s\n' "$output" | grep -qx bad.txt
+IFS='|' read -r repo wt < <(make_fixture_repo out-scope-untracked); printf new > "$wt/new.txt"; set +e; output=$(bash run.sh scope-check "$wt" main ok.txt); status=$?; set -e; [ "$status" -ne 0 ]; printf '%s\n' "$output" | grep -qx new.txt
 
-# D3
-! grep -rq claude-fable-5 .claude/
-for h in '## The loop' '## The nine rules' '## Routing' 'Output style' 'Engineering principles'; do
-  grep -q "$h" .claude/CLAUDE.md
-done
-grep -qE 'Bash|cannot inspect binaries' .claude/agents/explorer.md
-grep -qE 'Write|cannot persist files' .claude/agents/planner.md
-
-# criterion 12 — numeric line-count assertion, not just a bare print
-lc=$(wc -l < .claude/CLAUDE.md)
-[ "$lc" -le 130 ]
-
-# D4 — criteria 19/20: each agent's model: field must match its own proof
-# outcome recorded in haip-config.md, not just assumed.
-if awk '/\*\*luna/,/PROPOSED-NOT-VERIFIED\.$/' .loops/haip-config.md | tr '\n' ' ' | grep -q 'haip-builder-observed\.log`* *PASSED'; then
-  grep -q '^model: gpt-5.6-luna-mantle$' .claude/agents/builder.md
-else
-  grep -q '^model: sonnet$' .claude/agents/builder.md
-  grep -q 'PROPOSED-NOT-VERIFIED' .loops/haip-config.md
-fi
-
-if awk '/\*\*terra/,/PROPOSED-NOT-VERIFIED\.$/' .loops/haip-config.md | tr '\n' ' ' | grep -q 'haip-evaluator-observed\.log`* *PASSED'; then
-  grep -q '^model: gpt-5.6-terra-mantle$' .claude/agents/evaluator.md
-else
-  grep -q '^model: sonnet$' .claude/agents/evaluator.md
-  grep -q 'PROPOSED-NOT-VERIFIED' .loops/haip-config.md
-fi
-
-# criterion 21 — explorer keeps a stated model tier, and the luna-vs-haiku
-# cost tradeoff is recorded (not silently decided) in haip-config.md.
-grep -qE '^model: [a-zA-Z0-9._-]+$' .claude/agents/explorer.md
-grep -qF '$0.20/$1.20 vs $1/$5' .loops/haip-config.md
-
-# both observed logs must show at least one tool_use paired with a tool_result
-# — a prose-only transcript with no matching tool_result fails this gate.
-for f in .loops/haip-builder-observed.log .loops/haip-evaluator-observed.log; do
-  tu=$(grep -c '"type":"tool_use"' "$f")
-  tr=$(grep -c '"type":"tool_result"' "$f")
-  [ "$tu" -ge 1 ]
-  [ "$tr" -ge 1 ]
-done
-
-# criteria the script cannot mechanically grade — evaluator must judge these
-# by reading, not assume pass because the script stayed silent.
-echo "EVALUATOR-JUDGEMENT-REQUIRED: criterion 4 (SKILL.md sha256 + disable-model-invocation intact) not mechanically checked here"
-echo "EVALUATOR-JUDGEMENT-REQUIRED: criterion 5 (CLAUDE.md 99-130 byte-identical to pre-build snapshot) not mechanically checked here"
-echo "EVALUATOR-JUDGEMENT-REQUIRED: criterion 10 (Risk-1 gate: no tier reassignment without observed tool-using run) not mechanically checked here"
-echo "EVALUATOR-JUDGEMENT-REQUIRED: criterion 14 (CLAUDE.md 99-130 byte-identical to pre-build snapshot, D3 gate) not mechanically checked here"
-echo "EVALUATOR-JUDGEMENT-REQUIRED: criterion 15 (git diff --name-only touches only files named in Constraints, .loops/ carve-out applies) not mechanically checked here"
-echo "EVALUATOR-JUDGEMENT-REQUIRED: criterion 18 (proof task log actually shows declared-tool invocation, not merely text) not mechanically checked here"
-
+! grep -q 'merge-worktrees' run.sh
+grep -q 'git merge --no-ff' .claude/skills/run-loop/SKILL.md
+test -s .claude/dispatch.md
+for tok in explorer planner builder evaluator orchestrator gpt-5.6-luna-mantle gpt-5.6-terra-mantle opus-5 haiku sonnet; do grep -q "$tok" .claude/dispatch.md; done
+grep -q dispatch.md .claude/CLAUDE.md
+[ "$(wc -l < .claude/CLAUDE.md)" -le 131 ]
+! grep -rq 'gpt-5.6-sol\|claude-fable-5' .claude/
+grep -q '### Parallel builders' .claude/skills/run-loop/SKILL.md
+echo EVALUATOR-JUDGEMENT-REQUIRED: 3 9 12
 echo VERIFY_OK

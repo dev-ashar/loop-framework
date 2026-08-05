@@ -29,6 +29,7 @@ below is a footnote on those five verbs.
 
 ## Routing (the one rule)
 
+See [.claude/dispatch.md](.claude/dispatch.md) for the capability dispatch table.
 **Opus = this session, and only orchestrates**: plan, judge, synthesize, decide.
 Delegate volume at the cheapest competent tier: `explorer` (Haiku) to find/map,
 `builder` to write code, `planner` to draft the contract, `evaluator`

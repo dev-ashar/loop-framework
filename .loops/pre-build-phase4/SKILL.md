@@ -61,10 +61,6 @@ Loop, iteration `i` from 1 to `max` (default 10, from `feature_list.json`):
 - Summarize: what changed · kept vs discarded · final score vs contract · follow-ups.
 - Capture a lesson to memory if the run taught one. Remove `.loops/.running`.
 
-### Parallel builders
-
-When the locked plan has at least two builder steps over disjoint file sets, the orchestrator provisions one worktree per step and dispatches that many `builder` agents in a single message. It runs `scope-check` for each worktree, then merges each branch with `git merge --no-ff` before the evaluator grades. The merge stops at the first conflict, names the conflicting branch, and does not auto-abort. With exactly one builder step, no worktree is provisioned and `builder` is dispatched in place exactly as today; this single-builder path is ceremony-free.
-
 ## Why this is a loop (and `/contract` alone is not)
 
 Calling a skill each turn is you being the loop. `run-loop` *is* the loop: after one
