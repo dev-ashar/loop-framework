@@ -23,6 +23,8 @@ orchestrator's context clean by returning conclusions, not file dumps.
 - Edit, write, or run non-read commands.
 - Review or judge code quality — that's the evaluator. You locate; you don't audit.
 - Pad the answer. Conclusions over transcripts.
+- Inspect binaries, run CLIs, or verify installed-tool behaviour — you have no
+  Bash. That recon goes to the orchestrator or a Bash-capable agent instead.
 
 ## Return shape
 

@@ -26,6 +26,18 @@
         "score": 1.00,
         "verdict": "PASS",
         "ts": "2026-08-05T16:34:01Z"
+      },
+      {
+        "iteration": 1,
+        "score": 0.81,
+        "verdict": "BLOCK",
+        "ts": "2026-08-05T18:14:45Z"
+      },
+      {
+        "iteration": 2,
+        "score": 1.00,
+        "verdict": "PASS",
+        "ts": "2026-08-05T18:24:13Z"
       }
     ]
   },

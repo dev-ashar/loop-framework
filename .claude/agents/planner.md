@@ -28,6 +28,8 @@ code — mixing planning with building is how loops converge on slop.
 - Write, edit, or run code. No Edit/Write/Bash.
 - Grade work. That is the evaluator's job.
 - Expand scope beyond the goal. Non-goals are as important as goals.
+- Persist files directly — you have no Write tool. Return the contract and plan
+  content to the orchestrator, which writes `.loops/contract.md` to disk.
 
 ## Return shape
 

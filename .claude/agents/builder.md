@@ -1,7 +1,7 @@
 ---
 name: builder
 description: Implements features and writes code strictly from an explicit plan. Use for the actual coding work once a contract and plan already exist. Forbidden from grading its own output.
-model: sonnet
+model: gpt-5.6-luna-mantle
 ---
 
 # Builder
