@@ -75,3 +75,55 @@ Awaiting the single human approval gate.
 ## [2026-07-30 13:22] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/log.md
 ## [2026-07-30 13:22] fix | removed placeholder entry from templates/log.md + .loops/log.md
 ## [2026-07-30 13:23] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/progress.md
+## [2026-07-30 13:26] Write | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/worktree/SKILL.md
+## [2026-07-30 13:29] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 13:33] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 13:35] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-07-30 13:35] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 13:40] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 13:41] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 13:43] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 13:44] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 13:44] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 13:45] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 13:45] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 13:45] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 13:49] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-07-30 13:50] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-07-30 13:51] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 13:52] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 13:53] build | Phase 3 implemented: criteria 24-33,38 — worktree check/provision/fix/reap, safety gates 30+38 pass behavioral proof
+## [2026-07-30 14:03] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 14:03] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 14:04] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-07-30 14:04] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-07-30 14:05] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-07-30 14:05] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-07-30 14:06] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-07-30 14:06] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-07-30 14:09] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-07-30 14:10] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-07-30 14:11] fix | criterion 28: wt_root derived via git-common-dir (not --show-toplevel) so fix resolves the MAIN repo from inside a linked worktree; awk rewriter now does string-prefix-stripping instead of 5-component heuristic and fails loudly + exits 1 + leaves hook byte-unchanged on out-of-repo paths; criterion 33 now snapshots downstream repos once at suite start (not tautologically at the same instant) and can actually fail
+## [2026-07-30 14:11] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/log.md
+## [2026-07-30 14:15] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-07-30 14:15] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-07-30 14:15] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-07-30 14:16] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-07-30 14:16] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-07-30 14:18] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-08-05 11:58] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-08-05 11:58] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-08-05 11:58] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-08-05 12:12] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-08-05 12:17] Write | /tmp/int_test_early.sh
+## [2026-08-05 12:18] Write | /tmp/sig_diag.sh
+## [2026-08-05 12:19] Write | /tmp/sig_diag2.sh
+## [2026-08-05 12:21] Write | /tmp/diag_target3.sh
+## [2026-08-05 12:23] Write | /tmp/int_fg_test.sh
+## [2026-08-05 12:23] Write | /tmp/int_fg_test_late.sh
+## [2026-08-05 12:23] Write | /tmp/int_fg_test_late.sh
+## [2026-08-05 12:24] Write | /tmp/int_fg_test_early2.sh
+
+## [2026-08-05 12:30] fix | tests/run_tests.sh: separated INT/TERM trap from EXIT trap — bash resumes execution after a signal handler unless it exits explicitly, so cleanup() previously rm -rf'd SUITE_TMPDIR mid-run on SIGINT/SIGTERM while the suite kept running against the deleted dir, silently dropping post-signal fresh_home_tmp registry appends and stranding ~/.cache/loops-test.* dirs. Added on_signal() (cleanup then exit 130/143) and a CLEANUP_DONE guard so the EXIT trap firing afterward is a harmless no-op. Verified: 33/37 unchanged, 0 strays pre/post full run, SIGTERM mid-run exit 143 + 0 strays, SIGINT at two kill points (foreground delivery, since backgrounded async-list SIGINT is unconditionally ignored by bash regardless of trap) exit 130 + 0 strays both times, no set -u unbound-variable crash in any run.
+## [2026-08-05 12:34] phase3 | worktree management — check/provision/fix/reap, draft-PR path, scope-check; 4 evaluator-caught defects fixed; PASS 1.00
+## [2026-08-05 12:34] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/progress.md

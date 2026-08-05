@@ -17,15 +17,72 @@ FAIL_COUNT=0
 # Global temp dir, cleaned up on exit
 SUITE_TMPDIR=""
 
+# Some fixtures (HARDCODED_HOOK_PATH rewrite tests) must live under a path
+# that literally starts with /Users/ or /home/ — the hazard prefilter never
+# matches the OS temp dir (/var/folders/... on macOS). Confine those to
+# ~/.cache/loops-test.* (never scattered loose in $HOME) and track them via
+# a registry file (not a shell array — fresh_home_tmp() is invoked as
+# d=$(fresh_home_tmp), which runs in a command-substitution subshell, so an
+# array mutation there would never reach the parent shell) so cleanup()
+# removes them even if the suite is interrupted mid-run.
+HOME_TMPDIR_REGISTRY=""
+
+# Guard so cleanup() only ever does its work once: bash signal traps do NOT
+# terminate the script on INT/TERM (execution resumes after the handler
+# returns unless it exits explicitly), so on_signal() below calls cleanup()
+# and then exits immediately. The EXIT trap still fires afterward (trapping
+# EXIT always fires on process exit, including exit calls from other traps),
+# so without this guard that second cleanup() run would rm -rf an
+# already-removed SUITE_TMPDIR — harmless by itself, but confirms cleanup
+# only runs once as designed.
+CLEANUP_DONE=""
+
 cleanup() {
+  [ -n "$CLEANUP_DONE" ] && return 0
+  CLEANUP_DONE=1
+  # Read the registry before removing SUITE_TMPDIR (the registry file lives
+  # inside it), so interrupted/early runs still see every recorded path.
+  if [ -n "$HOME_TMPDIR_REGISTRY" ] && [ -f "$HOME_TMPDIR_REGISTRY" ]; then
+    local hd
+    while IFS= read -r hd; do
+      [ -n "$hd" ] && [ -d "$hd" ] && rm -rf "$hd"
+    done < "$HOME_TMPDIR_REGISTRY"
+  fi
   [ -n "$SUITE_TMPDIR" ] && [ -d "$SUITE_TMPDIR" ] && rm -rf "$SUITE_TMPDIR"
 }
+
+# INT/TERM traps run a handler but do NOT terminate the script afterward —
+# execution would otherwise fall through and keep running against a
+# SUITE_TMPDIR that cleanup() just deleted (the exact bug this fixes: fixtures
+# created after the signal landed under a removed directory, so registry
+# appends silently failed and were never cleaned up). Exit explicitly with
+# the conventional 128+signum code so the process actually terminates.
+on_signal() {
+  cleanup
+  exit "$1"
+}
+trap 'on_signal 130' INT
+trap 'on_signal 143' TERM
 trap cleanup EXIT
 
 # Allocate a fresh scratch directory
 fresh_tmp() {
   local d
   d=$(mktemp -d "$SUITE_TMPDIR/testXXXXXX")
+  echo "$d"
+}
+
+# Allocate a fresh scratch directory rooted under $HOME (so its path matches
+# the /Users/|/home/ hazard prefilter), confined to ~/.cache and cleaned up
+# by the trap above even on interruption.
+fresh_home_tmp() {
+  local d
+  mkdir -p "$HOME/.cache"
+  d=$(mktemp -d "$HOME/.cache/loops-test.XXXXXX")
+  # Called as d=$(fresh_home_tmp) — a command-substitution subshell — so
+  # record the path in the registry FILE, not a shell array/variable: any
+  # variable mutation here is invisible to the parent shell.
+  echo "$d" >> "$HOME_TMPDIR_REGISTRY"
   echo "$d"
 }
 
@@ -1158,17 +1215,796 @@ test_criterion_23() {
 # Phase 3 stubs (criteria 24–33 and 38)
 # ============================================================================
 
-test_criterion_24() { record_result 24 "FAIL" "not yet implemented (phase 3)"; }
-test_criterion_25() { record_result 25 "FAIL" "not yet implemented (phase 3)"; }
-test_criterion_26() { record_result 26 "FAIL" "not yet implemented (phase 3)"; }
-test_criterion_27() { record_result 27 "FAIL" "not yet implemented (phase 3)"; }
-test_criterion_28() { record_result 28 "FAIL" "not yet implemented (phase 3)"; }
-test_criterion_29() { record_result 29 "FAIL" "not yet implemented (phase 3)"; }
-test_criterion_30() { record_result 30 "FAIL" "not yet implemented (phase 3)"; }
-test_criterion_31() { record_result 31 "FAIL" "not yet implemented (phase 3)"; }
-test_criterion_32() { record_result 32 "FAIL" "not yet implemented (phase 3)"; }
-test_criterion_33() { record_result 33 "FAIL" "not yet implemented (phase 3)"; }
-test_criterion_38() { record_result 38 "FAIL" "not yet implemented (phase 3)"; }
+test_criterion_24() {
+  local skill_file="$LOOPS_ROOT/.claude/skills/worktree/SKILL.md"
+
+  if [ ! -f "$skill_file" ]; then
+    record_result 24 "FAIL" "worktree/SKILL.md not found"
+    return
+  fi
+
+  # Check frontmatter name
+  if ! grep -q '^name: worktree$' "$skill_file"; then
+    record_result 24 "FAIL" "missing 'name: worktree' in frontmatter"
+    return
+  fi
+
+  # Check that check, provision, fix subcommands are documented
+  if ! grep -qi 'check' "$skill_file" || ! grep -qi 'provision' "$skill_file" || ! grep -qi 'fix' "$skill_file"; then
+    record_result 24 "FAIL" "missing subcommand documentation"
+    return
+  fi
+
+  # Check fail-closed documentation
+  if ! grep -qi 'fail closed' "$skill_file" && ! grep -qi 'dirty tree' "$skill_file"; then
+    record_result 24 "FAIL" "missing fail-closed / dirty tree documentation"
+    return
+  fi
+
+  if ! grep -qi '\-\-force' "$skill_file"; then
+    record_result 24 "FAIL" "missing --force flag documentation"
+    return
+  fi
+
+  record_result 24 "pass" "worktree skill exists with correct structure"
+}
+
+test_criterion_25() {
+  local d
+  d=$(fresh_tmp)
+
+  # All-hazards fixture
+  cd "$d"
+  git init -q
+  git config user.email "test@test.com"
+  git config user.name "Test"
+  touch file.txt
+  git add file.txt
+  git commit -qm "init"
+
+  mkdir -p .git/hooks
+  echo '#!/bin/bash
+INSTALL_PYTHON=/Users/devashar/Documents/DS/arthur2.0/arthur/env/bin/python3.12
+echo ok' > .git/hooks/pre-commit
+  chmod +x .git/hooks/pre-commit
+
+  git config core.hooksPath "$(pwd)/.git/hooks"
+
+  touch .env
+  git add file.txt
+  git commit -qm "add file"
+  echo "SECRET=123" >> .env
+
+  mkdir -p node_modules
+  echo "*" > .gitignore
+  echo "node_modules/" >> .gitignore
+  echo ".env" >> .gitignore
+
+  local output_all before_status after_status
+  before_status=$(git status --porcelain)
+  output_all=$("$LOOPS_RUN" worktree check 2>&1)
+  after_status=$(git status --porcelain)
+
+  # Clean fixture
+  local d2
+  d2=$(fresh_tmp)
+  cd "$d2"
+  git init -q
+  git config user.email "test@test.com"
+  git config user.name "Test"
+  touch file.txt
+  git add file.txt
+  git commit -qm "init"
+
+  local output_clean
+  output_clean=$("$LOOPS_RUN" worktree check 2>&1)
+
+  # Strict-subset fixture (only 2 hazards)
+  local d3
+  d3=$(fresh_tmp)
+  cd "$d3"
+  git init -q
+  git config user.email "test@test.com"
+  git config user.name "Test"
+  touch file.txt
+  git add file.txt
+  git commit -qm "init"
+
+  mkdir -p .git/hooks
+  echo '#!/bin/bash
+INSTALL_PYTHON=/Users/devashar/Documents/DS/arthur2.0/arthur/env/bin/python3.12
+echo ok' > .git/hooks/pre-commit
+  chmod +x .git/hooks/pre-commit
+
+  mkdir -p env
+  echo "env/" > .gitignore
+
+  local output_subset
+  output_subset=$("$LOOPS_RUN" worktree check 2>&1)
+
+  local fail=""
+  # All-hazards fixture must have all four tokens
+  echo "$output_all" | grep -q "HARDCODED_HOOK_PATH" || fail="$fail all:no-HARDCODED"
+  echo "$output_all" | grep -q "HOOKS_PATH_ABSOLUTE" || fail="$fail all:no-ABSOLUTE"
+  echo "$output_all" | grep -q "MISSING_ENV_FILE" || fail="$fail all:no-ENV"
+  echo "$output_all" | grep -q "MISSING_BOOTSTRAP_ARTIFACT" || fail="$fail all:no-BOOTSTRAP"
+
+  # Clean fixture must have none
+  echo "$output_clean" | grep -q "HARDCODED_HOOK_PATH" && fail="$fail clean:has-HARDCODED"
+  echo "$output_clean" | grep -q "HOOKS_PATH_ABSOLUTE" && fail="$fail clean:has-ABSOLUTE"
+  echo "$output_clean" | grep -q "MISSING_ENV_FILE" && fail="$fail clean:has-ENV"
+  echo "$output_clean" | grep -q "MISSING_BOOTSTRAP_ARTIFACT" && fail="$fail clean:has-BOOTSTRAP"
+
+  # Subset fixture must have exactly two and NOT the other two
+  echo "$output_subset" | grep -q "HARDCODED_HOOK_PATH" || fail="$fail subset:no-HARDCODED"
+  echo "$output_subset" | grep -q "MISSING_BOOTSTRAP_ARTIFACT" || fail="$fail subset:no-BOOTSTRAP"
+  echo "$output_subset" | grep -q "HOOKS_PATH_ABSOLUTE" && fail="$fail subset:has-ABSOLUTE"
+  echo "$output_subset" | grep -q "MISSING_ENV_FILE" && fail="$fail subset:has-ENV"
+
+  # Read-only check
+  [ "$before_status" != "$after_status" ] && fail="$fail git-mutated"
+
+  if [ -z "$fail" ]; then
+    record_result 25 "pass" "worktree check emits correct hazard tokens"
+  else
+    record_result 25 "FAIL" "$fail"
+  fi
+}
+
+test_criterion_26() {
+  # Hazardous fixture - should fail without --force
+  local d
+  d=$(fresh_tmp)
+  cd "$d"
+  git init -q
+  git config user.email "test@test.com"
+  git config user.name "Test"
+  touch file.txt
+  git add file.txt
+  git commit -qm "init"
+
+  mkdir -p .git/hooks
+  echo '#!/bin/bash
+INSTALL_PYTHON=/Users/devashar/Documents/DS/arthur2.0/arthur/env/bin/python3.12
+echo ok' > .git/hooks/pre-commit
+  chmod +x .git/hooks/pre-commit
+
+  local wt_count_before wt_count_after
+  wt_count_before=$(git worktree list | wc -l | tr -d ' ')
+
+  "$LOOPS_RUN" worktree provision test-branch >/dev/null 2>&1
+  local exit_a=$?
+  wt_count_after=$(git worktree list | wc -l | tr -d ' ')
+
+  # Clean fixture - should succeed without --force
+  local d2
+  d2=$(fresh_tmp)
+  cd "$d2"
+  git init -q
+  git config user.email "test@test.com"
+  git config user.name "Test"
+  touch file.txt
+  git add file.txt
+  git commit -qm "init"
+
+  "$LOOPS_RUN" worktree provision clean-branch >/dev/null 2>&1
+  local exit_b=$?
+
+  local wt_exists=0
+  [ -d ".claude/worktrees/clean-branch" ] && wt_exists=1
+
+  local wt_in_list=0
+  git worktree list | grep -q "clean-branch" && wt_in_list=1
+
+  local fail=""
+  [ $exit_a -eq 0 ] && fail="$fail hazardous→exit-0"
+  [ "$wt_count_before" != "$wt_count_after" ] && fail="$fail hazardous-created-wt"
+  [ $exit_b -ne 0 ] && fail="$fail clean→exit-nonzero"
+  [ $wt_exists -eq 0 ] && fail="$fail clean:wt-dir-missing"
+  [ $wt_in_list -eq 0 ] && fail="$fail clean:wt-not-in-list"
+
+  if [ -z "$fail" ]; then
+    record_result 26 "pass" "provision fails-closed on hazards, succeeds when clean"
+  else
+    record_result 26 "FAIL" "$fail"
+  fi
+}
+
+test_criterion_27() {
+  local d
+  d=$(fresh_tmp)
+  cd "$d"
+  git init -q
+  git config user.email "test@test.com"
+  git config user.name "Test"
+  touch file.txt
+  git add file.txt
+  git commit -qm "init"
+
+  mkdir -p .git/hooks
+  echo '#!/bin/bash
+INSTALL_PYTHON=/Users/devashar/Documents/DS/arthur2.0/arthur/env/bin/python3.12
+echo ok' > .git/hooks/pre-commit
+  chmod +x .git/hooks/pre-commit
+
+  local output
+  output=$("$LOOPS_RUN" worktree provision test-branch --force 2>&1)
+
+  local wt_exists=0
+  [ -d ".claude/worktrees/test-branch" ] && wt_exists=1
+
+  local tokens_in_output=0
+  echo "$output" | grep -q "HARDCODED_HOOK_PATH" && tokens_in_output=1
+
+  local fail=""
+  [ $wt_exists -eq 0 ] && fail="$fail wt-not-created"
+  [ $tokens_in_output -eq 0 ] && fail="$fail tokens-not-printed"
+
+  if [ -z "$fail" ]; then
+    record_result 27 "pass" "provision --force creates worktree and prints hazards"
+  else
+    record_result 27 "FAIL" "$fail"
+  fi
+}
+
+test_criterion_28() {
+  # The rewriter only treats /Users/... and /home/... paths as candidates
+  # (matching real machines), and the literal-prefix-match branch requires
+  # the hardcoded path to actually start with the repo root. fresh_tmp()
+  # lives under the OS temp dir (/var/folders/... on macOS), which does not
+  # match either pattern, so this fixture must use fresh_home_tmp() (rooted
+  # under $HOME/.cache) to exercise the real code path.
+  local d
+  d=$(fresh_home_tmp)
+  cd "$d"
+  git init -q
+  git config user.email "test@test.com"
+  git config user.name "Test"
+  touch file.txt
+  git add file.txt
+  git commit -qm "init"
+
+  # Create env dir to simulate real repo
+  mkdir -p env/bin
+  echo '#!/bin/bash
+echo "mock python"' > env/bin/python3.12
+  chmod +x env/bin/python3.12
+
+  mkdir -p .git/hooks
+  cat > .git/hooks/pre-commit <<EOF
+#!/bin/bash
+INSTALL_PYTHON=$d/env/bin/python3.12
+echo "running with \$INSTALL_PYTHON"
+EOF
+  chmod +x .git/hooks/pre-commit
+
+  # Apply fix
+  "$LOOPS_RUN" worktree fix --force >/dev/null 2>&1
+
+  # (a) Syntax checks — fix() migrates the hook into tracked .githooks/
+  local has_absolute has_show_toplevel is_executable parses_clean
+  has_absolute=0
+  has_show_toplevel=0
+  is_executable=0
+  parses_clean=0
+
+  grep -q '/Users/\|/home/' .githooks/pre-commit 2>/dev/null && has_absolute=1
+  grep -q '\-\-show-toplevel' .githooks/pre-commit 2>/dev/null && has_show_toplevel=1
+  [ -x .githooks/pre-commit ] && is_executable=1
+  bash -n .githooks/pre-commit 2>/dev/null && parses_clean=1
+
+  # (b) Functional check - commit the migrated hook so it propagates to a
+  # fresh linked worktree via checkout, then verify MAIN_WT resolves to the
+  # MAIN worktree (not the linked one) from inside that linked worktree.
+  git add .githooks/pre-commit >/dev/null 2>&1
+  git commit -qm "migrate hook" >/dev/null 2>&1
+  git worktree add .claude/worktrees/test-wt -b test-wt >/dev/null 2>&1
+
+  local functional_works=0
+  cd .claude/worktrees/test-wt
+  # Extract and eval the path derivation from the checked-out hook
+  main_wt_line=$(grep 'MAIN_WT.*git-common-dir' .githooks/pre-commit || echo "")
+  if [ -n "$main_wt_line" ]; then
+    eval "$main_wt_line"
+    local resolved_python="$MAIN_WT/env/bin/python3.12"
+    [ -x "$resolved_python" ] && functional_works=1
+  fi
+  cd "$d" >/dev/null
+
+  local fail=""
+  [ $has_absolute -eq 1 ] && fail="$fail has-absolute-path"
+  [ $has_show_toplevel -eq 1 ] && fail="$fail has-show-toplevel"
+  [ $is_executable -eq 0 ] && fail="$fail not-executable"
+  [ $parses_clean -eq 0 ] && fail="$fail parse-error"
+  [ $functional_works -eq 0 ] && fail="$fail functional-check-failed"
+
+  # (c) Edge-case path rewrites: 4-component, deep, spaces, out-of-repo.
+  # Each sub-case gets a fresh fixture so failures don't cascade.
+  local d4 ddeep dspace doutside
+
+  # 4-component path (e.g. /Users/x/y/tool) — the old heuristic dropped the
+  # filename entirely here because it assumed 5 path components.
+  d4=$(fresh_home_tmp)
+  (
+    cd "$d4"
+    git init -q
+    git config user.email "test@test.com"
+    git config user.name "Test"
+    touch file.txt && git add file.txt && git commit -qm "init"
+    mkdir -p x/y
+    echo "mock4" > x/y/tool
+    chmod +x x/y/tool
+    mkdir -p .git/hooks
+    cat > .git/hooks/test-4comp <<EOF
+#!/bin/bash
+T=$d4/x/y/tool
+\$T
+EOF
+    chmod +x .git/hooks/test-4comp
+    "$LOOPS_RUN" worktree fix --force >/dev/null 2>&1
+  )
+  local c4_rewrite
+  c4_rewrite=$(grep -o '\$MAIN_WT/x/y/tool' "$d4/.githooks/test-4comp" 2>/dev/null || echo "")
+  [ -z "$c4_rewrite" ] && fail="$fail 4comp-lost-filename"
+
+  # Deep path (many components)
+  ddeep=$(fresh_home_tmp)
+  (
+    cd "$ddeep"
+    git init -q
+    git config user.email "test@test.com"
+    git config user.name "Test"
+    touch file.txt && git add file.txt && git commit -qm "init"
+    mkdir -p a/b/c/d/e
+    echo "mockdeep" > a/b/c/d/e/deep
+    chmod +x a/b/c/d/e/deep
+    mkdir -p .git/hooks
+    cat > .git/hooks/test-deep <<EOF
+#!/bin/bash
+D=$ddeep/a/b/c/d/e/deep
+\$D
+EOF
+    chmod +x .git/hooks/test-deep
+    "$LOOPS_RUN" worktree fix --force >/dev/null 2>&1
+  )
+  local deep_rewrite
+  deep_rewrite=$(grep -o '\$MAIN_WT/a/b/c/d/e/deep' "$ddeep/.githooks/test-deep" 2>/dev/null || echo "")
+  [ -z "$deep_rewrite" ] && fail="$fail deep-path-corrupted"
+
+  # Path containing spaces — the matched region stops at the space, but the
+  # untouched remainder of the line is preserved verbatim, so the
+  # reconstructed line must still contain the full original suffix.
+  dspace=$(fresh_home_tmp)
+  (
+    cd "$dspace"
+    git init -q
+    git config user.email "test@test.com"
+    git config user.name "Test"
+    touch file.txt && git add file.txt && git commit -qm "init"
+    mkdir -p "dir with spaces"
+    echo "mockspace" > "dir with spaces/file with spaces"
+    chmod +x "dir with spaces/file with spaces"
+    mkdir -p .git/hooks
+    cat > .git/hooks/test-spaces <<EOF
+#!/bin/bash
+S="$dspace/dir with spaces/file with spaces"
+echo "\$S"
+EOF
+    chmod +x .git/hooks/test-spaces
+    "$LOOPS_RUN" worktree fix --force >/dev/null 2>&1
+  )
+  local spaces_ok=0
+  if [ -f "$dspace/.githooks/test-spaces" ]; then
+    bash -n "$dspace/.githooks/test-spaces" 2>/dev/null && \
+      grep -q 'dir with spaces/file with spaces' "$dspace/.githooks/test-spaces" 2>/dev/null && \
+      spaces_ok=1
+  fi
+  [ $spaces_ok -eq 0 ] && fail="$fail spaces-path-corrupted"
+
+  # Path outside repo root — must fail loudly, exit non-zero, leave the hook
+  # byte-unchanged, and never migrate it into .githooks/.
+  doutside=$(fresh_home_tmp)
+  (
+    cd "$doutside"
+    git init -q
+    git config user.email "test@test.com"
+    git config user.name "Test"
+    touch file.txt && git add file.txt && git commit -qm "init"
+    mkdir -p .git/hooks
+    # Must contain a literal /Users/ or /home/ segment to enter the rewriter
+    # at all (that's the hazard prefilter), while NOT sharing the repo root
+    # prefix — e.g. a tool installed under a different user's home directory.
+    cat > .git/hooks/test-outside <<'HOOKEOF'
+#!/bin/bash
+O=/Users/some-other-user/bin/python3.12
+$O
+HOOKEOF
+    chmod +x .git/hooks/test-outside
+    original_hash=$(shasum -a 256 .git/hooks/test-outside | awk '{print $1}')
+    "$LOOPS_RUN" worktree fix --force >/dev/null 2>&1
+    fix_exit=$?
+    after_hash=$(shasum -a 256 .git/hooks/test-outside | awk '{print $1}')
+    echo "$fix_exit $original_hash $after_hash"
+  ) > "$SUITE_TMPDIR/c28_outside_result" 2>/dev/null
+  read -r out_exit out_hash_before out_hash_after < "$SUITE_TMPDIR/c28_outside_result"
+  [ "$out_exit" = "0" ] && fail="$fail outside-path-did-not-fail"
+  [ "$out_hash_before" != "$out_hash_after" ] && fail="$fail outside-path-hook-modified"
+  [ -f "$doutside/.githooks/test-outside" ] && fail="$fail outside-path-hook-migrated"
+
+  if [ -z "$fail" ]; then
+    record_result 28 "pass" "fix remediates HARDCODED_HOOK_PATH correctly"
+  else
+    record_result 28 "FAIL" "$fail"
+  fi
+}
+
+test_criterion_29() {
+  local d
+  d=$(fresh_tmp)
+  cd "$d"
+  git init -q
+  git config user.email "test@test.com"
+  git config user.name "Test"
+  touch file.txt
+  git add file.txt
+  git commit -qm "init"
+
+  # Set absolute hooksPath
+  git config core.hooksPath "$(pwd)/.git/hooks"
+
+  "$LOOPS_RUN" worktree fix --force >/dev/null 2>&1
+
+  local hooks_path_after
+  hooks_path_after=$(git config --get core.hooksPath 2>/dev/null || echo "")
+
+  local check_output
+  check_output=$("$LOOPS_RUN" worktree check 2>&1)
+
+  local fail=""
+  [ -n "$hooks_path_after" ] && fail="$fail hooksPath-still-set"
+  echo "$check_output" | grep -q "HOOKS_PATH_ABSOLUTE" && fail="$fail check-still-emits-token"
+
+  if [ -z "$fail" ]; then
+    record_result 29 "pass" "fix remediates HOOKS_PATH_ABSOLUTE"
+  else
+    record_result 29 "FAIL" "$fail"
+  fi
+}
+
+test_criterion_30() {
+  local d
+  d=$(fresh_tmp)
+  cd "$d"
+  git init -q
+  git config user.email "test@test.com"
+  git config user.name "Test"
+  echo "init" > file.txt
+  git add file.txt
+  git commit -qm "init"
+
+  # Seed all secret patterns
+  touch .env .env.local secret.pem private.key mysecret.txt credential.json
+  touch id_rsa id_ed25519 .npmrc .netrc .pgpass secrets.tfvars
+  touch cert.p12 cert.pfx keystore.jks app.keystore
+  touch my-service-account.json app-sa.json gcloud-prod.json
+
+  mkdir -p .git/hooks
+  cat > .git/hooks/pre-commit <<'EOF'
+#!/bin/bash
+INSTALL_PYTHON=/Users/devashar/Documents/DS/arthur2.0/arthur/env/bin/python3.12
+echo ok
+EOF
+  chmod +x .git/hooks/pre-commit
+
+  # Create a stub gh command
+  local stub_dir
+  stub_dir=$(fresh_tmp)/bin
+  mkdir -p "$stub_dir"
+  cat > "$stub_dir/gh" <<'GHSTUB'
+#!/bin/bash
+echo "https://github.com/test/test/pull/1"
+GHSTUB
+  chmod +x "$stub_dir/gh"
+
+  # Apply fix and attempt PR
+  PATH="$stub_dir:$PATH" "$LOOPS_RUN" worktree provision test-branch --pr >/dev/null 2>&1 || true
+
+  # Check staged/committed state IN THE WORKTREE
+  cd .claude/worktrees/test-branch
+  local staged
+  staged=$(git diff --cached --name-only 2>/dev/null || echo "")
+
+  # Check committed files
+  local committed
+  committed=$(git log --name-only --pretty=format: HEAD 2>/dev/null | grep -v '^$' || echo "")
+
+  local fail=""
+  echo "$staged" | grep -Eq '\\.env|\\*\\.pem|\\.key|secret|credential|id_rsa|id_ed25519|\\.npmrc|\\.netrc|\\.pgpass|\\.tfvars|\\.p12|\\.pfx|keystore|\\.jks|service-account|\-sa\\.json|gcloud-' && fail="$fail secret-in-staged"
+  echo "$committed" | grep -Eq '\\.env|\\*\\.pem|\\.key|secret|credential|id_rsa|id_ed25519|\\.npmrc|\\.netrc|\\.pgpass|\\.tfvars|\\.p12|\\.pfx|keystore|\\.jks|service-account|\-sa\\.json|gcloud-' && fail="$fail secret-in-committed"
+
+  # Return to ORIGINAL fixture to check that secret files remain untracked THERE
+  cd "$d"
+  local untracked
+  untracked=$(git ls-files --others --exclude-standard)
+
+  # Verify secret files are untracked in the original fixture
+  for secret_file in .env .env.local secret.pem private.key mysecret.txt credential.json id_rsa id_ed25519 .npmrc .netrc .pgpass secrets.tfvars cert.p12 cert.pfx keystore.jks app.keystore my-service-account.json app-sa.json gcloud-prod.json; do
+    echo "$untracked" | grep -q "$secret_file" || fail="$fail $secret_file-not-untracked"
+  done
+
+  if [ -z "$fail" ]; then
+    record_result 30 "pass" "secrets never staged or committed"
+  else
+    record_result 30 "FAIL" "$fail"
+  fi
+}
+
+test_criterion_31() {
+  # Fixture requires $HOME-rooted path to trigger HARDCODED_HOOK_PATH hazard
+  # (prefilter looks for /Users/|/home/), and the hardcoded path must share
+  # repo-root as literal prefix so fix() succeeds cleanly (no fail-loud on
+  # out-of-repo path). The original literal "/Users/devashar/.../arthur/..."
+  # was relying on the old heuristic fallback (now correctly removed).
+  local d
+  d=$(fresh_home_tmp)
+  cd "$d"
+  git init -q
+  git config user.email "test@test.com"
+  git config user.name "Test"
+  echo "init" > file.txt
+  git add file.txt
+  git commit -qm "init"
+
+  mkdir -p .loops
+  echo "# Log" > .loops/log.md
+
+  # Create subset fixture (only HARDCODED_HOOK_PATH and MISSING_BOOTSTRAP_ARTIFACT)
+  mkdir -p env/bin
+  echo '#!/bin/bash
+echo "mock python"' > env/bin/python3.12
+  chmod +x env/bin/python3.12
+
+  mkdir -p .git/hooks
+  cat > .git/hooks/pre-commit <<EOF
+#!/bin/bash
+INSTALL_PYTHON=$d/env/bin/python3.12
+echo ok
+EOF
+  chmod +x .git/hooks/pre-commit
+
+  echo "env/" > .gitignore
+
+  # Stub gh command
+  local stub_dir argv_file
+  stub_dir=$(fresh_tmp)/bin
+  argv_file=$(fresh_tmp)/gh_argv.txt
+  mkdir -p "$stub_dir"
+  cat > "$stub_dir/gh" <<GHSTUB
+#!/bin/bash
+echo "\$@" > "$argv_file"
+echo "https://github.com/test/test/pull/123"
+GHSTUB
+  chmod +x "$stub_dir/gh"
+
+  # Run provision --pr
+  PATH="$stub_dir:$PATH" bash "$LOOPS_ROOT/run.sh" worktree provision test-branch --pr >/dev/null 2>&1 || true
+
+  # Check commit diff
+  local commit_diff
+  cd .claude/worktrees/test-branch 2>/dev/null || { record_result 31 "FAIL" "worktree not created"; return; }
+  commit_diff=$(git show --name-only --pretty=format: HEAD 2>/dev/null || echo "")
+
+  # Check log contains PR URL
+  cd "$d"
+  local log_has_url=0
+  grep -q "https://github.com/test/test/pull/123" .loops/log.md 2>/dev/null && log_has_url=1
+
+  # Check gh argv
+  local argv
+  argv=$(cat "$argv_file" 2>/dev/null || echo "")
+
+  local fail=""
+  [ -z "$commit_diff" ] && fail="$fail empty-commit-diff"
+  echo "$commit_diff" | grep -q "pre-commit" || fail="$fail hook-not-in-diff"
+  [ $log_has_url -eq 0 ] && fail="$fail url-not-in-log"
+  echo "$argv" | grep -q "\-\-draft" || fail="$fail no-draft-flag"
+  echo "$argv" | grep -q "HARDCODED_HOOK_PATH" || fail="$fail body-missing-HARDCODED"
+  echo "$argv" | grep -q "MISSING_BOOTSTRAP_ARTIFACT" || fail="$fail body-missing-BOOTSTRAP"
+  echo "$argv" | grep -q "HOOKS_PATH_ABSOLUTE" && fail="$fail body-has-untriggered-ABSOLUTE"
+  echo "$argv" | grep -q "MISSING_ENV_FILE" && fail="$fail body-has-untriggered-ENV"
+
+  if [ -z "$fail" ]; then
+    record_result 31 "pass" "provision --pr creates commit, PR with correct body, logs URL"
+  else
+    record_result 31 "FAIL" "$fail"
+  fi
+}
+
+test_criterion_32() {
+  # (a) Orphaned worktree fixture
+  local d
+  d=$(fresh_tmp)
+  cd "$d"
+  git init -q
+  git config user.email "test@test.com"
+  git config user.name "Test"
+  touch file.txt
+  git add file.txt
+  git commit -qm "init"
+
+  git worktree add .claude/worktrees/orphan-wt -b orphan-wt >/dev/null 2>&1
+  rm -rf .claude/worktrees/orphan-wt
+
+  local output_default
+  output_default=$("$LOOPS_RUN" worktree reap 2>&1)
+
+  local wt_entry_before wt_entry_after
+  wt_entry_before=$(ls .git/worktrees/ 2>/dev/null | wc -l | tr -d ' ')
+
+  "$LOOPS_RUN" worktree reap --prune >/dev/null 2>&1
+
+  wt_entry_after=$(ls .git/worktrees/ 2>/dev/null | wc -l | tr -d ' ')
+
+  # (b) Clean fixture
+  local d2
+  d2=$(fresh_tmp)
+  cd "$d2"
+  git init -q
+  git config user.email "test@test.com"
+  git config user.name "Test"
+  touch file.txt
+  git add file.txt
+  git commit -qm "init"
+
+  git worktree add .claude/worktrees/live-wt -b live-wt >/dev/null 2>&1
+
+  local output_clean
+  output_clean=$("$LOOPS_RUN" worktree reap 2>&1)
+
+  local fail=""
+  echo "$output_default" | grep -q "orphan-wt" || fail="$fail default-didnt-report-orphan"
+  [ "$wt_entry_before" -eq 0 ] && fail="$fail orphan-entry-missing-before-prune"
+  [ "$wt_entry_after" -ne 0 ] && fail="$fail prune-didnt-remove-entry"
+  echo "$output_clean" | grep -qi "orphan" && fail="$fail clean-reported-orphan"
+  echo "$output_clean" | grep -q "live-wt" && fail="$fail clean-named-live-wt"
+
+  if [ -z "$fail" ]; then
+    record_result 32 "pass" "reap reports orphans, prunes only with --prune"
+  else
+    record_result 32 "FAIL" "$fail"
+  fi
+}
+
+test_criterion_33() {
+  # IDENTITY: Does not remediate real user repos.
+  # Snapshots were captured at suite start; compare now.
+  local repos=(
+    "$HOME/Documents/DS/data-catalog"
+    "$HOME/Documents/DS/data-solutions-kujata"
+    "$HOME/Documents/DS/plugins/runbooks"
+    "$HOME/Documents/DS/workspace/infrastructure"
+    "$HOME/Documents/DS/arthur2.0/petrichor"
+    "$HOME/Documents/DS/arthur2.0/arthur"
+  )
+
+  local fail=""
+  local skipped=""
+  for repo in "${repos[@]}"; do
+    if [ ! -d "$repo" ]; then
+      skipped="$skipped $(basename "$repo")"
+      continue
+    fi
+
+    local repo_basename=$(basename "$repo")
+    local snapshot_status="$DOWNSTREAM_SNAPSHOTS/${repo_basename}.status"
+    local snapshot_head="$DOWNSTREAM_SNAPSHOTS/${repo_basename}.head"
+
+    if [ ! -f "$snapshot_status" ] || [ ! -f "$snapshot_head" ]; then
+      fail="$fail ${repo_basename}:no-snapshot"
+      continue
+    fi
+
+    local status_before status_after head_before head_after
+    status_before=$(cat "$snapshot_status")
+    head_before=$(cat "$snapshot_head")
+    status_after=$(cd "$repo" && git status --porcelain 2>/dev/null)
+    head_after=$(cd "$repo" && git rev-parse HEAD 2>/dev/null)
+
+    [ "$status_before" != "$status_after" ] && fail="$fail ${repo_basename}:status-changed"
+    [ "$head_before" != "$head_after" ] && fail="$fail ${repo_basename}:head-changed"
+  done
+
+  if [ -z "$fail" ]; then
+    local msg="no remediation against real repos"
+    [ -n "$skipped" ] && msg="$msg (skipped:$skipped)"
+    record_result 33 "pass" "$msg"
+  else
+    record_result 33 "FAIL" "$fail"
+  fi
+}
+
+test_criterion_38() {
+  # (a) Static check
+  local static_fail=""
+  grep -q 'git add -A' "$LOOPS_RUN" && static_fail="$static_fail has-git-add-A"
+  grep -q 'git add \.' "$LOOPS_RUN" && static_fail="$static_fail has-git-add-dot"
+  grep -q 'git add -u' "$LOOPS_RUN" && static_fail="$static_fail has-git-add-u"
+  grep -q 'git commit -a' "$LOOPS_RUN" && static_fail="$static_fail has-git-commit-a"
+  grep -q 'commit -am' "$LOOPS_RUN" && static_fail="$static_fail has-commit-am"
+
+  # (b) Behavioral check
+  # Fixture requires $HOME-rooted path to trigger HARDCODED_HOOK_PATH hazard
+  # (prefilter looks for /Users/|/home/), and the hardcoded path must share
+  # repo-root as literal prefix so fix() succeeds cleanly (no fail-loud on
+  # out-of-repo path). The original literal "/Users/devashar/.../arthur/..."
+  # was relying on the old heuristic fallback (now correctly removed).
+  local d
+  d=$(fresh_home_tmp)
+  cd "$d"
+  git init -q
+  git config user.email "test@test.com"
+  git config user.name "Test"
+  echo "init" > file.txt
+  git add file.txt
+  git commit -qm "init"
+
+  # Create unrelated dirty tracked file
+  echo "tracked change" > file.txt
+
+  # Create unrelated untracked file
+  echo "untracked" > unrelated.txt
+
+  mkdir -p .loops
+  echo "# Log" > .loops/log.md
+
+  mkdir -p env/bin
+  echo '#!/bin/bash
+echo "mock python"' > env/bin/python3.12
+  chmod +x env/bin/python3.12
+
+  mkdir -p .git/hooks
+  cat > .git/hooks/pre-commit <<EOF
+#!/bin/bash
+INSTALL_PYTHON=$d/env/bin/python3.12
+echo ok
+EOF
+  chmod +x .git/hooks/pre-commit
+
+  # Stub gh
+  local stub_dir
+  stub_dir=$(fresh_tmp)/bin
+  mkdir -p "$stub_dir"
+  cat > "$stub_dir/gh" <<'GHSTUB'
+#!/bin/bash
+echo "https://github.com/test/test/pull/1"
+GHSTUB
+  chmod +x "$stub_dir/gh"
+
+  PATH="$stub_dir:$PATH" bash "$LOOPS_ROOT/run.sh" worktree provision test-branch --pr >/dev/null 2>&1 || true
+
+  cd .claude/worktrees/test-branch 2>/dev/null || { record_result 38 "FAIL" "worktree not created"; return; }
+
+  local committed_files
+  committed_files=$(git show --name-only --pretty=format: HEAD 2>/dev/null || echo "")
+
+  # Check unrelated files are still dirty/untracked
+  cd "$d"
+  local file_status unrelated_status
+  file_status=$(git status --porcelain file.txt 2>/dev/null | awk '{print $1}')
+  unrelated_status=$(git status --porcelain unrelated.txt 2>/dev/null | awk '{print $1}')
+
+  local fail="$static_fail"
+  echo "$committed_files" | grep -q "file.txt" && fail="$fail committed-unrelated-tracked"
+  echo "$committed_files" | grep -q "unrelated.txt" && fail="$fail committed-unrelated-untracked"
+  [ "$file_status" != "M" ] && fail="$fail file.txt-not-dirty-after"
+  [ "$unrelated_status" != "??" ] && fail="$fail unrelated.txt-not-untracked-after"
+
+  if [ -z "$fail" ]; then
+    record_result 38 "pass" "no blanket staging: explicit paths only"
+  else
+    record_result 38 "FAIL" "$fail"
+  fi
+}
 
 # ============================================================================
 # Phase 4 stubs (criteria 34–37)
@@ -1185,9 +2021,30 @@ test_criterion_37() { record_result 37 "FAIL" "not yet implemented (phase 4)"; }
 
 # Create the suite temp root once; all helpers allocate under it
 SUITE_TMPDIR=$(mktemp -d)
+HOME_TMPDIR_REGISTRY="$SUITE_TMPDIR/home_dirs.txt"
+: > "$HOME_TMPDIR_REGISTRY"
 
 # Capture initial git status (immutability guard)
 INITIAL_GIT_STATUS=$(cd "$LOOPS_ROOT" && git status --porcelain 2>/dev/null)
+
+# Snapshot downstream repos for criterion 33 (no-remediation-against-real-repos)
+DOWNSTREAM_REPOS=(
+  "$HOME/Documents/DS/data-catalog"
+  "$HOME/Documents/DS/data-solutions-kujata"
+  "$HOME/Documents/DS/plugins/runbooks"
+  "$HOME/Documents/DS/workspace/infrastructure"
+  "$HOME/Documents/DS/arthur2.0/petrichor"
+  "$HOME/Documents/DS/arthur2.0/arthur"
+)
+DOWNSTREAM_SNAPSHOTS="$SUITE_TMPDIR/downstream_snapshots"
+mkdir -p "$DOWNSTREAM_SNAPSHOTS"
+for repo_path in "${DOWNSTREAM_REPOS[@]}"; do
+  if [ -d "$repo_path" ]; then
+    repo_basename=$(basename "$repo_path")
+    (cd "$repo_path" && git status --porcelain 2>/dev/null) > "$DOWNSTREAM_SNAPSHOTS/${repo_basename}.status" || true
+    (cd "$repo_path" && git rev-parse HEAD 2>/dev/null) > "$DOWNSTREAM_SNAPSHOTS/${repo_basename}.head" || true
+  fi
+done
 
 # Capture the REAL global lesson store (unstubbed $HOME) — every lesson test
 # above stubs its own $HOME, but this is the guard that proves none of them

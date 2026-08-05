@@ -327,8 +327,288 @@ case "$cmd" in
         ;;
     esac
     ;;
+  worktree)
+    subcmd="${2:-}"
+    shift 2
+    case "$subcmd" in
+      check)
+        path="${1:-.}"
+        cd "$path" || exit 1
+
+        # Resolve repo root for the current working tree
+        wt_root="$(git rev-parse --show-toplevel)"
+        # Resolve the shared .git dir (works from both main and linked worktree)
+        git_common="$(cd "$(git rev-parse --git-common-dir)" && pwd)"
+
+        # Determine effective hooks directory
+        hooks_path_cfg="$(git config --get core.hooksPath 2>/dev/null || true)"
+        if [ -n "$hooks_path_cfg" ]; then
+          case "$hooks_path_cfg" in
+            /*) hookdir="$hooks_path_cfg" ;;
+            *)  hookdir="$wt_root/$hooks_path_cfg" ;;
+          esac
+        else
+          hookdir="$git_common/hooks"
+        fi
+
+        # HARDCODED_HOOK_PATH: any executable hook (non-sample) containing /Users/ or /home/
+        if [ -d "$hookdir" ]; then
+          for _hf in "$hookdir"/*; do
+            [ -f "$_hf" ] || continue
+            case "$_hf" in *.sample) continue ;; esac
+            if grep -qE '/Users/|/home/' "$_hf" 2>/dev/null; then
+              echo "HARDCODED_HOOK_PATH"
+              break
+            fi
+          done
+        fi
+
+        # HOOKS_PATH_ABSOLUTE: core.hooksPath set to an absolute path
+        if [ -n "$hooks_path_cfg" ]; then
+          case "$hooks_path_cfg" in
+            /*) echo "HOOKS_PATH_ABSOLUTE" ;;
+          esac
+        fi
+
+        # MISSING_ENV_FILE: gitignored .env* present on disk
+        _found_env=0
+        for _ef in .env .env.*; do
+          [ -f "$_ef" ] || continue
+          if git check-ignore -q "$_ef" 2>/dev/null; then
+            echo "MISSING_ENV_FILE"
+            _found_env=1
+            break
+          fi
+        done
+
+        # MISSING_BOOTSTRAP_ARTIFACT: gitignored build/dep dir present
+        for _art in node_modules .terraform env venv .venv; do
+          if [ -d "$_art" ] && git check-ignore -q "$_art" 2>/dev/null; then
+            echo "MISSING_BOOTSTRAP_ARTIFACT"
+            break
+          fi
+        done
+        ;;
+      provision)
+        branch=""
+        force=0
+        pr_mode=0
+        while [ $# -gt 0 ]; do
+          case "$1" in
+            --force) force=1; shift ;;
+            --pr) pr_mode=1; shift ;;
+            *) branch="$1"; shift ;;
+          esac
+        done
+
+        [ -n "$branch" ] || { echo "usage: worktree provision <branch> [--force] [--pr]"; exit 1; }
+
+        # Check for hazards
+        hazards=$("$0" worktree check)
+
+        if [ -n "$hazards" ] && [ $force -eq 0 ] && [ $pr_mode -eq 0 ]; then
+          echo "Hazards detected (use --force to override):"
+          echo "$hazards"
+          exit 1
+        fi
+
+        # Print hazards if forcing
+        if [ -n "$hazards" ] && [ $force -eq 1 ]; then
+          echo "$hazards"
+        fi
+
+        # Create worktree
+        wt_dir=".claude/worktrees/$branch"
+        mkdir -p .claude/worktrees
+        git worktree add "$wt_dir" -b "$branch" 2>/dev/null || git worktree add "$wt_dir" "$branch"
+
+        if [ $pr_mode -eq 1 ]; then
+          # Ensure .loops exists for logging
+          mkdir -p "$LOOPDIR"
+          [ -f "$LOOPDIR/log.md" ] || echo "# Loop log" > "$LOOPDIR/log.md"
+
+          # Save absolute path to the fixture/original repo (where we log back to)
+          main_repo="$(pwd)"
+
+          # Move to worktree and apply fixes (use SCRIPT_DIR — the loops tool's
+          # own location — never a path relative to the repo being provisioned)
+          cd "$wt_dir"
+          bash "$SCRIPT_DIR/run.sh" worktree fix --force
+
+          # fix() writes remediated hooks into the tracked .githooks/ directory.
+          # Stage ONLY those specific paths, explicitly, one at a time.
+          if [ -d ".githooks" ]; then
+            for _hf in .githooks/*; do
+              [ -f "$_hf" ] || continue
+              git add "$_hf"
+            done
+          fi
+
+          # Commit with hazard list in body
+          body="Remediate worktree hazards:"
+          for _tok in $hazards; do
+            body="$body
+- $_tok"
+          done
+
+          git commit -m "$body" 2>/dev/null || true
+
+          # Create PR
+          pr_url=$(gh pr create --draft --body "$body" 2>&1 | grep -o 'https://[^ ]*' | head -1)
+
+          # Return to main repo and log
+          cd "$main_repo"
+          if [ -n "$pr_url" ]; then
+            bash "$SCRIPT_DIR/run.sh" log "worktree" "opened PR $pr_url"
+          fi
+        fi
+        ;;
+      fix)
+        force=0
+        while [ $# -gt 0 ]; do
+          case "$1" in
+            --force) force=1; shift ;;
+            *) shift ;;
+          esac
+        done
+
+        # Check for dirty tree (unless forcing)
+        if [ $force -eq 0 ] && [ -n "$(git status --porcelain)" ]; then
+          echo "Dirty tree (use --force to override)"
+          exit 1
+        fi
+
+        # Resolve the MAIN repo root regardless of which worktree `fix` runs
+        # from. `--show-toplevel` resolves to whichever worktree is current
+        # (provision --pr invokes fix from inside the linked worktree), so we
+        # must derive it the same way the emitted hook does: via
+        # git-common-dir, which always points at the main repo's .git. This
+        # is the value hardcoded hook paths are expected to be prefixed
+        # with — hooks are shared across worktrees but the absolute paths
+        # baked into them (e.g. a venv) point at the MAIN checkout.
+        git_common="$(cd "$(git rev-parse --git-common-dir)" && pwd)"
+        main_root="$(dirname "$git_common")"
+
+        # The DESTINATION for the tracked .githooks/ copy is different: it
+        # must be the CURRENT working tree (so the commit provision --pr
+        # makes actually contains it), which is the linked worktree when
+        # invoked from there.
+        cwd_root="$(git rev-parse --show-toplevel)"
+
+        # Fix HARDCODED_HOOK_PATH
+        # Remediation: copy hooks to .githooks/ (tracked, committable) with absolute paths
+        # rewritten to derive from the main worktree via git-common-dir. Set core.hooksPath
+        # to ".githooks" (relative) so the tracked copy is used instead of .git/hooks.
+        hookdir="$git_common/hooks"
+        if [ -d "$hookdir" ]; then
+          _any_hook=0
+          for _hf in "$hookdir"/*; do
+            [ -f "$_hf" ] || continue
+            case "$_hf" in *.sample) continue ;; esac
+
+            if grep -qE '/Users/|/home/' "$_hf" 2>/dev/null; then
+              # Create tracked .githooks/ directory in the CURRENT working tree
+              mkdir -p "$cwd_root/.githooks"
+              _name=$(basename "$_hf")
+              _dest="$cwd_root/.githooks/$_name"
+
+              # Rewrite absolute paths, prepending MAIN_WT derivation.
+              # `repo` here is the MAIN repo root — the hardcoded paths must
+              # match it as a literal prefix, not the current worktree.
+              _tmp=$(mktemp)
+              awk -v repo="$main_root" '
+              BEGIN { injected=0 }
+              /\/(Users|home)\// && !injected {
+                print "# Derive main worktree path dynamically"
+                print "MAIN_WT=$(dirname \"$(cd \"$(git rev-parse --git-common-dir)\" && pwd)\")"
+                injected=1
+              }
+              {
+                line = $0
+                while (match(line, /\/(Users|home)\/[^"$'"'"' \t)]+/)) {
+                  before = substr(line, 1, RSTART-1)
+                  matched = substr(line, RSTART, RLENGTH)
+                  after = substr(line, RSTART+RLENGTH)
+                  if (index(matched, repo) == 1) {
+                    suffix = substr(matched, length(repo)+1)
+                    line = before "$MAIN_WT" suffix after
+                  } else {
+                    # Path does not start with repo root — cannot safely rewrite.
+                    # Fail loudly rather than guessing.
+                    print "ERROR: Cannot rewrite path outside repo root: " matched > "/dev/stderr"
+                    print "       in hook: " FILENAME > "/dev/stderr"
+                    exit 1
+                  }
+                }
+                print line
+              }
+              ' "$_hf" > "$_tmp"
+              if [ $? -ne 0 ]; then
+                rm -f "$_tmp"
+                exit 1
+              fi
+              mv "$_tmp" "$_dest"
+              chmod +x "$_dest"
+              _any_hook=1
+            fi
+          done
+
+          if [ "$_any_hook" -eq 1 ]; then
+            # Set core.hooksPath to relative .githooks (fixes HOOKS_PATH_ABSOLUTE too)
+            git config core.hooksPath .githooks
+          fi
+        fi
+
+        # Fix HOOKS_PATH_ABSOLUTE (if not already fixed by the HARDCODED fix above)
+        hooks_path_cfg="$(git config --get core.hooksPath 2>/dev/null || true)"
+        if [ -n "$hooks_path_cfg" ]; then
+          case "$hooks_path_cfg" in
+            /*) git config --unset core.hooksPath ;;
+          esac
+        fi
+        ;;
+      reap)
+        path="."
+        prune=0
+        while [ $# -gt 0 ]; do
+          case "$1" in
+            --prune) prune=1; shift ;;
+            *) path="$1"; shift ;;
+          esac
+        done
+
+        cd "$path" || exit 1
+
+        # Parse git worktree list --porcelain to find orphans (directories deleted but git still tracks them)
+        orphaned_wts=""
+        current_wt=""
+        while IFS= read -r line; do
+          case "$line" in
+            worktree\ *)
+              current_wt="${line#worktree }"
+              ;;
+            "")
+              if [ -n "$current_wt" ] && [ ! -d "$current_wt" ]; then
+                echo "$current_wt"
+                orphaned_wts="yes"
+              fi
+              current_wt=""
+              ;;
+          esac
+        done < <(git worktree list --porcelain 2>/dev/null && echo "")
+
+        if [ "$prune" -eq 1 ] && [ -n "$orphaned_wts" ]; then
+          git worktree prune
+        fi
+        ;;
+      *)
+        echo "usage: $0 worktree {check [path] | provision <branch> [--force] [--pr] | fix [--force] | reap [path] [--prune]}"
+        exit 1
+        ;;
+    esac
+    ;;
   *)
-    echo "usage: $0 {init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check}}"
+    echo "usage: $0 {init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check} | worktree {check|provision|fix|reap}}"
     exit 1
     ;;
 esac
