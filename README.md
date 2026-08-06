@@ -11,6 +11,41 @@ Claude Code *Getting Started with Loops* guide, and the LOOPKIT layout.
 > **If you are an agent working in this repo, read [Rules for agents](#rules-for-agents)
 > first.** It is the part of this file that changes what you do.
 
+## Quickstart
+
+```bash
+./install.sh          # wires ~/.claude and puts `loops` on your PATH
+loops                 # interactive config
+```
+
+Bare `loops` opens a picker over the roster and the engine:
+
+```
+configure> ▊
+  Select a role or engine
+> builder         gpt-5.6-luna-mantle
+  evaluator       gpt-5.6-terra-mantle
+  explorer        haiku
+  general-purpose gpt-5.6-terra-mantle
+  planner         sonnet
+  engine          claude (/opt/homebrew/bin/claude)
+```
+
+Pick a role → pick from the models the gateway actually serves → confirm:
+
+```
+builder: gpt-5.6-luna-mantle -> sonnet
+Apply change? [y/N] y
+```
+
+Then start a loop from inside Claude Code — that's the daily interface, not the CLI:
+
+```
+/run-loop "make the ingestion pipeline idempotent"
+```
+
+Full command surface: [The `loops` CLI](#the-loops-cli).
+
 ## One loop, four rungs
 
 There's only one loop — `gather → reason → act → verify`. What changes is how much
