@@ -1,0 +1,68 @@
+{
+  "$schema": "loops/feature_list",
+  "goal": "<one sentence>",
+  "metric": {
+    "name": "<what is measured>",
+    "direction": "maximize | minimize",
+    "verify": "<command that emits a single number>",
+    "baseline": null,
+    "best": null,
+    "target": null,
+    "history": [
+      {
+        "iteration": 1,
+        "score": 1.00,
+        "verdict": "PASS",
+        "ts": "2026-07-29T20:09:05Z"
+      },
+      {
+        "iteration": 2,
+        "score": 1.00,
+        "verdict": "PASS",
+        "ts": "2026-07-30T17:21:26Z"
+      },
+      {
+        "iteration": 3,
+        "score": 1.00,
+        "verdict": "PASS",
+        "ts": "2026-08-05T16:34:01Z"
+      },
+      {
+        "iteration": 1,
+        "score": 0.81,
+        "verdict": "BLOCK",
+        "ts": "2026-08-05T18:14:45Z"
+      },
+      {
+        "iteration": 2,
+        "score": 1.00,
+        "verdict": "PASS",
+        "ts": "2026-08-05T18:24:13Z"
+      },
+      {
+        "iteration": 3,
+        "score": 1.00,
+        "verdict": "PASS",
+        "ts": "2026-08-05T18:54:52Z"
+      },
+      {
+        "iteration": 4,
+        "score": 1.00,
+        "verdict": "PASS",
+        "ts": "2026-08-05T20:37:58Z"
+      }
+    ]
+  },
+  "guard": "<condition that must stay true, e.g. 'tests pass'>",
+  "iterations": {
+    "max": 10,
+    "spent": 0
+  },
+  "features": [
+    {
+      "id": "f1",
+      "desc": "<testable feature>",
+      "done": false
+    }
+  ]
+}

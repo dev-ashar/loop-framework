@@ -13,16 +13,7 @@
 
 set -euo pipefail
 
-SOURCE="${BASH_SOURCE[0]}"
-while [ -h "$SOURCE" ]; do
-  SOURCE_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
-  LINK="$(readlink "$SOURCE")"
-  case "$LINK" in
-    /*) SOURCE="$LINK" ;;
-    *) SOURCE="$SOURCE_DIR/$LINK" ;;
-  esac
-done
-SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATES="$SCRIPT_DIR/templates"
 LOOPDIR=".loops"
 LESSONS_FILE="$HOME/.claude/memory/lessons.jsonl"
@@ -63,10 +54,7 @@ case "$cmd" in
     mkdir -p "$LOOPDIR"
     for f in contract.md progress.md log.md feature_list.json; do
       if [ ! -f "$LOOPDIR/$f" ]; then
-        if ! cp "$TEMPLATES/$f" "$LOOPDIR/$f"; then
-          echo "failed to create $LOOPDIR/$f" >&2
-          exit 1
-        fi
+        cp "$TEMPLATES/$f" "$LOOPDIR/$f"
         echo "created $LOOPDIR/$f"
       else
         echo "kept $LOOPDIR/$f (already exists)"
@@ -105,12 +93,6 @@ case "$cmd" in
       stall)
         history_len=$(jq '.metric.history | length' "$LOOPDIR/feature_list.json")
         if [ "$history_len" -lt 2 ]; then
-          exit 0
-        fi
-        # A loop that has reached PASS is finished, not stuck. Flat scores at the
-        # ceiling are the stop condition; only flat scores below it are a stall.
-        last_verdict=$(jq -r '.metric.history[-1].verdict' "$LOOPDIR/feature_list.json")
-        if [ "$last_verdict" = "PASS" ]; then
           exit 0
         fi
         last=$(jq '.metric.history[-1].score' "$LOOPDIR/feature_list.json")
@@ -219,7 +201,6 @@ case "$cmd" in
           if (/^#{2,4} /) next;  # Heading
           if (/^> /) next;  # Blockquote
           if (/^- \[[ x]\] /) next;  # Checkbox item
-          if (/^[0-9]+\. /) next;  # Numbered criterion
           if (/^  /) next;  # Continuation line (indented >=2 spaces)
           print "lint: line " NR " in acceptance criteria is bare prose: " $0
           exit 1
@@ -345,36 +326,6 @@ case "$cmd" in
         exit 1
         ;;
     esac
-    ;;
-  models)
-    # shellcheck source=lib/models.sh
-    . "$SCRIPT_DIR/lib/models.sh"
-    shift
-    cmd_models "$@"
-    ;;
-  engine)
-    # shellcheck source=lib/engine.sh
-    . "$SCRIPT_DIR/lib/engine.sh"
-    shift
-    cmd_engine "$@"
-    ;;
-  scope-check)
-    worktree_path="${2:-}"
-    base_ref="${3:-}"
-    allowed_csv="${4:-}"
-    [ -n "$worktree_path" ] && [ -n "$base_ref" ] && [ -n "$allowed_csv" ] || { echo "usage: $0 scope-check <worktree-path> <base-ref> <allowed-file-list>" >&2; exit 1; }
-    allowed_set="|$allowed_csv|"
-    merge_base="$(git -C "$worktree_path" merge-base "$base_ref" HEAD)"
-    offending=""
-    while IFS= read -r changed; do
-      [ -n "$changed" ] || continue
-      case "$allowed_set" in *"|$changed|"*) ;; *) offending="$offending$changed\n" ;; esac
-    done < <({ git -C "$worktree_path" diff --name-only "$merge_base"; git -C "$worktree_path" ls-files --others --exclude-standard; } | sort -u)
-    if [ -n "$offending" ]; then
-      printf '%b' "$offending"
-      exit 1
-    fi
-    exit 0
     ;;
   worktree)
     subcmd="${2:-}"
@@ -657,7 +608,7 @@ case "$cmd" in
     esac
     ;;
   *)
-    echo "usage: $0 {init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check} | models {list|available|set} | engine {show|set|run} | scope-check <wt> <base> <files> | worktree {check|provision|fix|reap}}"
+    echo "usage: $0 {init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check} | worktree {check|provision|fix|reap}}"
     exit 1
     ;;
 esac

@@ -1,0 +1,9 @@
+### POSITIVE: only allowed file present
+$ ./run.sh scope-check /tmp/loops-scopecheck-neg origin/main lib/models.sh
+exit=0
+
+### NEGATIVE: out-of-allowlist path added
+$ echo ... > /tmp/loops-scopecheck-neg/.env.stolen
+$ ./run.sh scope-check /tmp/loops-scopecheck-neg origin/main lib/models.sh
+.env.stolen
+exit=1

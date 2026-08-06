@@ -11,6 +11,8 @@
 #      the loops hooks; drops the retired flow-goal hook). Never clobbers plugins.
 #   4. Retires (unlinks only — sources untouched) flow, autoresearch, grill-me,
 #      and the old reviewer agent. Keeps handoff and jaljira.
+#   5. Creates the global cross-repo lesson store at ~/.claude/memory/lessons.jsonl
+#      idempotently — created if absent, NEVER truncated or overwritten if present.
 
 set -euo pipefail
 
@@ -97,8 +99,16 @@ echo
 # ---------------------------------------------------------------- 6. settings merge
 echo "6. Merging settings.json (plugins/marketplaces/rtk preserved)"
 EXISTING="$DEST/settings.json"
-[ -f "$EXISTING" ] || echo '{}' > "${EXISTING}.loops-empty-tmp" 2>/dev/null || true
-SRC="$EXISTING"; [ -f "$EXISTING" ] || SRC="${EXISTING}.loops-empty-tmp"
+if [ ! -f "$EXISTING" ]; then
+  if [ "$DRY" = 1 ]; then
+    SRC="$KIT/settings.json"
+  else
+    echo '{}' > "${EXISTING}.loops-empty-tmp" 2>/dev/null || true
+    SRC="${EXISTING}.loops-empty-tmp"
+  fi
+else
+  SRC="$EXISTING"
+fi
 
 MERGE_JQ='
   .[0] as $e | .[1] as $k |
@@ -126,7 +136,31 @@ fi
 rm -f "${EXISTING}.loops-empty-tmp" 2>/dev/null || true
 echo
 
+# ---------------------------------------------------------------- 7. lesson store
+echo "7. Global cross-repo lesson store"
+MEMDIR="$DEST/memory"
+LESSONS_FILE="$MEMDIR/lessons.jsonl"
+run "mkdir -p '$MEMDIR'"
+if [ -f "$LESSONS_FILE" ]; then
+  say "kept memory/lessons.jsonl (already exists)"
+else
+  run "touch '$LESSONS_FILE'"
+  say "created memory/lessons.jsonl"
+fi
+echo
+
+# ---------------------------------------------------------------- 8. CLI
+echo "8. Installing loops CLI"
+run "mkdir -p '$HOME/.local/bin'"
+run "ln -sfn '$SCRIPT_DIR/run.sh' '$HOME/.local/bin/loops'"
+say "→ ~/.local/bin/loops"
+case ":${PATH:-}:" in
+  *":$HOME/.local/bin:"*) ;;
+  *) say "add $HOME/.local/bin to PATH to use the loops command" ;;
+esac
+echo
+
 # ---------------------------------------------------------------- done
 echo "Done. Backup at: $BACKUP"
-echo "Verify with:  ls -la $DEST/agents $DEST/skills $DEST/hooks"
+echo "Verify with:  ls -la $DEST/agents $DEST/skills $DEST/hooks $DEST/memory"
 echo "Restore with: cp -R $BACKUP/* $DEST/"
