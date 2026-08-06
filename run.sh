@@ -56,9 +56,91 @@ lesson_tokens() {
   printf '%s' "${result# }"
 }
 
-cmd="${1:-status}"
+current_model_for_role() {
+  local role="$1" agents_dir="${LOOPS_AGENTS_DIR:-$SCRIPT_DIR/.claude/agents}"
+  awk '
+    NR == 1 { line=$0; sub(/\r$/, "", line); if (line == "---") in_front=1; next }
+    { line=$0; sub(/\r$/, "", line) }
+    in_front && line == "---" { exit }
+    in_front && line ~ /^[[:space:]]*model:[[:space:]]*/ {
+      sub(/^[[:space:]]*model:[[:space:]]*/, "", line); print line; exit
+    }
+  ' "$agents_dir/$role.md" 2>/dev/null
+}
+
+ui_roster() {
+  local agents_dir="${LOOPS_AGENTS_DIR:-$SCRIPT_DIR/.claude/agents}" path role model engine='claude' binary
+  for path in "$agents_dir"/*.md; do
+    [ -f "$path" ] || continue
+    role=${path##*/}; role=${role%.md}; model=$(current_model_for_role "$role")
+    printf '%-12s %s\n' "$role" "${model:-(default)}"
+  done
+  if [ -f "$LOOPDIR/engine" ]; then
+    engine=$(cat "$LOOPDIR/engine" 2>/dev/null || printf '%s' claude)
+  fi
+  binary=$(command -v "$engine" 2>/dev/null || printf '%s' '(missing)')
+  printf '%-12s %s\n' engine "$engine ($binary)"
+}
+
+ui_config() {
+  local roster selected status role current options choice new_model engine current_engine engine_choice FZF
+  local claude_path opencode_path confirm
+  if [ ! -t 0 ]; then
+    printf 'loops: interactive configuration requires a TTY; use loops models set <role> <model>\n' >&2
+    return 1
+  fi
+  # LOOPS_FZF is the seam: it lets this check be exercised, and lets an fzf that
+  # is not on PATH be pointed at directly.
+  FZF="${LOOPS_FZF:-fzf}"
+  if ! command -v "$FZF" >/dev/null 2>&1; then
+    printf 'loops: the interactive UI needs fzf (brew install fzf); use loops models set <role> <model>\n' >&2
+    return 1
+  fi
+  . "$SCRIPT_DIR/lib/models.sh"
+  . "$SCRIPT_DIR/lib/engine.sh"
+  roster=$(ui_roster)
+  if selected=$(printf '%s\n' "$roster" | "$FZF" --prompt='configure> ' --header='Select a role or engine' --height=40% --no-multi --layout=reverse --preview="printf '%s\\n' '$roster'"); then
+    :
+  else
+    status=$?
+    return "$status"
+  fi
+  role=$(printf '%s\n' "$selected" | awk '{print $1}')
+  if [ "$role" = engine ]; then
+    current_engine=claude
+    [ -f "$LOOPDIR/engine" ] && current_engine=$(cat "$LOOPDIR/engine" 2>/dev/null || printf '%s' claude)
+    claude_path=$(command -v claude 2>/dev/null || true)
+    opencode_path=$(command -v opencode 2>/dev/null || true)
+    engine_choice=''
+    [ -n "$claude_path" ] && engine_choice="${engine_choice}$( [ "$current_engine" = claude ] && printf '> ' || printf '  ')claude\\t$claude_path\\n"
+    [ -n "$opencode_path" ] && engine_choice="${engine_choice}$( [ "$current_engine" = opencode ] && printf '> ' || printf '  ')opencode\\t$opencode_path\\n"
+    if [ -z "$engine_choice" ]; then printf 'loops: no engine binaries found\n' >&2; return 1; fi
+    if engine_choice=$(printf '%b' "$engine_choice" | "$FZF" --prompt='engine> ' --header='Choose engine' --height=30% --no-multi --layout=reverse --preview="printf '%s\\n' '$roster'"); then :; else status=$?; return "$status"; fi
+    engine=$(printf '%s\n' "$engine_choice" | awk '{print $1}')
+    [ "$engine" = "$current_engine" ] && return 0
+    printf 'engine: %s -> %s\n' "$current_engine" "$engine"
+    printf 'Apply change? [y/N] '
+    IFS= read -r confirm || return 1
+    case "$confirm" in y|Y) cmd_engine set "$engine" ;; *) return 1 ;; esac
+    return $?
+  fi
+  current=$(current_model_for_role "$role")
+  if ! options=$(models_menu_options "$current"); then return 1; fi
+  if choice=$(printf '%s\n' "$options" | "$FZF" --prompt="$role> " --header="Choose model for $role" --height=50% --no-multi --layout=reverse --preview="printf '%s\\n' '$roster'"); then :; else status=$?; return "$status"; fi
+  new_model=$(printf '%s\n' "$choice" | awk -F '\t' '{print $2}')
+  [ -n "$new_model" ] && [ "$new_model" != "$current" ] || return 0
+  printf '%s: %s -> %s\n' "$role" "$current" "$new_model"
+  printf 'Apply change? [y/N] '
+  IFS= read -r confirm || return 1
+  case "$confirm" in y|Y) cmd_models set "$role" "$new_model" ;; *) return 1 ;; esac
+}
+
+cmd="${1:-ui}"
 
 case "$cmd" in
+  ui)
+    ui_config
+    ;;
   init)
     mkdir -p "$LOOPDIR"
     for f in contract.md progress.md log.md feature_list.json; do
@@ -657,7 +739,7 @@ case "$cmd" in
     esac
     ;;
   *)
-    echo "usage: $0 {init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check} | models {list|available|set} | engine {show|set|run} | scope-check <wt> <base> <files> | worktree {check|provision|fix|reap}}"
+    echo "usage: $0 {[no args: interactive config] | init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check} | models {list|available|set} | engine {show|set|run} | scope-check <wt> <base> <files> | worktree {check|provision|fix|reap}}"
     exit 1
     ;;
 esac

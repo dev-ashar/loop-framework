@@ -240,7 +240,51 @@ init_status=$?
 set -e
 [ "$init_status" -ne 0 ] || fail 'init: failed template copy returned zero'
 
+# Bare invocation is an explicit, testable non-interactive failure.
+set +e
+noninteractive_err=$(cd "$repo_root" && ./run.sh </dev/null 2>&1 >/dev/null)
+noninteractive_status=$?
+set -e
+[ "$noninteractive_status" -ne 0 ] || fail 'ui: bare noninteractive invocation returned zero'
+printf '%s\n' "$noninteractive_err" | grep -q 'loops models set <role> <model>' || fail 'ui: noninteractive diagnostic missing equivalent'
+
+# The menu builder contains every alias and a live id accepted by set.
+menu_fixture="$fixture_root/menu-bin"
+mkdir -p "$menu_fixture"
+cat > "$menu_fixture/curl" <<'EOF'
+#!/bin/sh
+printf '%s\n' '{"data":[{"id":"sample-live-model"}]}'
+EOF
+chmod +x "$menu_fixture/curl"
+menu_output=$(PATH="$menu_fixture:$PATH" ANTHROPIC_BASE_URL=http://models ANTHROPIC_AUTH_TOKEN=test bash -c '. "$1/lib/models.sh"; models_menu_options' _ "$repo_root") || fail 'ui: menu builder failed'
+for menu_id in haiku sonnet opus sample-live-model; do
+  printf '%s\n' "$menu_output" | awk -F '\t' -v wanted="$menu_id" '$2 == wanted {found=1} END {exit !found}' || fail "ui: menu omitted $menu_id"
+done
+
 # Live path remains operational after the regression checks.
 ./run.sh models available >/dev/null || fail 'c6: live models available failed'
 
+# --- interactive config UI ---------------------------------------------------
+# The UI must refuse with a diagnostic rather than dying inside a command
+# substitution when its two preconditions are missing.
+# LOOPS_FZF=false keeps this bounded: if the TTY guard were ever removed, the
+# UI would fall through to a picker that exits immediately instead of blocking,
+# and the missing diagnostic still fails the check.
+out=$(LOOPS_FZF=false ./run.sh ui </dev/null 2>&1 || true)
+case "$out" in *"requires a TTY"*) ;; *) echo "FAIL: no TTY guard: $out"; exit 1 ;; esac
+[ -z "$(git status --porcelain .claude/agents 2>/dev/null)" ] || { echo "FAIL: non-TTY ui touched the roster"; exit 1; }
+
+# The fzf guard needs a pty to reach (the TTY guard fires first otherwise), so
+# it is only exercised when this harness has one.
+if pty_out=$(LOOPS_FZF=loops-no-such-fzf script -q /dev/null ./run.sh ui 2>&1 | tr -d '\r'); then
+  case "$pty_out" in
+    *"needs fzf"*) ;;
+    *) echo "FAIL: no fzf guard: $pty_out"; exit 1 ;;
+  esac
+fi
+
+# Bare invocation must enter the UI, not print status.
+grep -q 'cmd="${1:-ui}"' run.sh || { echo "FAIL: bare loops no longer defaults to ui"; exit 1; }
+
 echo VERIFY_OK
+

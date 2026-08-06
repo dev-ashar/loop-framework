@@ -1,5 +1,25 @@
 #!/usr/bin/env bash
 
+# Print selectable model ids, marking the current id when supplied.
+models_menu_options() {
+  local current="${1-}" available id mark
+  if ! available=$(cmd_models available); then
+    return 1
+  fi
+  for id in haiku sonnet opus; do
+    if [ "$id" = "$current" ]; then mark='>'; else mark=' '; fi
+    printf '%s\t%s\n' "$mark" "$id"
+  done
+  while IFS= read -r id; do
+    [ -n "$id" ] || continue
+    case "$id" in haiku|sonnet|opus) continue ;; esac
+    if [ "$id" = "$current" ]; then mark='>'; else mark=' '; fi
+    printf '%s\t%s\n' "$mark" "$id"
+  done <<EOF
+$available
+EOF
+}
+
 cmd_models() {
   local subcommand="${1-}"
   shift || true
@@ -59,6 +79,11 @@ cmd_models() {
         return 1
       fi
       printf '%s\n' "$response" | jq -r '.data[].id' | sort
+      ;;
+
+    menu)
+      [ "$#" -le 1 ] || { printf 'usage: cmd_models menu [current-model]\n' >&2; return 2; }
+      models_menu_options "${1-}"
       ;;
 
     set)
@@ -161,7 +186,7 @@ PY
       ;;
 
     *)
-      printf 'usage: cmd_models {list|available|set}\n' >&2
+      printf 'usage: cmd_models {list|available|menu|set}\n' >&2
       return 2
       ;;
   esac
