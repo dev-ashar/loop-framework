@@ -3,11 +3,20 @@ set -euo pipefail
 cd /Users/devashar/Documents/DS/workspace/loops
 test -f .loops/verify.sh || { echo "verify.sh missing — contract defect, not build fail" >&2; exit 1; }
 
-test -d .loops/pre-build-phase4
-test -s .loops/pre-build-phase4/SHA256SUMS
-( cd .loops/pre-build-phase4 && shasum -a 256 -c SHA256SUMS --status )
-awk '/^## Output style/{p=1} p && /^## / && !/^## Output style/{exit} p' .claude/CLAUDE.md > /tmp/adhd-now.txt
-diff -q .loops/pre-build-claudemd-99-130.txt /tmp/adhd-now.txt
+# The phase-4 pre-build snapshot guard is gone with the phase-4 run. It only ever
+# checksummed its own copies of the files, so it proved the snapshot was intact
+# rather than that the originals were unchanged, and the CLAUDE.md diff pinned one
+# section verbatim forever. Both are debris, not guards.
+
+# The five durable files are the whole tracked footprint of a run. Anything else
+# under .loops/ is per-run scratch and must not reach the index.
+tracked=$(git ls-files .loops)
+expected='.loops/contract.md
+.loops/feature_list.json
+.loops/log.md
+.loops/progress.md
+.loops/verify.sh'
+[ "$tracked" = "$expected" ] || { echo "FAIL: .loops/ tracks more than the durable five:"; printf '%s\n' "$tracked"; exit 1; }
 
 fixture_root="$(mktemp -d)"
 trap 'rm -rf "$fixture_root"' EXIT
