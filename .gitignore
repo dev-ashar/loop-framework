@@ -1,4 +1,12 @@
 
 .serena/
 .claude/worktrees/
-.loops/engine
+
+# A loop run keeps exactly five durable files. Everything else it produces —
+# snapshots, probe logs, evidence, scratch — is per-run debris and stays local.
+.loops/*
+!.loops/contract.md
+!.loops/progress.md
+!.loops/log.md
+!.loops/feature_list.json
+!.loops/verify.sh
