@@ -270,9 +270,11 @@ done
 # LOOPS_FZF=false keeps this bounded: if the TTY guard were ever removed, the
 # UI would fall through to a picker that exits immediately instead of blocking,
 # and the missing diagnostic still fails the check.
+roster_before=$(cat .claude/agents/*.md | shasum | awk '{print $1}')
 out=$(LOOPS_FZF=false ./run.sh ui </dev/null 2>&1 || true)
 case "$out" in *"requires a TTY"*) ;; *) echo "FAIL: no TTY guard: $out"; exit 1 ;; esac
-[ -z "$(git status --porcelain .claude/agents 2>/dev/null)" ] || { echo "FAIL: non-TTY ui touched the roster"; exit 1; }
+roster_after=$(cat .claude/agents/*.md | shasum | awk '{print $1}')
+[ "$roster_before" = "$roster_after" ] || { echo "FAIL: non-TTY ui touched the roster"; exit 1; }
 
 # The fzf guard needs a pty to reach (the TTY guard fires first otherwise), so
 # it is only exercised when this harness has one.
