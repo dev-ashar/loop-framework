@@ -29,22 +29,22 @@ Fixed token set emitted by `check`:
 
 ```bash
 # Scan for hazards (read-only)
-run.sh worktree check [path]
+loops worktree check [path]
 
 # Create worktree only if safe
-run.sh worktree provision <branch>
-run.sh worktree provision <branch> --force  # create despite hazards
+loops worktree provision <branch>
+loops worktree provision <branch> --force  # create despite hazards
 
 # Fix detected hazards in place
-run.sh worktree fix
-run.sh worktree fix --force  # fix despite dirty tree
+loops worktree fix
+loops worktree fix --force  # fix despite dirty tree
 
 # Open a PR with the fix
-run.sh worktree provision <branch> --pr
+loops worktree provision <branch> --pr
 
 # Report and prune orphaned worktrees
-run.sh worktree reap [path]
-run.sh worktree reap [path] --prune
+loops worktree reap [path]
+loops worktree reap [path] --prune
 ```
 
 ## Safety gates
@@ -90,6 +90,6 @@ When `provision <branch> --pr` is invoked:
 4. Stage ONLY the modified paths via explicit `git add <path>`
 5. Commit with a message listing the remediated hazards
 6. Invoke `gh pr create --draft --body <summary>` where the body names every detected hazard token
-7. Record the returned PR URL to `.loops/log.md` via `run.sh log`
+7. Record the returned PR URL to `.loops/log.md` via `loops log`
 
 The PR body must name exactly the hazards that `check` emitted for that repo — every triggered token present AND every untriggered token absent. A body that always lists all tokens regardless of what was detected is incorrect.

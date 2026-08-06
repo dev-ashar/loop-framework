@@ -24,7 +24,7 @@ done" is the chosen default.
 ## The loop
 
 ### 0. Bootstrap state
-- Run `run.sh init "<goal>"` (or create `.loops/` from templates) if absent.
+- Run `loops init "<goal>"` (or create `.loops/` from templates) if absent.
 - Write `.loops/.running` as the active-run marker.
 
 ### 1. Negotiate the contract  (invoke the `contract` skill)
@@ -43,8 +43,8 @@ Loop, iteration `i` from 1 to `max` (default 10, from `feature_list.json`):
    command, walk every criterion, return `REVIEW: PASS|BLOCK`, `SCORE`, `GAP`.
 3. **Record.** Overwrite `.loops/progress.md` (iteration, score, what's done/blocked);
    append one line to `.loops/log.md`.
-   Run `run.sh score record <i> <score> <verdict>` to persist the iteration result.
-   Run `run.sh score stall`; exit code 2 means the score stalled — trigger a restart.
+   Run `loops score record <i> <score> <verdict>` to persist the iteration result.
+   Run `loops score stall`; exit code 2 means the score stalled — trigger a restart.
 4. **Decide:**
    - `PASS` and guard holds → **break, go to Land.**
    - `BLOCK` → feed `GAP` into the next iteration's builder. Continue.
