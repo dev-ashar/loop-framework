@@ -17,7 +17,7 @@ single change that moves runs from broken demos to working products.
 
 - **planner** sets the **boundary** — goal, constraints, non-goals. This is the
   spec; it does not change during negotiation. (Dispatch the `planner` agent, or
-  seed it from `run.sh init "<goal>"`.)
+  seed it from `loops init "<goal>"`.)
 - **builder proposes** the acceptance checklist — what *it* claims proves the goal
   is met, within the boundary.
 - **evaluator attacks** the checklist — flags every criterion that is vague,
@@ -30,9 +30,9 @@ the criteria itself.
 
 ## Protocol
 
-1. **Boundary.** Ensure `.loops/contract.md` exists (`run.sh init "<goal>"`).
+1. **Boundary.** Ensure `.loops/contract.md` exists (`loops init "<goal>"`).
    Dispatch `planner` to fill Goal / Constraints / Non-goals from the goal +
-   codebase (via `explorer`). Run `run.sh lesson check "<goal keywords>"` first —
+   codebase (via `explorer`). Run `loops lesson check "<goal keywords>"` first —
    a hit tagged `external-data-source` means this ground was already burned once.
    When the goal names an external API or data source, require a mandatory
    acceptance criterion of the form "verify <external system>'s exact semantics
@@ -57,7 +57,7 @@ the criteria itself.
 5. **Verify command.** The evaluator states the exact command(s) it will run to
    grade. It must emit observable results. Dry-run it once to confirm.
 
-6. **Lock.** Validate the contract structure by running `run.sh lint .loops/contract.md`.
+6. **Lock.** Validate the contract structure by running `loops lint .loops/contract.md`.
    Any lint failure is blocking — fix the contract first.
    Show the converged contract. On your approval it becomes the boundary.
    From here the loop runs; a human interrupts only if the *contract* is wrong —
