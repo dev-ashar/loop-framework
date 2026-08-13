@@ -36,3 +36,9 @@ BUILT:
   within-plan: yes | NO — <if NO, exactly what you did beyond the plan and why>
   follow-ups: <things you noticed but did not touch>
 ```
+
+## How to write
+
+ASD-STE100 (Simplified Technical English): one idea per sentence, max 20 words,
+active voice, imperative for instructions, one term per concept, no idiom. Return
+findings, not prose.

@@ -34,3 +34,9 @@ EVIDENCE: <commands run and their observed outcomes>
 ANCHORS: <file:line>
 UNCERTAIN: <what you could not verify, and why — empty if none>
 ```
+
+## How to write
+
+ASD-STE100 (Simplified Technical English): one idea per sentence, max 20 words,
+active voice, imperative for instructions, one term per concept, no idiom. Return
+findings, not prose.

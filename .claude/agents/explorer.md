@@ -35,3 +35,9 @@ CONNECTIONS: <how the relevant pieces wire together>
 SURPRISES: <anything unexpected worth knowing — empty if none>
 COVERAGE: <what you searched; what you did not>
 ```
+
+## How to write
+
+ASD-STE100 (Simplified Technical English): one idea per sentence, max 20 words,
+active voice, imperative for instructions, one term per concept, no idiom. Return
+findings, not prose.

@@ -10,3 +10,6 @@
 !.loops/log.md
 !.loops/feature_list.json
 !.loops/verify.sh
+
+# Untracked durable memory: repo facts and per-branch journals.
+.loops-mem/

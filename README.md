@@ -123,6 +123,10 @@ loops reap                             # report a stale .running marker (>48h)
 loops multireport <repo-path>...       # loop state across several repos
 loops lesson record|check <text>       # global cross-repo lesson store
 loops models list|available|set <role> <model>
+loops mem show [limit]                 # repo facts + this branch's journal
+loops mem fact "<text>"                # record a repo truth (any branch)
+loops mem note "<text>"                # append to this branch's journal
+loops mem path|reap                    # store location; drop dead branches
 loops session show [--user]            # session model + context window
 loops session set <model> [--user]     # writes both, together
 loops engine show|set|run              # claude or opencode; state in .loops/engine
@@ -188,6 +192,33 @@ loops status
 - `verify.sh` — the mechanical checks the contract is graded by
 
 Those five are durable and tracked. Anything else a run leaves behind is debris.
+
+## Durable memory
+
+`.loops/` holds the current run. `.loops-mem/` holds what outlives it:
+
+```
+.loops-mem/                  untracked, one per repo, shared by all worktrees
+  repo.md                    curated facts true on any branch
+  branches/<slug>.md         append-only: what this work tried and ruled out
+```
+
+Two files, two lifetimes. `.loops/progress.md` is overwritten every iteration;
+`repo.md` survives for months. Never write durable facts to `progress.md`.
+
+- **repo.md** — gotchas, decisions, dead ends. About 20 lines, curated, not a log.
+  "bash is 3.2, no `mapfile`." "Tried `modelOverrides`; it carries no window."
+- **branches/&lt;slug&gt;.md** — one line per thing you did or eliminated. Slashes in the
+  branch name become dashes. `loops mem reap` drops journals for deleted branches.
+
+Recall is automatic. A `SessionStart` hook injects the store before you type, so a
+cold agent does not re-derive what a previous run already learned. That is the one
+thing the global `lessons.jsonl` never had, which is why it accumulated entries
+nobody read.
+
+Untracked on purpose: a tracked branch journal conflicts on every parallel branch
+and disappears exactly when its dead ends become most useful. `verify.sh` fails the
+build if `.loops-mem/` reaches the index.
 
 ## A typical loop
 
@@ -268,7 +299,7 @@ completeness. Name the blocker.
 
 ```
 .claude/    CLAUDE.md · settings.json · dispatch.md · hooks/ · agents/ · skills/
-lib/        models.sh · session.sh · engine.sh · agent-wait.sh
+lib/        models.sh · session.sh · mem.sh · engine.sh · agent-wait.sh
 templates/  contract.md · progress.md · log.md · feature_list.json
 run.sh · install.sh · MEMORY.md · README.md
 ```

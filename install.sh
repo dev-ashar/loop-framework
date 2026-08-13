@@ -119,6 +119,7 @@ MERGE_JQ='
   | .hooks.PreToolUse  = ( (($e.hooks.PreToolUse  // []) | map(select([.hooks[].command] | any(test("pre-tool-use.sh"))  | not))) + $k.hooks.PreToolUse )
   | .hooks.PostToolUse = ( (($e.hooks.PostToolUse // []) | map(select([.hooks[].command] | any(test("post-tool-use.sh")) | not))) + $k.hooks.PostToolUse )
   | .hooks.Stop        = ( (($e.hooks.Stop        // []) | map(select([.hooks[].command] | any(test("stop.sh"))          | not))) + $k.hooks.Stop )
+  | .hooks.SessionStart = ( (($e.hooks.SessionStart // []) | map(select([.hooks[].command] | any(test("session-start-mem.sh")) | not))) + ($k.hooks.SessionStart // []) )
   | del(.hooks.UserPromptSubmit | select(. == null))
 '
 # Drop the retired flow-goal UserPromptSubmit injector if it is the only UPS hook.
