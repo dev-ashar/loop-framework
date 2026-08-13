@@ -24,9 +24,9 @@ Bare `loops` opens a picker over the roster and the engine:
 configure> ▊
   Select a role or engine
 > builder         gpt-5.6-luna-mantle
-  evaluator       gpt-5.6-terra-mantle
+  evaluator       gpt-5.6-sol-mantle
   explorer        haiku
-  general-purpose gpt-5.6-terra-mantle
+  general-purpose gpt-5.6-sol-mantle
   planner         sonnet
   engine          claude (/opt/homebrew/bin/claude)
 ```
@@ -89,15 +89,17 @@ Two things the installer does not do for you:
 
 | Agent | Model | Job |
 |---|---|---|
-| *orchestrator* | Opus (this session) | plan, judge, route, synthesize, decide — inline, never a subagent |
+| *orchestrator* | `gpt-5.6-sol-mantle` (this session) | plan, judge, route, synthesize, decide — inline, never a subagent |
 | `planner` | `sonnet` | vague goal → contract + ordered plan; never writes code |
 | `builder` | `gpt-5.6-luna-mantle` | implements the plan; forbidden from grading itself |
-| `evaluator` | `gpt-5.6-terra-mantle` | adversarial — runs the thing, grades vs contract, 0–1 + gap |
+| `evaluator` | `gpt-5.6-sol-mantle` | adversarial — runs the thing, grades vs contract, 0–1 + gap |
 | `explorer` | `haiku` | read-only find/map/trace; no Bash |
-| `general-purpose` | `gpt-5.6-terra-mantle` | catch-all when no named role fits; all tools |
+| `general-purpose` | `gpt-5.6-sol-mantle` | catch-all when no named role fits; all tools |
 
 `loops models list` prints the live roster; it reads the `model:` frontmatter key
-in `.claude/agents/*.md`, which is the only place these are configured.
+in `.claude/agents/*.md`, which is the only place these are configured. The
+session model is separate — it lives in `settings.json` and is set with
+`loops session set`.
 
 Two rules make it work: **the generator never grades its own output**, and **Opus
 only orchestrates** — the Opus-tier thinking happens inline in your session; every
@@ -121,6 +123,8 @@ loops reap                             # report a stale .running marker (>48h)
 loops multireport <repo-path>...       # loop state across several repos
 loops lesson record|check <text>       # global cross-repo lesson store
 loops models list|available|set <role> <model>
+loops session show [--user]            # session model + context window
+loops session set <model> [--user]     # writes both, together
 loops engine show|set|run              # claude or opencode; state in .loops/engine
 loops scope-check <worktree> <base-ref> <allowed-files>
 loops worktree check|provision|fix|reap
@@ -137,6 +141,15 @@ Conventions worth knowing before you script against it:
   they work from any directory.
 - **No TTY or no fzf** makes bare `loops` print the non-interactive equivalent and
   exit 1 rather than hanging. `LOOPS_FZF` points at an fzf that isn't on `PATH`.
+- **`session set` writes the model and its context window as one edit.** Claude
+  Code has no per-model window setting — `modelOverrides` maps ids to provider ids
+  and carries no window, and `CLAUDE_CODE_MAX_CONTEXT_TOKENS` is a single global
+  number. So switching models by hand leaves the old model's cap in place and
+  silently shrinks the new one. `session set` resolves the window from the
+  gateway's `max_input_tokens`, falls back to a measured table for ids the gateway
+  reports as `null`, and *removes* the override entirely for models Claude Code
+  already knows. Scope defaults to `./.claude/settings.json`; `--user` targets
+  `~/.claude/settings.json`. Both take effect in new sessions.
 
 Lessons live in `~/.claude/memory/lessons.jsonl` and are shared across every repo,
 which is the point: a `set -e` bug learned here is retrievable from anywhere.
@@ -237,10 +250,16 @@ completeness. Name the blocker.
   `${var^^}`. BSD `readlink` has no `-f`. `timeout` is not installed; bound a
   hanging command with a background process and `kill` instead.
 - **Model access is through a gateway** configured entirely in the environment.
-  Never write a base URL or token value into a repo file. Roughly 11 s of fixed
-  overhead per API round trip, so the only latency lever is fewer round trips.
+  Never write a base URL or token value into a repo file. A round trip measured
+  1.6–2.0 s on 2026-08-13; an earlier ~11 s figure no longer holds, so re-measure
+  before optimizing for it.
 - `haiku` / `sonnet` / `opus` are Claude Code aliases and do not appear in
-  `loops models available`; both are valid values for `loops models set`.
+  `loops models available`; both are valid values for `loops models set` and
+  `loops session set`.
+- **The gateway reports `max_input_tokens` per model, but not for every model** —
+  the `gpt-5.6-*-mantle` ids return `null`. All three measured 272,000 on
+  2026-08-13 by oversizing a request until the API named its own limit; that is
+  where `session_measured_window` in `lib/session.sh` gets its numbers.
 - **`Agent(isolation: "worktree")` branches `origin/main`, not session HEAD.** A
   worktree builder can write against uncommitted work but cannot behaviorally test
   against it. Verification-heavy builders belong in the main checkout.
@@ -249,7 +268,7 @@ completeness. Name the blocker.
 
 ```
 .claude/    CLAUDE.md · settings.json · dispatch.md · hooks/ · agents/ · skills/
-lib/        models.sh · engine.sh · agent-wait.sh
+lib/        models.sh · session.sh · engine.sh · agent-wait.sh
 templates/  contract.md · progress.md · log.md · feature_list.json
 run.sh · install.sh · MEMORY.md · README.md
 ```
