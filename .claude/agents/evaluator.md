@@ -54,3 +54,9 @@ CRITERIA:
 GAP: <one paragraph: the most important gap, or "none — ship it">
 CHECKS RUN: <the commands you actually executed>
 ```
+
+## How to write
+
+ASD-STE100 (Simplified Technical English): one idea per sentence, max 20 words,
+active voice, imperative for instructions, one term per concept, no idiom. Return
+findings, not prose.

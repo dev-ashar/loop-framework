@@ -33,6 +33,18 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/session-start-mem.sh",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   },
   "env": {

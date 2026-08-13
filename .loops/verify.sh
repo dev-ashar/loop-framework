@@ -26,15 +26,25 @@ IFS='|' read -r repo wt < <(make_fixture_repo out-scope-committed); printf bad >
 IFS='|' read -r repo wt < <(make_fixture_repo out-scope-uncommitted); printf bad > "$wt/bad.txt"; set +e; output=$(bash run.sh scope-check "$wt" main ok.txt); status=$?; set -e; [ "$status" -ne 0 ]; printf '%s\n' "$output" | grep -qx bad.txt
 IFS='|' read -r repo wt < <(make_fixture_repo out-scope-untracked); printf new > "$wt/new.txt"; set +e; output=$(bash run.sh scope-check "$wt" main ok.txt); status=$?; set -e; [ "$status" -ne 0 ]; printf '%s\n' "$output" | grep -qx new.txt
 
-! grep -q 'merge-worktrees' run.sh
-grep -q 'git merge --no-ff' .claude/skills/run-loop/SKILL.md
-test -s .claude/dispatch.md
-for tok in explorer planner builder evaluator orchestrator gpt-5.6-luna-mantle gpt-5.6-terra-mantle opus-5 haiku sonnet; do grep -q "$tok" .claude/dispatch.md; done
-grep -q dispatch.md .claude/CLAUDE.md
-[ "$(wc -l < .claude/CLAUDE.md)" -le 131 ]
-! grep -rq 'gpt-5.6-sol\|claude-fable-5' .claude/
-grep -q '### Parallel builders' .claude/skills/run-loop/SKILL.md
 fail() { printf 'FAIL: %s\n' "$1" >&2; exit 1; }
+
+# These were bare assertions with no message: a failure exited 1 with no output,
+# which is the silent-empty-success shape this suite exists to catch. Two of them
+# were also `!`-prefixed, and bash exempts an inverted command from `set -e`, so
+# they had never enforced anything at all.
+if grep -q 'merge-worktrees' run.sh; then fail 'run.sh reintroduced merge-worktrees'; fi
+grep -q 'git merge --no-ff' .claude/skills/run-loop/SKILL.md || fail 'run-loop lost its no-ff merge'
+test -s .claude/dispatch.md || fail 'dispatch.md is missing or empty'
+for tok in explorer planner builder evaluator orchestrator gpt-5.6-luna-mantle gpt-5.6-terra-mantle opus-5 haiku sonnet; do
+  grep -q "$tok" .claude/dispatch.md || fail "dispatch.md no longer mentions $tok"
+done
+grep -q dispatch.md .claude/CLAUDE.md || fail 'CLAUDE.md no longer points at dispatch.md'
+# The harness stays thin on purpose. Raise this only for a rule that earns its lines.
+[ "$(wc -l < .claude/CLAUDE.md)" -le 138 ] || fail 'CLAUDE.md grew past 138 lines'
+# fable is still absent from the gateway, so nothing may route to it. sol is no
+# longer banned here — it is the session default and the evaluator tier.
+if grep -rq 'claude-fable-5' .claude/; then fail 'a config references claude-fable-5'; fi
+grep -q '### Parallel builders' .claude/skills/run-loop/SKILL.md || fail 'run-loop lost the parallel-builders section'
 cli_fixture="$fixture_root/phase5-cli"
 mkdir -p "$cli_fixture/lib" "$cli_fixture/.claude/agents" "$cli_fixture/.loops"
 cp run.sh "$cli_fixture/run.sh"
@@ -335,6 +345,73 @@ fi
 
 rm -rf "$session_tmp"
 trap - EXIT
+
+# --- durable memory ---
+# .loops-mem/ must never reach the index. It is per-machine working memory, and a
+# tracked branch journal would conflict on every parallel branch.
+git check-ignore -q .loops-mem || { echo "FAIL: .loops-mem is not ignored"; exit 1; }
+[ -z "$(git ls-files .loops-mem)" ] || { echo "FAIL: .loops-mem reached the index"; exit 1; }
+
+# A fact and a note must land in different files, and show must surface both.
+mem_root=$(./run.sh mem path)
+[ "$mem_root" = "$PWD/.loops-mem" ] || { echo "FAIL: mem path resolved to $mem_root"; exit 1; }
+
+# Strip probes before writing as well as after. A run that exits early leaves its
+# probe behind, and a leftover probe would satisfy the next run's grep and mask a
+# real regression.
+mem_strip_probes() {
+  [ -d "$1" ] || return 0
+  python3 - "$1" <<'PY'
+import os, sys
+root = sys.argv[1]
+paths = [os.path.join(root, "repo.md")]
+branches = os.path.join(root, "branches")
+if os.path.isdir(branches):
+    paths += [os.path.join(branches, f) for f in os.listdir(branches)]
+for path in paths:
+    if not os.path.exists(path):
+        continue
+    with open(path) as handle:
+        kept = [l for l in handle if "verify-probe-" not in l]
+    with open(path, "w") as handle:
+        handle.writelines(kept)
+PY
+}
+mem_strip_probes "$mem_root"
+
+./run.sh mem fact "verify-probe-fact" >/dev/null
+./run.sh mem note "verify-probe-note" >/dev/null
+grep -q verify-probe-fact "$mem_root/repo.md" || { echo "FAIL: fact did not reach repo.md"; exit 1; }
+mem_slug=$(git rev-parse --abbrev-ref HEAD | tr '/' '-')
+grep -q verify-probe-note "$mem_root/branches/$mem_slug.md" || { echo "FAIL: note did not reach the branch journal"; exit 1; }
+mem_shown=$(./run.sh mem show)
+case "$mem_shown" in *verify-probe-fact*) ;; *) echo "FAIL: show omitted repo facts"; exit 1 ;; esac
+case "$mem_shown" in *verify-probe-note*) ;; *) echo "FAIL: show omitted the branch journal"; exit 1 ;; esac
+
+# The store is keyed off --git-common-dir so every worktree of this repo shares it.
+# --git-dir would give each linked worktree a private, empty store.
+grep -q 'git rev-parse --git-common-dir' lib/mem.sh \
+  || { echo "FAIL: mem no longer resolves through --git-common-dir"; exit 1; }
+
+# reap deletes journals for branches that are gone and keeps the ones that are not.
+./run.sh mem reap >/dev/null
+[ -f "$mem_root/branches/$mem_slug.md" ] || { echo "FAIL: reap deleted a live branch's journal"; exit 1; }
+printf -- '- probe\n' > "$mem_root/branches/loops-no-such-branch.md"
+./run.sh mem reap >/dev/null
+[ ! -f "$mem_root/branches/loops-no-such-branch.md" ] || { echo "FAIL: reap kept a dead branch's journal"; exit 1; }
+
+# Recall is automatic or the store rots: the SessionStart hook must emit the store
+# inside a repo and stay silent (exit 0) outside one.
+hook=.claude/hooks/session-start-mem.sh
+[ -x "$hook" ] || { echo "FAIL: session-start-mem.sh is not executable"; exit 1; }
+case "$(./"$hook")" in *verify-probe-fact*) ;; *) echo "FAIL: hook did not emit the store"; exit 1 ;; esac
+hook_abs=$PWD/$hook
+(cd "$(mktemp -d)" && "$hook_abs" >/dev/null 2>&1) || { echo "FAIL: hook failed outside a repo"; exit 1; }
+grep -q 'session-start-mem.sh' .claude/settings.json \
+  || { echo "FAIL: the memory hook is not wired into settings"; exit 1; }
+
+# Leave no probe entries behind.
+mem_strip_probes "$mem_root"
 
 echo VERIFY_OK
 
