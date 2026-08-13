@@ -26,7 +26,7 @@ configure> ▊
 > builder         gpt-5.6-luna-mantle
   evaluator       gpt-5.6-sol-mantle
   explorer        haiku
-  general-purpose gpt-5.6-sol-mantle
+  general-purpose gpt-5.6-terra-mantle
   planner         sonnet
   engine          claude (/opt/homebrew/bin/claude)
 ```
@@ -94,7 +94,7 @@ Two things the installer does not do for you:
 | `builder` | `gpt-5.6-luna-mantle` | implements the plan; forbidden from grading itself |
 | `evaluator` | `gpt-5.6-sol-mantle` | adversarial — runs the thing, grades vs contract, 0–1 + gap |
 | `explorer` | `haiku` | read-only find/map/trace; no Bash |
-| `general-purpose` | `gpt-5.6-sol-mantle` | catch-all when no named role fits; all tools |
+| `general-purpose` | `gpt-5.6-terra-mantle` | catch-all when no named role fits; all tools |
 
 `loops models list` prints the live roster; it reads the `model:` frontmatter key
 in `.claude/agents/*.md`, which is the only place these are configured. The

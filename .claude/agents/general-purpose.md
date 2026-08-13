@@ -1,7 +1,7 @@
 ---
 name: general-purpose
 description: General-purpose agent for researching complex questions, searching for code, and executing multi-step tasks. Use when a task does not fit planner / builder / evaluator / explorer and you are not confident a keyword search will land in the first few tries.
-model: gpt-5.6-sol-mantle
+model: gpt-5.6-terra-mantle
 tools: '*'
 ---
 
