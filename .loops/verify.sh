@@ -297,5 +297,44 @@ fi
 # Bare invocation must enter the UI, not print status.
 grep -q 'cmd="${1:-ui}"' run.sh || { echo "FAIL: bare loops no longer defaults to ui"; exit 1; }
 
+# --- session model + window ---
+# The invariant: the model and CLAUDE_CODE_MAX_CONTEXT_TOKENS move together or not
+# at all. A model written without its window silently caps the new model at the old
+# one's size, which is the exact drift this command exists to prevent.
+loops_bin=$PWD/run.sh
+session_tmp=$(mktemp -d)
+trap 'rm -rf "$session_tmp"' EXIT
+mkdir -p "$session_tmp/.claude"
+printf '%s\n' '{"model":"before","effortLevel":"high","env":{"CLAUDE_CODE_MAX_CONTEXT_TOKENS":"999","KEEP_ME":"1"}}' \
+  > "$session_tmp/.claude/settings.json"
+session_json="$session_tmp/.claude/settings.json"
+
+# A model the gateway does not serve must be refused, and must leave the file alone.
+if (cd "$session_tmp" && "$loops_bin" session set loops-no-such-model >/dev/null 2>&1); then
+  echo "FAIL: session set accepted an unserved model"; exit 1
+fi
+[ "$(jq -r .model "$session_json")" = before ] || { echo "FAIL: rejected session set still wrote the model"; exit 1; }
+
+# A model with a known window writes that window.
+(cd "$session_tmp" && "$loops_bin" session set gpt-5.6-sol-mantle >/dev/null) \
+  || { echo "FAIL: session set of a served model failed"; exit 1; }
+[ "$(jq -r .model "$session_json")" = gpt-5.6-sol-mantle ] || { echo "FAIL: session set did not write the model"; exit 1; }
+[ "$(jq -r .env.CLAUDE_CODE_MAX_CONTEXT_TOKENS "$session_json")" = 272000 ] \
+  || { echo "FAIL: session set did not write the window"; exit 1; }
+
+# A model Claude Code recognizes must have the override *removed*, not overwritten —
+# leaving a smaller number behind would shrink a 1M window to 272k.
+(cd "$session_tmp" && "$loops_bin" session set opus >/dev/null) \
+  || { echo "FAIL: session set of a native alias failed"; exit 1; }
+[ "$(jq -r '.env.CLAUDE_CODE_MAX_CONTEXT_TOKENS // "absent"' "$session_json")" = absent ] \
+  || { echo "FAIL: native alias left a context-window override behind"; exit 1; }
+
+# Unrelated settings survive every write.
+[ "$(jq -r .effortLevel "$session_json")" = high ] || { echo "FAIL: session set dropped effortLevel"; exit 1; }
+[ "$(jq -r .env.KEEP_ME "$session_json")" = 1 ] || { echo "FAIL: session set dropped an unrelated env key"; exit 1; }
+
+rm -rf "$session_tmp"
+trap - EXIT
+
 echo VERIFY_OK
 

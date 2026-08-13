@@ -434,6 +434,12 @@ case "$cmd" in
     shift
     cmd_models "$@"
     ;;
+  session)
+    # shellcheck source=lib/session.sh
+    . "$SCRIPT_DIR/lib/session.sh"
+    shift
+    cmd_session "$@"
+    ;;
   engine)
     # shellcheck source=lib/engine.sh
     . "$SCRIPT_DIR/lib/engine.sh"
@@ -739,7 +745,7 @@ case "$cmd" in
     esac
     ;;
   *)
-    echo "usage: $0 {[no args: interactive config] | init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check} | models {list|available|set} | engine {show|set|run} | scope-check <wt> <base> <files> | worktree {check|provision|fix|reap}}"
+    echo "usage: $0 {[no args: interactive config] | init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check} | models {list|available|set} | session {show|set} | engine {show|set|run} | scope-check <wt> <base> <files> | worktree {check|provision|fix|reap}}"
     exit 1
     ;;
 esac
