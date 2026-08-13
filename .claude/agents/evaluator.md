@@ -1,7 +1,7 @@
 ---
 name: evaluator
 description: Adversarial evaluator. Told from the first message that the work is broken and its job is to prove it. Runs the app, grades against the contract, returns a 0–1 score plus the gap. Use after the builder finishes, before the orchestrator accepts anything.
-model: gpt-5.6-terra-mantle
+model: gpt-5.6-sol-mantle
 tools: Read, Grep, Glob, Bash
 ---
 
