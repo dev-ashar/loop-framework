@@ -216,6 +216,18 @@ cold agent does not re-derive what a previous run already learned. That is the o
 thing the global `lessons.jsonl` never had, which is why it accumulated entries
 nobody read.
 
+Writing is automatic too — the duty sits in three places, so no single one can
+forget it. `CLAUDE.md` states it. `builder`, `evaluator`, and `general-purpose`
+each carry it; `explorer` and `planner` deliberately do not, because they are
+read-only and report instead of write. `run-loop`'s Land step runs `loops mem
+note` before it clears the run marker.
+
+A `Stop` hook enforces it. `.claude/hooks/stop-mem.sh` blocks the first clean exit
+that leaves today's work unrecorded, and exit 2 feeds the instruction back to the
+agent. It writes its marker before that exit, so a refusal cannot loop, and the
+marker bounds it to one block per branch per day. Set `LOOPS_MEM_NUDGE=0` to
+disable. Every other path exits 0 — memory must never break a session.
+
 Untracked on purpose: a tracked branch journal conflicts on every parallel branch
 and disappears exactly when its dead ends become most useful. `verify.sh` fails the
 build if `.loops-mem/` reaches the index.
