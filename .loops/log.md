@@ -263,3 +263,4 @@ Awaiting the single human approval gate.
 ## [2026-08-13 16:00] build | added memory-writing instructions, stop enforcement, and verifier coverage
 ## [2026-08-17 11:48] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
 ## [2026-08-17 11:48] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-17 14:59] Edit | /Users/devashar/Documents/DS/workspace/loops/README.md
