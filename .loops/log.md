@@ -264,3 +264,14 @@ Awaiting the single human approval gate.
 ## [2026-08-17 11:48] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
 ## [2026-08-17 11:48] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
 ## [2026-08-17 14:59] Edit | /Users/devashar/Documents/DS/workspace/loops/README.md
+## [2026-08-17 15:04] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/settings.json
+## [2026-08-17 15:04] Edit | /Users/devashar/Documents/DS/workspace/loops/install.sh
+## [2026-08-17 15:05] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+
+## [2026-08-17 00:02] contract | BB + LOOPS Trace emitter and run-loop instrumentation
+Replaced the completed internal contract with the locked trace-emitter and lifecycle-instrumentation boundary.
+## [2026-08-17 15:06] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+
+## [2026-08-17 00:03] progress | trace emitter run start
+Updated progress to contract-locked/build-next; emitter implementation remains unstarted.
+## [2026-08-17 15:07] Edit | /Users/devashar/Documents/DS/workspace/loops/README.md

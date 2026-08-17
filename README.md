@@ -155,6 +155,17 @@ Conventions worth knowing before you script against it:
   already knows. Scope defaults to `./.claude/settings.json`; `--user` targets
   `~/.claude/settings.json`. Both take effect in new sessions.
 
+- **Agents run the safe half of the CLI without asking.** `settings.json`
+  allowlists the read-only and memory-write subcommands one at a time —
+  `mem show|path|fact|note`, `status`, `lint`, `log`, `score`, `init`, `reap`,
+  `lesson`, `models list|available`, `session show`, `engine show`,
+  `worktree check`. Everything that deletes state or rewrites config still
+  prompts: `mem reap`, `models set`, `session set`, `engine set|run`,
+  `worktree provision|fix|reap`. The allowlist is load-bearing, not a
+  convenience — the `Stop` hook orders the agent to run `loops mem note`, and a
+  prompt on every note would turn enforcement into a nag. There is deliberately
+  no blanket `Bash(loops:*)`; `verify.sh` fails the build if one appears.
+
 Lessons live in `~/.claude/memory/lessons.jsonl` and are shared across every repo,
 which is the point: a `set -e` bug learned here is retrievable from anywhere.
 

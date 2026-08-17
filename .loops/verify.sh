@@ -457,6 +457,23 @@ stop_status=$?
 set -e
 [ "$stop_status" -eq 0 ] || fail 'stop-mem ignored today journal entry'
 
+# --- the loops CLI runs unprompted -------------------------------------------
+# The Stop hook orders the agent to run `loops mem note`. A permission prompt on
+# every note turns that enforcement into a nag, so the allowlist is load-bearing.
+allow_json=$(jq -c '.permissions.allow // []' .claude/settings.json)
+for allowed in 'loops mem note' 'loops mem fact' 'loops mem show' 'loops status'; do
+  printf '%s' "$allow_json" | grep -q "Bash($allowed:\\*)" \
+    || fail "settings.json does not allowlist $allowed"
+done
+# Anything that deletes state or rewrites config still asks first.
+for guarded in 'loops mem reap' 'loops session set' 'loops models set' 'loops worktree provision' 'loops:'; do
+  if printf '%s' "$allow_json" | grep -q "Bash($guarded"; then
+    fail "settings.json allowlists $guarded — destructive commands must still prompt"
+  fi
+done
+grep -q '^  | \.permissions\.allow = ' install.sh \
+  || fail 'install.sh does not merge the permissions allowlist'
+
 # Leave no probe entries behind.
 mem_strip_probes "$mem_root"
 
