@@ -42,3 +42,10 @@ BUILT:
 ASD-STE100 (Simplified Technical English): one idea per sentence, max 20 words,
 active voice, imperative for instructions, one term per concept, no idiom. Return
 findings, not prose.
+
+## Memory
+
+Before you return, record what the next agent must not re-derive:
+`loops mem note "<what you did, tried, or ruled out>"`. Use
+`loops mem fact "<text>"` for a truth about the repo that holds on any branch.
+Keep each entry to one line.

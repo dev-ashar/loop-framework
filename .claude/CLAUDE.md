@@ -77,6 +77,17 @@ Persistent file memory lives in the per-project `.../memory/` dir with a
 `reference` facts that aren't derivable from code or git. After any correction,
 capture the lesson.
 
+Per repo, `.loops-mem/` holds durable memory. Recall is automatic. Writing is your
+job.
+
+- `loops mem fact "<text>"` → `repo.md`. A truth about this repo on any branch.
+- `loops mem note "<text>"` → `branches/<branch>.md`. What this branch did, tried,
+  or ruled out.
+
+Write a note before you finish a turn that changed files. Write a fact after any
+correction. A Stop hook blocks the first clean exit that leaves a change
+unrecorded.
+
 ## Engineering principles (ALWAYS ON)
 
 How code gets written, in every project. These are defaults, not suggestions.

@@ -40,11 +40,13 @@ for tok in explorer planner builder evaluator orchestrator gpt-5.6-luna-mantle g
 done
 grep -q dispatch.md .claude/CLAUDE.md || fail 'CLAUDE.md no longer points at dispatch.md'
 # The harness stays thin on purpose. Raise this only for a rule that earns its lines.
-[ "$(wc -l < .claude/CLAUDE.md)" -le 138 ] || fail 'CLAUDE.md grew past 138 lines'
+[ "$(wc -l < .claude/CLAUDE.md)" -le 149 ] || fail 'CLAUDE.md grew past 149 lines'
 # fable is still absent from the gateway, so nothing may route to it. sol is no
 # longer banned here — it is the session default and the evaluator tier.
 if grep -rq 'claude-fable-5' .claude/; then fail 'a config references claude-fable-5'; fi
 grep -q '### Parallel builders' .claude/skills/run-loop/SKILL.md || fail 'run-loop lost the parallel-builders section'
+# The Land step must write memory, not just say "capture a lesson" at nobody.
+grep -q 'loops mem note' .claude/skills/run-loop/SKILL.md || fail 'run-loop Land step no longer records memory'
 cli_fixture="$fixture_root/phase5-cli"
 mkdir -p "$cli_fixture/lib" "$cli_fixture/.claude/agents" "$cli_fixture/.loops"
 cp run.sh "$cli_fixture/run.sh"
@@ -409,6 +411,51 @@ hook_abs=$PWD/$hook
 (cd "$(mktemp -d)" && "$hook_abs" >/dev/null 2>&1) || { echo "FAIL: hook failed outside a repo"; exit 1; }
 grep -q 'session-start-mem.sh' .claude/settings.json \
   || { echo "FAIL: the memory hook is not wired into settings"; exit 1; }
+
+# Writing is enforced before a clean stop and remains bounded per branch per day.
+[ -x .claude/hooks/stop-mem.sh ] || fail 'stop-mem.sh is not executable'
+grep -q 'loops mem fact' .claude/CLAUDE.md || fail 'CLAUDE.md omits loops mem fact'
+grep -q 'loops mem note' .claude/CLAUDE.md || fail 'CLAUDE.md omits loops mem note'
+for role in builder evaluator general-purpose; do
+  grep -q 'loops mem note' ".claude/agents/$role.md" || fail "$role omits loops mem note"
+done
+if grep -q 'loops mem' .claude/agents/explorer.md .claude/agents/planner.md; then
+  fail 'read-only agents mention loops mem'
+fi
+grep -q 'stop-mem.sh' .claude/settings.json || fail 'stop-mem.sh is not wired into settings'
+grep -q 'git rev-parse --git-common-dir' .claude/hooks/stop-mem.sh \
+  || fail 'stop-mem.sh does not use git-common-dir'
+stop_fixture="$fixture_root/stop-mem"
+mkdir -p "$stop_fixture/bin" "$stop_fixture/repo"
+printf '%s\n' '#!/usr/bin/env bash' 'exit 0' > "$stop_fixture/bin/loops"
+chmod +x "$stop_fixture/bin/loops"
+git -C "$stop_fixture/repo" init -q -b main
+git -C "$stop_fixture/repo" config user.name verify
+git -C "$stop_fixture/repo" config user.email verify@example.test
+printf 'base\n' > "$stop_fixture/repo/base"
+git -C "$stop_fixture/repo" add base
+git -C "$stop_fixture/repo" commit -q -m base
+touch "$stop_fixture/repo/dirty-file"
+set +e
+stop_err=$(cd "$stop_fixture/repo" && PATH="$stop_fixture/bin:/usr/bin:/bin" "$repo_root/.claude/hooks/stop-mem.sh" 2>&1 >/dev/null)
+stop_status=$?
+set -e
+[ "$stop_status" -eq 2 ] || fail 'stop-mem did not block unrecorded work'
+printf '%s\n' "$stop_err" | grep -q 'loops mem note' || fail 'stop-mem omitted note instruction'
+set +e
+(cd "$stop_fixture/repo" && PATH="$stop_fixture/bin:/usr/bin:/bin" "$repo_root/.claude/hooks/stop-mem.sh" >/dev/null 2>&1)
+stop_status=$?
+set -e
+[ "$stop_status" -eq 0 ] || fail 'stop-mem marker did not bound the nudge'
+stop_slug=$(git -C "$stop_fixture/repo" rev-parse --abbrev-ref HEAD | tr '/' '-')
+mkdir -p "$stop_fixture/repo/.loops-mem/branches"
+printf -- '- [%s] recorded\n' "$(date -u +%Y-%m-%d)" > "$stop_fixture/repo/.loops-mem/branches/$stop_slug.md"
+rm -f "$stop_fixture/repo/.loops-mem/.nudged-$stop_slug-$(date -u +%Y-%m-%d)"
+set +e
+(cd "$stop_fixture/repo" && PATH="$stop_fixture/bin:/usr/bin:/bin" "$repo_root/.claude/hooks/stop-mem.sh" >/dev/null 2>&1)
+stop_status=$?
+set -e
+[ "$stop_status" -eq 0 ] || fail 'stop-mem ignored today journal entry'
 
 # Leave no probe entries behind.
 mem_strip_probes "$mem_root"
