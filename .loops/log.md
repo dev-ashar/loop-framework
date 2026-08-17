@@ -253,3 +253,13 @@ Awaiting the single human approval gate.
 ## [2026-08-13 15:55] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
 ## [2026-08-13 15:56] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
 ## [2026-08-13 15:56] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-17 11:43] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-17 11:43] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/agents/builder.md
+## [2026-08-17 11:43] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/agents/evaluator.md
+## [2026-08-17 11:44] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/agents/general-purpose.md
+## [2026-08-17 11:44] Write | /Users/devashar/Documents/DS/workspace/loops/.claude/hooks/stop-mem.sh
+## [2026-08-17 11:45] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-17 11:45] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-13 16:00] build | added memory-writing instructions, stop enforcement, and verifier coverage
+## [2026-08-17 11:48] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-17 11:48] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh

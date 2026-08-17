@@ -59,7 +59,9 @@ Loop, iteration `i` from 1 to `max` (default 10, from `feature_list.json`):
 - Final `evaluator` (or `/code-review`) pass over the cumulative diff.
 - **Never push/deploy/publish without explicit approval** — that is outside the gate.
 - Summarize: what changed · kept vs discarded · final score vs contract · follow-ups.
-- Capture a lesson to memory if the run taught one. Remove `.loops/.running`.
+- Record the run: `loops mem note "<what the loop built or ruled out>"`. Add
+  `loops mem fact "<text>"` for anything the next agent would otherwise re-derive.
+  Remove `.loops/.running`.
 
 ### Parallel builders
 

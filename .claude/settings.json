@@ -30,6 +30,11 @@
           {
             "type": "command",
             "command": "$HOME/.claude/hooks/stop.sh"
+          },
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/stop-mem.sh",
+            "timeout": 10
           }
         ]
       }
