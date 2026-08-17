@@ -1,54 +1,137 @@
-# Contract — BB + LOOPS Trace emitter and run-loop instrumentation
+# Contract — Phase 5: engine + model configuration CLI
 
-Locked 2026-08-17. Graded by `evaluator` against this file only.
+Locked 2026-08-05. Graded by `evaluator` (terra) against this file only.
 
 ## Goal
 
-Add a read-only LOOPS trace protocol and `/run-loop` lifecycle instrumentation for BB integration. The emitter records authoritative LOOPS transitions without allowing agents or BB to own loop state.
+Two new `run.sh` capability groups, built by two builders **running at the same
+time in separate worktrees**:
 
-## Constraints
+- `run.sh models` — inspect and change which model each role runs on.
+- `run.sh engine` — choose between Claude Code and OpenCode as the agent engine,
+  and dispatch a role through the chosen one.
 
-- Modify only the LOOPS CLI, `/run-loop` skill, tests, documentation, and contract artifacts for this phase.
-- Keep the trace file transient at `.loops/trace.jsonl` and keep it gitignored.
-- Keep LOOPS as the only owner of the contract, iteration state, evaluator verdict, score, gap, and PASS.
-- Keep the BB plugin, BB runtime, UI, dependency installation, and end-to-end pilot outside this contract.
-- Keep evaluator and builder agents unable to write authoritative trace state directly.
-- Do not add compatibility shims or change unrelated behavior.
-- Do not write secrets or ambient BB state into the LOOPS repository.
+Phase 5 is also the first real exercise of the parallel-builder gates built in
+Phase 4. The gates must *fire*, not merely exist.
+
+## File allowlist (scope-check enforced)
+
+- Builder A may create/modify **`lib/models.sh`** and nothing else.
+- Builder B may create/modify **`lib/engine.sh`** and nothing else.
+- The orchestrator, after both merge, wires two `case` arms into `run.sh`.
+
+Any path outside a builder's single allowed file is a scope violation and fails
+that builder outright, regardless of code quality.
 
 ## Acceptance criteria
 
-> Each assertion is checked by running `.loops/verify.sh` and its named fixture or probe. A failing assertion returns non-zero.
+### Shared interface contract (both builders)
 
-1. `bash .loops/verify.sh` confirms that the CLI exposes `loops trace start`, `loops trace emit`, and `loops trace end` (or one documented equivalent command family), and rejects an unknown trace subcommand with a non-zero status.
-2. The trace start probe creates exactly one run identifier and an append-only `.loops/trace.jsonl` file without modifying the locked contract or durable loop state.
-3. Every emitted JSONL record contains `schemaVersion`, `eventId`, `runId`, `sequence`, `timestamp`, `iteration`, `role`, `phase`, `status`, `correlationId`, and the locked-contract hash.
-4. Optional score, verdict, gap, task identifier, and worktree metadata fields are omitted when absent and preserved when supplied.
-5. The JSONL probe parses every record as one complete JSON object, rejects malformed input with a non-zero status, and never writes a partial JSON object.
-6. The sequence probe shows strictly increasing integer sequence values within one run, including after a process restart or an append recovery.
-7. The event probe shows unique event identifiers within one run and deterministic rejection of duplicate event identifiers.
-8. The timestamp probe accepts only valid machine-readable timestamps and records the timestamp at emission time.
-9. The contract-hash probe derives the hash from the locked contract bytes, records the same hash on every event, and changes the hash after a contract-byte mutation.
-10. The hash-mismatch probe prevents a PASS event when the event hash differs from the currently locked contract hash.
-11. The transition probe records loop start, contract awaiting approval, contract locked, role dispatch, role completion, score recorded, repair requested, guard result, loop PASS or BLOCK, and loop end in append order.
-12. The approval-gate probe records contract awaiting approval and blocks builder dispatch until the contract is approved and locked.
-13. The correlation probe puts one run correlation identifier in every Claude Agent description created by the orchestrator and links those descriptions to the matching trace run.
-14. The authority probe proves that builder and evaluator processes can emit observations only through the orchestrator and cannot forge an authoritative PASS, score, verdict, or contract hash.
-15. The negative PASS probe proves that an agent-supplied PASS record is ignored or rejected and cannot change the LOOPS verdict.
-16. The role probe distinguishes planner, builder, evaluator, and orchestrator roles in emitted records without collapsing them into a generic agent role.
-17. The iteration probe records the active iteration on every transition and preserves iteration changes across a BLOCK-to-repair cycle.
-18. The append probe proves that a second emission appends one line, preserves all earlier bytes, and does not rewrite or reorder existing records.
-19. The malformed-record probe handles missing required fields, wrong field types, unknown status values, and invalid correlation identifiers with deterministic non-zero results.
-20. The recovery probe handles an interrupted final line by discarding only the incomplete tail, then resumes with the next monotonic sequence value.
-21. The lifecycle probe emits loop end for both PASS and BLOCK terminal paths and never treats provider completion or BB idle state as LOOPS PASS.
-22. The existing LOOPS verification suite remains green after trace instrumentation is enabled.
-23. The trace protocol tests cover monotonic sequences, valid JSONL, event uniqueness, contract hashing, malformed inputs, truncation recovery, and replacement handling.
-24. The trace path is ignored by Git, and the trace probe confirms that no `.loops/trace.jsonl` bytes enter a normal repository diff.
-25. The documentation probe identifies the trace schema, lifecycle transitions, authority boundary, transient-file rule, and the single supported emitter entrypoint.
-26. The final guard probe returns non-zero when any required transition, required field, correlation identifier, contract hash, or authority check is missing.
+1. Each file is a POSIX-`bash` library, **sourced**, not executed. It defines
+   exactly one entrypoint function — `cmd_models` / `cmd_engine` — taking the
+   post-subcommand argv. No top-level side effects at source time: sourcing the
+   file must not read a network, write a file, or print anything.
+2. The file must not contain `set -euo pipefail` (run.sh already sets it) and
+   must not call `exit` from library code paths that a caller may want to
+   recover from — return non-zero instead. Usage errors return 1 or 2.
+3. Secrets never appear in output. `$ANTHROPIC_AUTH_TOKEN` must not be echoed,
+   logged, or written to any file. `grep -c ANTHROPIC_AUTH_TOKEN` on the file may
+   match only in a context that passes the value to `curl -H` — never a `printf`,
+   `echo`, `>>`, or `tee`.
+4. Every subcommand prints a one-line usage string and returns non-zero when
+   called with no args or an unknown subcommand.
 
-## Verify command
+### D1 — `lib/models.sh` (Builder A)
 
-```bash
+5. `cmd_models list` — for each `.claude/agents/*.md`, print `role<TAB>model`,
+   reading the `model:` key from the YAML frontmatter (the block between the
+   first two `---` lines only — a `model:` mention in the prose body must not be
+   picked up). Roles with no `model:` key print `(default)`.
+6. `cmd_models available` — `GET $ANTHROPIC_BASE_URL/v1/models` with header
+   `x-api-key: $ANTHROPIC_AUTH_TOKEN`, print `.data[].id` sorted, one per line.
+   On non-zero curl exit or unparseable body, print a diagnostic to stderr and
+   return non-zero. Must not print the token in the diagnostic.
+7. `cmd_models set <role> <model-id>` — rewrite that role's frontmatter `model:`
+   line in place, preserving every other byte of the file. If the role file has
+   no `model:` key, insert one as the last line of the frontmatter block.
+8. `set` validates: unknown role → non-zero, no write. Model id absent from the
+   live HAIP list → non-zero, no write, **unless** `--force` is passed. Prove the
+   no-write property: the file's sha256 is unchanged after a rejected `set`.
+9. `set` is idempotent — running the same `set` twice leaves the file
+   byte-identical to after the first run.
+
+### D2 — `lib/engine.sh` (Builder B)
+
+10. Engine state persists in **`.loops/engine`**, a single line, `claude` or
+    `opencode`. Absent file means `claude`. `cmd_engine` creates it only on `set`.
+11. `cmd_engine show` — print the active engine and the resolved binary path.
+12. `cmd_engine set <claude|opencode>` — reject any other value non-zero. Reject
+    with non-zero if the corresponding binary is not on `PATH` (`command -v
+    claude` / `command -v opencode`), and do not write the state file in that
+    case.
+13. `cmd_engine run <role> "<prompt>"` — resolve the role's model from
+    `.claude/agents/<role>.md` frontmatter, then exec the active engine headless:
+    - claude → `claude --model <model> -p "<prompt>"`
+    - opencode → `opencode run -m <model> "<prompt>"`
+    Unknown role → non-zero before spawning anything.
+14. `cmd_engine run --dry-run <role> "<prompt>"` prints the exact argv it would
+    execute, one token per line, and spawns nothing. This is the graded path —
+    the evaluator must be able to verify command construction without burning
+    tokens or requiring network.
+
+### D3 — parallel-run evidence (orchestrator)
+
+15. `.loops/phase5-parallel.md` records, from the actual run: the two worktree
+    paths, both builders' start order in a single dispatch, the `scope-check`
+    invocation and exit code for each worktree, and **the integration mechanism
+    actually used**, named positively and backed by pasted output.
+
+    *Amended, iteration 1.* This criterion originally said "the merge commands
+    used." It presumed a merge. No merge happened or could have: the builders
+    were instructed not to commit, so both worktree branches sat at zero commits
+    ahead of `origin/main` and the two files were untracked in their worktrees.
+    They were integrated with `cp`. The evaluator read the original wording
+    literally and failed the criterion for recording a copy instead of a merge —
+    which would have required either fabricating a merge record or performing a
+    merge purely to satisfy the sentence. Recording the mechanism that actually
+    ran is the point; the specific verb was an assumption baked into the
+    criterion, so the criterion is what changes. The amendment is disclosed here
+    rather than applied silently.
+16. `run.sh scope-check` was actually executed against both worktrees and its
+    output is pasted verbatim. A transcribed or reconstructed result fails this
+    criterion.
+17. At least one **negative** scope-check is demonstrated in the same file: an
+    intentionally out-of-allowlist path is shown being rejected with a non-zero
+    exit. A guard that has only ever returned 0 is not a tested guard.
+
+### D4 — integration (orchestrator, after merge)
+
+18. `run.sh models` and `run.sh engine` are reachable from the top-level `case`
+    in `run.sh`, and both appear in the bottom `usage:` string.
+19. `bash -n run.sh`, `bash -n lib/models.sh`, `bash -n lib/engine.sh` all pass.
+20. `.loops/verify.sh` is extended to cover criteria 5–14 and 18–19
+    mechanically, and exits non-zero if any fails.
+
+## Verify
+
+```
 bash .loops/verify.sh
 ```
+
+Mechanical criteria are graded by running that script, not by reading the code.
+Criteria 3, 9, and 12 additionally require evaluator judgement.
+
+## Constraints
+
+- No secret values in any repo file. `git grep` for the token value must return
+  zero hits before commit.
+- `.claude/CLAUDE.md` stays ≤131 lines and its `## Output style` block stays
+  byte-identical (anchor by heading-to-next-heading extraction, never by line
+  number or fixed count).
+- No backward-compatibility shims. This is new surface; build it once, correctly.
+- Nothing is pushed, deployed, or published.
+
+## Stop condition
+
+Evaluator returns PASS at ≥0.95 with every mechanical criterion verified by
+running the command, not by reading the code.
