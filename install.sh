@@ -121,6 +121,8 @@ MERGE_JQ='
   | .hooks.Stop        = ( (($e.hooks.Stop        // []) | map(select([.hooks[].command] | any(test("stop.sh"))          | not))) + $k.hooks.Stop )
   | .hooks.SessionStart = ( (($e.hooks.SessionStart // []) | map(select([.hooks[].command] | any(test("session-start-mem.sh")) | not))) + ($k.hooks.SessionStart // []) )
   | del(.hooks.UserPromptSubmit | select(. == null))
+  | .permissions = ($e.permissions // {})
+  | .permissions.allow = ( (($e.permissions.allow // []) + ($k.permissions.allow // [])) | unique )
 '
 # Drop the retired flow-goal UserPromptSubmit injector if it is the only UPS hook.
 DROP_FLOWGOAL='if (.hooks.UserPromptSubmit // []) | all(([.hooks[].command] | join(" ")) | test("flow-goal")) then del(.hooks.UserPromptSubmit) else . end'

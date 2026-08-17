@@ -52,6 +52,28 @@
       }
     ]
   },
+  "permissions": {
+    "allow": [
+      "Bash(loops status:*)",
+      "Bash(loops lint:*)",
+      "Bash(loops log:*)",
+      "Bash(loops score:*)",
+      "Bash(loops init:*)",
+      "Bash(loops reap:*)",
+      "Bash(loops multireport:*)",
+      "Bash(loops scope-check:*)",
+      "Bash(loops lesson:*)",
+      "Bash(loops models list:*)",
+      "Bash(loops models available:*)",
+      "Bash(loops mem show:*)",
+      "Bash(loops mem path:*)",
+      "Bash(loops mem fact:*)",
+      "Bash(loops mem note:*)",
+      "Bash(loops session show:*)",
+      "Bash(loops engine show:*)",
+      "Bash(loops worktree check:*)"
+    ]
+  },
   "env": {
     "CLAUDE_CODE_MAX_CONTEXT_TOKENS": "272000"
   }
