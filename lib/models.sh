@@ -64,7 +64,7 @@ cmd_models() {
         return 2
       fi
       local response curl_status
-      if response=$(curl -fsS "$ANTHROPIC_BASE_URL/v1/models" \
+      if response=$(curl -fsS --connect-timeout 3 --max-time 10 "$ANTHROPIC_BASE_URL/v1/models" \
         -H "x-api-key: $ANTHROPIC_AUTH_TOKEN"); then
         curl_status=0
       else
@@ -117,7 +117,7 @@ cmd_models() {
 
       if [ "$force" != '--force' ]; then
         local response curl_status found
-        if response=$(curl -fsS "$ANTHROPIC_BASE_URL/v1/models" \
+        if response=$(curl -fsS --connect-timeout 3 --max-time 10 "$ANTHROPIC_BASE_URL/v1/models" \
           -H "x-api-key: $ANTHROPIC_AUTH_TOKEN"); then
           curl_status=0
         else
