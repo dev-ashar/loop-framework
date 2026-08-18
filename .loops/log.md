@@ -275,3 +275,72 @@ Replaced the completed internal contract with the locked trace-emitter and lifec
 ## [2026-08-17 00:03] progress | trace emitter run start
 Updated progress to contract-locked/build-next; emitter implementation remains unstarted.
 ## [2026-08-17 15:07] Edit | /Users/devashar/Documents/DS/workspace/loops/README.md
+## [2026-08-17 15:32] build | added trace CLI, strict JSONL validation, contract hash checks, PASS authority, and run-loop lifecycle instructions
+## [2026-08-17 15:49] fix | rejected malformed calls, physical-line violations, inconsistent records, caller identity mismatches, and forged PASS; serialized start
+## [2026-08-17 15:50] fix | added physical JSONL validation and strengthened verifier probes
+## [2026-08-17 16:06] Write | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/distinguish-agent-context-from-worktree.md
+## [2026-08-17 16:06] Edit | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/MEMORY.md
+## [2026-08-17 16:08] Edit | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/distinguish-agent-context-from-worktree.md
+## [2026-08-17 16:31] fix | removed sourceable PASS authority, strengthened lock, active-run rejection, usage paths, and valid-sequence forged-PASS probe
+## [2026-08-17 16:55] fix | bounded trace verify | captured trace rejection status before unlock; added local trace-focused mode with four prompt checks and explicit external-probe skip; elapsed 26.12s
+## [2026-08-17 17:02] fix | bounded gateway probes | added curl connect timeout 3s and max time 10s; verifier prints external probe step; full verify elapsed 35.45s and returned VERIFY_OK
+## [2026-08-17] fix | sequential trace runs and consumer-derived UI PASS wording
+## [2026-08-18 13:49] Write | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/prefer-very-short-direct-answers.md
+## [2026-08-18 13:49] Edit | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/MEMORY.md
+## [2026-08-18 13:52] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 13:55] Write | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 13:56] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 13:57] Write | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 13:57] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 13:59] Write | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 14:01] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 14:01] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 14:04] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 14:06] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 14:45] Write | /Users/devashar/.claude/plans/harden-builder-contracts.md
+## [2026-08-18 14:59] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/agents/builder.md
+## [2026-08-18 15:01] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/agents/builder.md
+## [2026-08-18 15:03] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 15:03] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-18 15:03] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:05] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/log.md
+## [2026-08-18 15:10] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 15:10] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:10] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-18 15:10] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:10] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-18 15:14] Write | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 15:14] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:15] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:15] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:15] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:15] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:15] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:15] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:15] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:17] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:17] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 15:17] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 15:17] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:17] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:25] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:25] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:25] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:25] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:25] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:25] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:25] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:25] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:25] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 15:25] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 15:25] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 15:25] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 15:25] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 15:25] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 15:26] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 15:26] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 15:26] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 15:26] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 15:26] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+- Restored the verifier snapshot and added strict builder-report validation with 27 malformed fixtures.
+## [2026-08-18 15:33] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh

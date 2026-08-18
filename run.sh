@@ -434,6 +434,12 @@ case "$cmd" in
     shift
     cmd_models "$@"
     ;;
+  trace)
+    # shellcheck source=lib/trace.sh
+    . "$SCRIPT_DIR/lib/trace.sh"
+    shift
+    cmd_trace "$@"
+    ;;
   mem)
     # shellcheck source=lib/mem.sh
     . "$SCRIPT_DIR/lib/mem.sh"
@@ -751,7 +757,7 @@ case "$cmd" in
     esac
     ;;
   *)
-    echo "usage: $0 {[no args: interactive config] | init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check} | models {list|available|set} | session {show|set} | mem {show|note|fact|path|reap} | engine {show|set|run} | scope-check <wt> <base> <files> | worktree {check|provision|fix|reap}}"
+    echo "usage: $0 {[no args: interactive config] | init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check} | models {list|available|set} | trace {start|emit|end|validate} | session {show|set} | mem {show|note|fact|path|reap} | engine {show|set|run} | scope-check <wt> <base> <files> | worktree {check|provision|fix|reap}}"
     exit 1
     ;;
 esac

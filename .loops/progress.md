@@ -2,8 +2,8 @@
 
 ## Run: Phase 5 — engine + model configuration CLI, on two real parallel builders
 Contract: `.loops/contract.md` (20 criteria, locked 2026-08-05)
-Result: **PASS 1.00** at iteration 4. Evaluator: converged, no gap.
-Roster: two luna builders in parallel, terra graded every round, opus orchestrated.
+Result: trace protocol implementation in progress; evaluator grading remains pending.
+Scope: trace CLI, strict JSONL validation, contract hashing, PASS authority, and run-loop lifecycle instructions.
 
 This is the run Phase 4 was built for. The gates fired instead of merely existing.
 
@@ -89,3 +89,17 @@ Every loop run leaves the repo filthy: 13 tracked scratch files this round. Plan
 4. Contract template gains a mandatory teardown criterion.
 5. Migrate existing debris **last** — `verify.sh` currently asserts
    `.loops/pre-build-phase4/SHA256SUMS`, so moving files breaks the verifier first.
+
+## Trace verification hang repair — 2026-08-17
+- Bounded xtrace isolated the hang to forged PASS rejection under inherited `set -e`.
+- `lib/trace.sh` now captures rejection status before unlocking the trace lock.
+- `LOOPS_TRACE_VERIFY=1 bash .loops/verify.sh` skips external gateway/model probes with an explicit message.
+- Trace-focused checks pass: usage output, 24 concurrent emitters, second-start rejection, and no sourceable or CLI PASS.
+- Elapsed time: 26.12 seconds. Full `bash .loops/verify.sh` also returned `VERIFY_OK` within the 55-second bound.
+- Added `--connect-timeout 3 --max-time 10` to all live gateway model probes.
+- Full verifier prints `EXTERNAL_PROBE: live gateway model catalog` and returned `VERIFY_OK` in 35.45 seconds under a 60-second bound.
+
+## Trace durability fix — 2026-08-17
+- Trace validation now groups records by runId and checks per-run correlation, hash, iteration, and sequence values.
+- New runs restart sequence at 1 while preserving globally unique event IDs.
+- Active trace state rejects interleaved run history before appending events.

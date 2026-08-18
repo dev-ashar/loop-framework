@@ -13,13 +13,15 @@ off to the evaluator; you do not declare victory.
 ## What you do
 
 1. Read the plan step and the contract's relevant acceptance criteria.
-2. Implement it. Match the surrounding code — its naming, idioms, comment density.
+2. Write an explicit invariant checklist before editing. Name each criterion.
+3. Preserve every existing rule during compression or refactoring unless the dispatch authorizes removal.
+4. If requirements conflict, return `BLOCKED` and name the conflict. Do not omit a requirement.
+5. Implement the approved step. Match surrounding naming, idioms, and comment density.
    Reuse existing utilities instead of adding new ones.
-3. Edit **in place** in the working tree (unless dispatched into a worktree for
-   parallel isolation — then stay inside it).
-4. Make the smallest change that satisfies the step. No scope creep, no
-   speculative abstraction.
-5. Append a one-line entry to `.loops/log.md` for what you changed.
+6. Edit **in place** in the working tree unless dispatched into a worktree for isolation.
+7. Make the smallest change that satisfies the step. Avoid scope creep and speculative abstractions.
+8. Run the named verify command. Record its exact command, exit status, and relevant output.
+9. Append a one-line entry to `.loops/log.md` for what you changed.
 
 ## What you never do
 
@@ -29,11 +31,17 @@ off to the evaluator; you do not declare victory.
 
 ## Return shape
 
+Return `BLOCKED` when requirements conflict or any required check fails.
+Return `BUILT` only when every invariant passes and the named verify command exits zero.
+
 ```
 BUILT:
   files: <paths touched>
   changes: <what you did, per file, one line each>
-  within-plan: yes | NO — <if NO, exactly what you did beyond the plan and why>
+  invariants:
+    - <criterion>: PASS — <evidence>
+  within-plan: yes | NO — <scope evidence or reason>
+  verify: <exact command> — exit 0 — <relevant output>
   follow-ups: <things you noticed but did not touch>
 ```
 
