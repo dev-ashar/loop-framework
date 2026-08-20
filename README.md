@@ -24,7 +24,7 @@ Bare `loops` opens a picker over the roster and the engine:
 configure> ▊
   Select a role or engine
 > builder         gpt-5.6-luna-mantle
-  evaluator       gpt-5.6-sol-mantle
+  evaluator       gpt-5.6-terra-mantle
   explorer        haiku
   general-purpose gpt-5.6-terra-mantle
   planner         sonnet
@@ -53,9 +53,9 @@ driving you hand off. Climb only as high as the task needs:
 
 1. **Default (no command)** — the everyday posture. Do it in one pass, delegate the
    file-heavy work to an agent so your context stays clean, verify. You hand off *the check*.
-2. **`/run-loop "<goal>"`** — hand off *the repetition*: negotiate a contract, then
-   loop build→grade until it passes. Auto-triggers (with a heads-up) when a task
-   turns out non-trivial.
+2. **`/run-loop "<goal>"`** — hand off *the repetition*: negotiate and lock the
+   contract automatically, then loop build→grade until it passes. Invoke it once,
+   go to sleep, and let it run with zero mid-run human gates.
 3. **`/goal`** (native) — hand off *the stop condition* when one metric defines done.
 4. **`/loop`, `/schedule`** (native) — hand off *the trigger* for recurring work.
 
@@ -92,7 +92,7 @@ Two things the installer does not do for you:
 | *orchestrator* | `gpt-5.6-sol-mantle` (this session) | plan, judge, route, synthesize, decide — inline, never a subagent |
 | `planner` | `sonnet` | vague goal → contract + ordered plan; never writes code |
 | `builder` | `gpt-5.6-luna-mantle` | implements the plan; forbidden from grading itself |
-| `evaluator` | `gpt-5.6-sol-mantle` | adversarial — runs the thing, grades vs contract, 0–1 + gap |
+| `evaluator` | `gpt-5.6-terra-mantle` | adversarial — runs the thing, grades vs contract, 0–1 + gap |
 | `explorer` | `haiku` | read-only find/map/trace; no Bash |
 | `general-purpose` | `gpt-5.6-terra-mantle` | catch-all when no named role fits; all tools |
 
@@ -252,10 +252,12 @@ The whole point: you invoke it **once**, not per turn.
 ```
 
 1. It negotiates the contract — `builder` proposes testable criteria, `evaluator`
-   attacks them on disk until airtight. **You approve once.**
-2. Then it runs autonomously: `builder` implements → `evaluator` grades against the
-   contract → the gap is fed back → repeat, until PASS / max-iterations / the
-   contract proves wrong. State is written to `.loops/` every turn.
+   attacks them on disk until airtight. A fresh evaluator and successful dry-run
+   verify lock it automatically.
+2. Then it runs autonomously while you sleep: `builder` implements → `evaluator` grades against the
+   contract → the gap is fed back → repeat, until PASS or max-iterations. If evidence
+   disproves the contract, renegotiate and continue within the original goal. State is
+   written to `.loops/` every turn.
 3. For a purely measurable goal, hand the locked contract to native `/goal`; for
    recurring work, `/loop` or `/schedule`.
 4. Read `.loops/log.md` when judgment diverges. Let the loop restart if it goes sideways.

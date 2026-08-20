@@ -296,16 +296,19 @@ case "$cmd" in
           end_line=$((next_section - 1))
         fi
 
-        awk -v start="$criteria_start" -v end="$end_line" 'NR > start && NR <= end {
-          if (NF == 0) next;  # Skip blank lines
-          if (/^#{2,4} /) next;  # Heading
-          if (/^> /) next;  # Blockquote
-          if (/^- \[[ x]\] /) next;  # Checkbox item
-          if (/^[0-9]+\. /) next;  # Numbered criterion
-          if (/^  /) next;  # Continuation line (indented >=2 spaces)
-          print "lint: line " NR " in acceptance criteria is bare prose: " $0
-          exit 1
-        }' "$target" || errors=$((errors + 1))
+        awk -v start="$criteria_start" -v end="$end_line" '
+          NR > start && NR <= end {
+            if (NF == 0) next;  # Skip blank lines
+            if (/^#{2,4} /) next;  # Heading
+            if (/^> /) next;  # Blockquote
+            if (/^- \[[ x]\] /) next;  # Checkbox item
+            if (/^[0-9]+\. /) next;  # Numbered criterion
+            if (/^  /) next;  # Continuation line (indented >=2 spaces)
+            print "lint: line " NR " in acceptance criteria is bare prose: " $0
+            bad=1
+          }
+          END { if (bad) exit 1 }
+        ' "$target" || errors=$((errors + 1))
       fi
     fi
 

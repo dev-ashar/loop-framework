@@ -22,46 +22,58 @@ single change that moves runs from broken demos to working products.
   is met, within the boundary.
 - **evaluator attacks** the checklist — flags every criterion that is vague,
   untestable, rubber-stampable, or missing. It wants criteria it cannot fake.
-- **you** approve the converged contract, and are the tiebreaker *only* if the
-  boundary itself is wrong.
+- A fresh evaluator reviews the final contract before approval.
+- Only an explicit host-conversation response approves the exact final contract hash.
+  Local records are advisory and cannot prove approval.
+- Contract changes invalidate approval and require fresh host approval.
 
-The orchestrator (Opus) relays between agents via the file on disk and never writes
-the criteria itself.
+Each planner, builder, and evaluator returns a structured proposal or attack. The
+orchestrator integrates accepted content and writes authoritative contract state.
+Agents never write `.loops/contract.md` or other authoritative state.
 
 ## Protocol
 
 1. **Boundary.** Ensure `.loops/contract.md` exists (`loops init "<goal>"`).
-   Dispatch `planner` to fill Goal / Constraints / Non-goals from the goal +
-   codebase (via `explorer`). Run `loops lesson check "<goal keywords>"` first —
-   a hit tagged `external-data-source` means this ground was already burned once.
-   When the goal names an external API or data source, require a mandatory
-   acceptance criterion of the form "verify <external system>'s exact semantics
-   via a live read-only check before locking" — the direct fix for that repeated
-   mistake. This is the fixed frame.
+   Always dispatch `explorer` first and wait for completion. For production-data
+   incidents, require the explorer to run the cheapest decisive read-only direct
+   check when access exists before planning or expanding theory. For object-freshness
+   incidents, enumerate candidate relations and compare latest timestamps and state.
+   Reject plan-only returns when executable evidence was requested. Any retry must
+   change the method or route. Urgent work without a build uses the minimal
+   explorer-only investigation. Dispatch `planner` only when the boundary is unclear,
+   and record the written reason before that call.
+   The planner proposes Goal / Constraints / Non-goals from the goal, explorer
+   findings, and codebase. The orchestrator writes authoritative state. Run
+   `loops lesson check "<goal keywords>"` first — a hit tagged
+   `external-data-source` means this ground was already burned once. When the goal
+   names an external API or data source, require a mandatory acceptance criterion
+   of the form "verify <external system>'s exact semantics via a live read-only
+   check before locking". This is the fixed frame.
 
-2. **Propose.** Dispatch the `builder` agent: *"Propose the acceptance checklist
-   for this goal — the testable assertions that would prove it's done. Each must be
-   checkable by running something. Write them into `.loops/contract.md`."*
+2. **Propose.** For nontrivial work, dispatch the `builder` only after exploration.
+   Return a structured acceptance checklist. Each assertion must be testable.
+   The orchestrator integrates the proposal into `.loops/contract.md`.
 
-3. **Attack.** Dispatch the `evaluator` agent: *"You will later have to grade
-   against this checklist and you want it airtight. Attack it. For each criterion:
-   is it testable by running something? Could you rubber-stamp it? What's missing?
-   Write your objections to `.loops/contract.md` under an OBJECTIONS heading. Do NOT
-   soften anything."*
+3. **Attack.** Dispatch a newly created, fresh `evaluator` context.
+   Return a structured attack for every criterion. Check testability, omissions,
+   and false passes. The evaluator reviews the final contract before approval.
 
-4. **Iterate.** Relay the objections back to `builder` to revise. Repeat 2–3 until
-   the evaluator returns **no objections** — a checklist of concrete, runnable
-   assertions (aim well past ten; ten rubber-stamps). Keep the argument trail in
-   `.loops/contract.md` (or `.loops/contract-negotiation.md`) — it's a trace.
+4. **Iterate.** Dispatch a newly created, fresh evaluator context for every attack
+   round. Relay structured objections to the builder, then integrate returned
+   revisions and attacks through the orchestrator. Repeat 2–3 until the evaluator
+   returns **no objections**. Keep the argument trail in `.loops/contract.md` or
+   `.loops/contract-negotiation.md` as orchestrator-owned trace state.
 
 5. **Verify command.** The evaluator states the exact command(s) it will run to
    grade. It must emit observable results. Dry-run it once to confirm.
 
-6. **Lock.** Validate the contract structure by running `loops lint .loops/contract.md`.
-   Any lint failure is blocking — fix the contract first.
-   Show the converged contract. On your approval it becomes the boundary.
-   From here the loop runs; a human interrupts only if the *contract* is wrong —
-   never because the *build* is unfinished.
+6. **Lock.** Validate the contract with `run.sh lint .loops/contract.md`.
+   Any lint failure blocks approval. Compute the exact contract hash after evaluation.
+   Ask the host user to approve that exact final contract. Local observations are
+   advisory only. A changed hash requires fresh evaluation and host approval.
+   Lock only after explicit host approval. Repairs within the approved contract do
+   not require reapproval. If evidence disproves the contract, renegotiate and obtain
+   approval again within the original goal.
 
 ## Handoff
 

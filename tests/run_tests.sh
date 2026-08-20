@@ -2010,10 +2010,42 @@ GHSTUB
 # Phase 4 stubs (criteria 34–37)
 # ============================================================================
 
-test_criterion_34() { record_result 34 "FAIL" "not yet implemented (phase 4)"; }
-test_criterion_35() { record_result 35 "FAIL" "not yet implemented (phase 4)"; }
-test_criterion_36() { record_result 36 "FAIL" "not yet implemented (phase 4)"; }
-test_criterion_37() { record_result 37 "FAIL" "not yet implemented (phase 4)"; }
+test_criterion_34() {
+  local file="$LOOPS_ROOT/.claude/dispatch.md" fail=""
+  grep -q 'explorer completes before any builder' "$file" || fail="$fail explorer-order"
+  grep -q 'minimal route is explorer → builder' "$file" || fail="$fail minimal-route"
+  [ -z "$fail" ] && record_result 34 "pass" "dispatch enforces explorer-before-builder routing" || record_result 34 "FAIL" "$fail"
+}
+
+test_criterion_35() {
+  local file="$LOOPS_ROOT/.claude/dispatch.md" fail=""
+  grep -q 'boundary is unclear' "$file" || fail="$fail planner-boundary"
+  grep -q 'written reason' "$file" || fail="$fail planner-reason"
+  grep -q 'fresh evaluator' "$file" || fail="$fail evaluator-freshness"
+  [ -z "$fail" ] && record_result 35 "pass" "dispatch gates planner and fresh evaluator" || record_result 35 "FAIL" "$fail"
+}
+
+test_criterion_36() {
+  local file="$LOOPS_ROOT/.claude/skills/run-loop/SKILL.md" fail=""
+  grep -q 'tool-ceiling failure' "$file" || fail="$fail ceiling"
+  grep -q 'Never retry unchanged' "$file" || fail="$fail retry"
+  grep -q 'disjoint file' "$file" || fail="$fail fanout"
+  [ -z "$fail" ] && record_result 36 "pass" "run-loop handles reroute and fan-out rules" || record_result 36 "FAIL" "$fail"
+}
+
+test_criterion_37() {
+  local d fixture output rc count
+  d=$(fresh_tmp)
+  fixture="$d/contract.md"
+  printf '%s\n' '## Goal' 'goal' '## Constraints' 'constraint' '## Acceptance criteria' 'bad first line' 'bad second line' '## Verify' '```bash' 'true' '```' > "$fixture"
+  output=$("$LOOPS_RUN" lint "$fixture" 2>&1); rc=$?
+  count=$(printf '%s\n' "$output" | grep -c 'in acceptance criteria is bare prose:' || true)
+  if [ "$rc" -ne 0 ] && [ "$count" -eq 2 ] && printf '%s\n' "$output" | grep -q 'line 6' && printf '%s\n' "$output" | grep -q 'line 7'; then
+    record_result 37 "pass" "lint reports all malformed criteria with line numbers"
+  else
+    record_result 37 "FAIL" "rc=$rc count=$count output=$output"
+  fi
+}
 
 # ============================================================================
 # Main execution
