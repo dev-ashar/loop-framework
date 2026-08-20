@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd /Users/devashar/Documents/DS/workspace/loops
+root=$PWD
 test -f .loops/verify.sh || { echo "verify.sh missing — contract defect, not build fail" >&2; exit 1; }
 
 validate_builder_report() {
@@ -9,6 +10,7 @@ validate_builder_report() {
   python3 - "$report" <<'PY'
 import re
 import sys
+import json
 from pathlib import Path
 
 try:
@@ -18,6 +20,16 @@ except (OSError, UnicodeDecodeError):
 if not text or "\r" in text or not text.endswith("\n"):
     raise SystemExit(1)
 lines = text[:-1].split("\n")
+if lines and lines[0].startswith("LOOPS-ENVELOPE: "):
+    try: envelope = json.loads(lines.pop(0)[len("LOOPS-ENVELOPE: "):])
+    except Exception: raise SystemExit(1)
+    if list(envelope) != ["correlationId", "runId", "role", "taskFingerprint", "contractHash"]:
+        raise SystemExit(1)
+    if any(not isinstance(envelope[k], str) or not envelope[k] for k in ("correlationId", "runId", "role", "taskFingerprint")):
+        raise SystemExit(1)
+    if envelope["contractHash"] is not None and not isinstance(envelope["contractHash"], str): raise SystemExit(1)
+    if not re.fullmatch(r"[0-9a-f]{64}", envelope["taskFingerprint"]): raise SystemExit(1)
+    if envelope["contractHash"] is not None and not re.fullmatch(r"[0-9a-f]{64}", envelope["contractHash"]): raise SystemExit(1)
 if any(line == "" for line in lines):
     raise SystemExit(1)
 if lines[0] != "BUILT:":
@@ -70,6 +82,62 @@ if index + 3 != len(lines):
     raise SystemExit(1)
 PY
 }
+validate_agent_envelope() {
+  local report="${1:-}" correlation="" run="" role="" task="" contract="" mode=0
+  [ -f "$report" ] || return 1
+  shift
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --correlation) correlation="${2:-}"; shift 2;;
+      --run) run="${2:-}"; shift 2;;
+      --role) role="${2:-}"; shift 2;;
+      --task) task="${2:-}"; shift 2;;
+      --contract) [ "$mode" -eq 0 ] || return 1; mode=1; contract="${2:-}"; shift 2;;
+      --no-contract) [ "$mode" -eq 0 ] || return 1; mode=2; shift;;
+      *) return 1;;
+    esac
+  done
+  [ -n "$correlation" ] && [ -n "$run" ] && [ -n "$role" ] && [ -n "$task" ] && [ "$mode" -ne 0 ] || return 1
+  [[ "$task" =~ ^[0-9a-f]{64}$ ]] || return 1
+  if [ "$mode" -eq 1 ]; then [[ "$contract" =~ ^[0-9a-f]{64}$ ]] || return 1; else contract=null; fi
+  local reason digest status
+  set +e
+  reason=$(python3 - "$report" "$correlation" "$run" "$role" "$task" "$contract" <<'PYTHON'
+import json, sys
+from pathlib import Path
+p, ec, er, ero, et, eh = sys.argv[1:]
+try:
+    raw=Path(p).read_bytes(); text=raw.decode('utf-8'); lines=text.splitlines()
+    if not raw or b'\r' in raw or not text.endswith('\n') or len(lines)<2: raise ValueError('malformed-envelope')
+    if sum(x.startswith('LOOPS-ENVELOPE: ') for x in lines) != 1 or not lines[0].startswith('LOOPS-ENVELOPE: '): raise ValueError('malformed-envelope')
+    e=json.loads(lines[0][len('LOOPS-ENVELOPE: '):])
+    if list(e) != ['correlationId','runId','role','taskFingerprint','contractHash']: raise ValueError('malformed-envelope')
+    if any(not isinstance(e.get(k), str) or not e[k] for k in ['correlationId','runId','role','taskFingerprint']): raise ValueError('malformed-envelope')
+    if e['contractHash'] is not None and not isinstance(e['contractHash'], str): raise ValueError('malformed-envelope')
+    hashes=['taskFingerprint'] + ([] if e['contractHash'] is None else ['contractHash'])
+    if any(len(e[k]) != 64 or e[k] != e[k].lower() or any(c not in '0123456789abcdef' for c in e[k]) for k in hashes): raise ValueError('malformed-envelope')
+    for k,a,x in [('correlationId',e.get('correlationId'),ec),('runId',e.get('runId'),er),('role',e.get('role'),ero),('taskFingerprint',e.get('taskFingerprint'),et),('contractHash',e.get('contractHash'),None if eh=='null' else eh)]:
+        if a != x: raise ValueError('mismatch-'+k)
+    if lines[0] != 'LOOPS-ENVELOPE: '+json.dumps(e,separators=(',',':'),ensure_ascii=False): raise ValueError('malformed-envelope')
+except Exception as ex:
+    print(str(ex) or 'malformed-envelope'); raise SystemExit(1)
+PYTHON
+  )
+  status=$?
+  set -e
+  if [ "$status" -ne 0 ]; then
+    digest=$(shasum -a 256 "$report" 2>/dev/null | awk '{print $1}' || printf unavailable)
+    printf '## [%s] envelope-rejection | %s | report-sha256=%s\n' "$(date -u '+%Y-%m-%d %H:%M')" "${reason:-malformed-envelope}" "$digest" >> "$root/.loops/log.md"
+    return 1
+  fi
+}
+
+if [ "${1:-}" = agent-envelope ]; then
+  shift
+  validate_agent_envelope "${1:-}" "${@:2}"
+  exit $?
+fi
+
 if [ "${1:-}" = builder-report ]; then
   validate_builder_report "${2:-}"
   exit $?
@@ -191,7 +259,7 @@ for invalid in prefix leading-space trailing-space placeholder-files placeholder
 done
 
 # fable is still absent from the gateway, so nothing may route to it. sol is no
-# longer banned here — it is the session default and the evaluator tier.
+# longer banned here — it is the session default; terra is the evaluator tier.
 if grep -rq 'claude-fable-5' .claude/; then fail 'a config references claude-fable-5'; fi
 grep -q '### Parallel builders' .claude/skills/run-loop/SKILL.md || fail 'run-loop lost the parallel-builders section'
 # The Land step must write memory, not just say "capture a lesson" at nobody.
@@ -780,3 +848,32 @@ grep -q '^  | \.permissions\.allow = ' install.sh \
 mem_strip_probes "$mem_root"
 
 echo VERIFY_OK
+
+# --- unattended /run-loop contract regression checks -------------------------
+run_loop_skill=.claude/skills/run-loop/SKILL.md
+contract_skill=.claude/skills/contract/SKILL.md
+grep -Eiq 'host-user approval|explicit host approval|approval-required' "$run_loop_skill" "$contract_skill" || fail 'missing explicit host approval gate'
+grep -Eiq 'advisory|cannot prove approval|cannot.*proof' "$run_loop_skill" "$contract_skill" || fail 'local approval record is overstated'
+grep -Fq 'contract/awaiting-approval' "$run_loop_skill" || fail 'run-loop lost contract awaiting phase token'
+grep -Eiq 'only after explicit host approval|lock only after explicit host approval' "$run_loop_skill" "$contract_skill" || fail 'run-loop locks without host approval'
+grep -Eiq 'renegotiat.*(approval|fresh)|contract change.*approval|changed hash.*approval' "$run_loop_skill" "$contract_skill" || fail 'contract changes do not require reapproval'
+grep -Eiq 'repairs? inside.*approved contract|within.*approved contract.*reapproval' "$run_loop_skill" "$contract_skill" || fail 'repair loop approval rule missing'
+grep -Eiq 'contract disproof|evidence disproves|contract.*wrong' "$run_loop_skill" "$contract_skill" || fail 'contract disproof path missing'
+grep -Eiq 'max iterations' "$run_loop_skill" || fail 'run-loop lacks max-iteration stop reason'
+grep -Eiq 'credentials|access' "$run_loop_skill" || fail 'run-loop lacks access stop reason'
+grep -Eiq 'destructive|outward-facing' "$run_loop_skill" || fail 'run-loop lacks outward-action stop reason'
+grep -Eiq 'original goal' "$run_loop_skill" || fail 'run-loop lacks original-goal stop reason'
+grep -Eiq 'push.*deploy.*publish|push, deploy, publish' "$run_loop_skill" || fail 'run-loop lacks outward-action approval rule'
+grep -Eiq 'explicit approval' "$run_loop_skill" || fail 'run-loop lacks explicit approval requirement'
+grep -Eiq 'cheapest decisive.*read-only|read-only.*cheapest decisive' "$run_loop_skill" "$contract_skill" || fail 'missing decisive read-only evidence protocol'
+grep -Eiq 'object-freshness|candidate relations|latest timestamps and state' "$run_loop_skill" "$contract_skill" || fail 'missing object freshness evidence protocol'
+grep -Eiq 'plan-only.*evidence requested|reject.*plan-only' "$run_loop_skill" "$contract_skill" || fail 'missing plan-only evidence rejection'
+grep -Eiq 'retry.*method or route|method or route.*retry' "$run_loop_skill" "$contract_skill" || fail 'missing changed retry method requirement'
+grep -Eiq 'urgent.*explorer-only|explorer-only.*urgent' "$run_loop_skill" "$contract_skill" || fail 'missing urgent explorer-only protocol'
+if grep -Eiq 'run\\.sh dispatch|dispatch\\.state' "$run_loop_skill" "$contract_skill"; then fail 'fake dispatch API introduced'; fi
+grep -Eiq 'read-only.*data|data.*read-only' .claude/CLAUDE.md .claude/dispatch.md "$run_loop_skill" "$contract_skill" || fail 'missing read-only routing rule'
+grep -Eiq 'direct source checks' .claude/CLAUDE.md .claude/dispatch.md "$run_loop_skill" "$contract_skill" || fail 'missing direct source check rule'
+grep -Eiq 'moving bottleneck' .claude/CLAUDE.md .claude/dispatch.md "$run_loop_skill" "$contract_skill" || fail 'missing harness bottleneck rule'
+grep -Eiq 'one attempt' .claude/CLAUDE.md .claude/dispatch.md "$run_loop_skill" "$contract_skill" || fail 'missing one-attempt harness cap'
+grep -Eiq 'no source query' .claude/CLAUDE.md .claude/dispatch.md "$run_loop_skill" "$contract_skill" || fail 'missing source-query cycle guard'
+# The protocol checks above cover the repaired approval gate and route rules.

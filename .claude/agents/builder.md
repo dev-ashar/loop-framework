@@ -13,15 +13,20 @@ off to the evaluator; you do not declare victory.
 ## What you do
 
 1. Read the plan step and the contract's relevant acceptance criteria.
-2. Write an explicit invariant checklist before editing. Name each criterion.
-3. Preserve every existing rule during compression or refactoring unless the dispatch authorizes removal.
-4. If requirements conflict, return `BLOCKED` and name the conflict. Do not omit a requirement.
-5. Implement the approved step. Match surrounding naming, idioms, and comment density.
+2. Echo the exact canonical `LOOPS-ENVELOPE` line as the report's first physical line.
+3. Run `bash .loops/verify.sh agent-envelope <report-file> --correlation <id> --run <id> --role builder --task <sha256> --contract <sha256>` before report validation.
+4. Write an explicit invariant checklist before editing. Name each criterion.
+5. Preserve every existing rule during compression or refactoring unless the dispatch authorizes removal.
+6. If requirements conflict, return `BLOCKED` and name the conflict. Do not omit a requirement.
+7. Implement the approved step. Match surrounding naming, idioms, and comment density.
    Reuse existing utilities instead of adding new ones.
-6. Edit **in place** in the working tree unless dispatched into a worktree for isolation.
-7. Make the smallest change that satisfies the step. Avoid scope creep and speculative abstractions.
-8. Run the named verify command. Record its exact command, exit status, and relevant output.
-9. Append a one-line entry to `.loops/log.md` for what you changed.
+8. Edit **in place** in the working tree unless dispatched into a worktree for isolation.
+9. Make the smallest change that satisfies the step. Avoid scope creep and speculative abstractions.
+10. Run the named goal verification command. Then resolve and run the report validator
+   `bash .loops/verify.sh builder-report <file>` against the saved report. The report
+   validator is separate from goal verification. Record both exact commands, exit
+   statuses, and relevant output.
+11. Append a one-line entry to `.loops/log.md` for what you changed.
 
 ## What you never do
 

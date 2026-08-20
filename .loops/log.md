@@ -344,3 +344,330 @@ Updated progress to contract-locked/build-next; emitter implementation remains u
 ## [2026-08-18 15:26] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
 - Restored the verifier snapshot and added strict builder-report validation with 27 malformed fixtures.
 ## [2026-08-18 15:33] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 00:00] build | removed run-loop contract approval gate, added automatic lock and renegotiation rules, and extended regression checks
+## [2026-08-18 17:31] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-18 17:31] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-18 17:31] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/contract/SKILL.md
+## [2026-08-18 17:31] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/contract/SKILL.md
+## [2026-08-18 17:31] Edit | /Users/devashar/Documents/DS/workspace/loops/README.md
+## [2026-08-18 17:31] Edit | /Users/devashar/Documents/DS/workspace/loops/README.md
+## [2026-08-18 17:31] Write | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 17:32] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 17:32] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/log.md
+## [2026-08-18 17:32] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 17:32] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 17:40] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-18 17:40] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-18 17:40] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 17:42] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-18 17:42] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 17:42] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 17:44] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/contract/SKILL.md
+## [2026-08-18 17:46] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 17:47] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 17:53] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/contract/SKILL.md
+## [2026-08-18 17:53] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-18 17:53] Edit | /Users/devashar/Documents/DS/workspace/loops/README.md
+## [2026-08-18 17:53] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-18 17:53] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-19 10:12] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/agents/evaluator.md
+## [2026-08-19 10:12] Edit | /Users/devashar/Documents/DS/workspace/loops/README.md
+## [2026-08-19 10:12] Edit | /Users/devashar/Documents/DS/workspace/loops/README.md
+## [2026-08-19 10:12] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/dispatch.md
+## [2026-08-19 10:12] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-19 10:12] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-19 10:12] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-18 18:00] build | narrow evaluator routing
+- Changed evaluator routing to Terra, kept Sol orchestrator ownership, routed Bash/write fallback support to general-purpose, and preserved unattended verifier checks.
+## [2026-08-19 11:08] Write | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/prefer-minimal-agent-dispatch.md
+## [2026-08-19 11:08] Edit | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/MEMORY.md
+## [2026-08-19 11:10] Edit | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/prefer-minimal-agent-dispatch.md
+## [2026-08-19 11:10] Edit | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/prefer-minimal-agent-dispatch.md
+## [2026-08-19 11:10] Edit | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/MEMORY.md
+## [2026-08-19 11:11] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:13] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:15] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:15] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:15] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:19] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-08-19 11:19] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/dispatch.md
+## [2026-08-19 11:19] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/agents/planner.md
+## [2026-08-19 11:20] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/contract/SKILL.md
+## [2026-08-19 11:20] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 11:20] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 11:21] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/run_tests.sh
+## [2026-08-19 11:21] Write | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 11:21] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 11:23] Write | /tmp/F7D42698-builder-report.md
+## [2026-08-19 11:28] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/contract/SKILL.md
+## [2026-08-19 11:29] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/contract/SKILL.md
+## [2026-08-19 11:29] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/contract/SKILL.md
+## [2026-08-19 11:29] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/dispatch.md
+## [2026-08-19 11:29] Write | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 11:30] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 11:30] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/contract/SKILL.md
+## [2026-08-19 11:38] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:38] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:38] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:40] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/evidence/baseline-tests.txt
+## [2026-08-19 11:41] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:41] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:41] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:41] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:43] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:43] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:43] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/evidence/baseline-tests.txt
+## [2026-08-19 11:44] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/evidence/baseline-tests.txt
+## [2026-08-19 11:45] Edit | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/prefer-minimal-agent-dispatch.md
+## [2026-08-19 11:46] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/evidence/baseline-tests.txt
+## [2026-08-19 11:46] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:46] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:49] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 11:49] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/contract/SKILL.md
+## [2026-08-19 11:49] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 11:49] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-19 11:50] Edit | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/prefer-minimal-agent-dispatch.md
+## [2026-08-19 11:51] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 11:51] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 11:53] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/agents/builder.md
+## [2026-08-19 11:53] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/dispatch.md
+## [2026-08-19 11:53] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 11:53] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 11:53] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 11:58] Edit | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/prefer-minimal-agent-dispatch.md
+## [2026-08-19 11:58] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-19 11:58] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/dispatch.md
+## [2026-08-19 11:58] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 11:58] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:58] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 11:58] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 11:58] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-19 11:59] Write | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/require-user-contract-approval.md
+## [2026-08-19 11:59] Edit | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/MEMORY.md
+## [2026-08-19 12:00] Edit | /Users/devashar/.claude/projects/-Users-devashar-Documents-DS-workspace-loops/memory/require-user-contract-approval.md
+## [2026-08-19 14:09] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-19 14:09] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-19 14:09] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/dispatch.md
+## [2026-08-19 14:10] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/contract/SKILL.md
+## [2026-08-19 14:10] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/contract/SKILL.md
+## [2026-08-19 14:10] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/contract/SKILL.md
+## [2026-08-19 14:10] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 14:10] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 14:10] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 14:10] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 14:10] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 14:10] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 14:11] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-19 14:11] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-19 14:11] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-19 14:11] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 14:11] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/log.md
+## [2026-08-19 14:11] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-19 14:12] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 14:13] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 14:14] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 14:16] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/log.md
+## [2026-08-19 14:17] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/dispatch.md
+## [2026-08-19 14:17] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/dispatch.md
+## [2026-08-19 14:18] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 14:18] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 00:00] build | approval-gated routing protocol updated
+## [2026-08-19 14:19] Write | /tmp/approval-builder-report
+## [2026-08-19 14:19] Write | /tmp/approval-builder-report
+## [2026-08-19 14:19] Write | /tmp/approval-builder-report
+## [2026-08-19 14:27] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/contract/SKILL.md
+## [2026-08-19 14:27] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 14:27] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 14:28] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/contract/SKILL.md
+## [2026-08-19 00:00] build | repaired trace evidence and baseline preservation checks
+## [2026-08-19 14:35] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 14:35] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 14:35] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 14:37] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 14:37] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-19 14:38] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 14:40] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 00:00] build | added reroute evidence and failure preservation guards
+## [2026-08-19 14:47] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-19 14:47] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-19 14:47] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-19 14:47] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-19 14:47] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-19 14:48] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 14:48] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 19:10] envelope-rejection | mismatch-correlationId | report-sha256=2a001a837ba91cc9aa2368412228e5fcc41ff2a7c3d050542cb8a1c691c87432
+## [2026-08-19 19:10] envelope-rejection | mismatch-contractHash | report-sha256=2a001a837ba91cc9aa2368412228e5fcc41ff2a7c3d050542cb8a1c691c87432
+## [2026-08-19 15:10] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/agents/evaluator.md
+## [2026-08-19 00:00] build | cross-session envelope validation
+Implemented canonical envelope checks, binding mismatch order, quarantine digests, and enveloped builder reports.
+## [2026-08-19 15:40] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 15:41] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 15:43] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 15:44] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 15:44] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 15:47] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 15:47] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 15:47] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 15:48] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 15:48] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 15:50] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 15:50] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 19:51] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:51] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:51] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 19:51] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:52] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:52] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:52] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 19:52] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:52] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:52] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:52] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 19:52] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 15:52] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 19:53] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:53] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:53] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 19:53] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 15:53] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/agents/evaluator.md
+## [2026-08-19 15:54] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/agents/evaluator.md
+## [2026-08-19 15:54] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 19:54] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:54] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:54] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 19:54] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:55] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:55] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:55] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 19:55] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 15:55] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 19:56] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:56] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:56] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 19:56] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 15:56] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 19:57] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:57] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:57] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 19:57] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 15:57] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 19:58] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:58] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:58] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 19:58] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:58] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:58] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 19:58] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 19:58] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 12:00] build | repaired contract negotiation supersession and envelope evidence fixtures
+## [2026-08-19 20:02] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:02] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:02] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 20:02] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:02] envelope-rejection | Expecting property name enclosed in double quotes: line 1 column 2 (char 1) | report-sha256=0f3a1949df53c93be31384c080f87d38f52b9983d01f3e6ff568601b88ca70c6
+## [2026-08-19 20:03] envelope-rejection | mismatch-correlationId | report-sha256=a843be9eb226ddc3bb598f548d32f619244fabea6c4fb4875dbf3feab1b391fb
+## [2026-08-19 20:03] envelope-rejection | mismatch-runId | report-sha256=a843be9eb226ddc3bb598f548d32f619244fabea6c4fb4875dbf3feab1b391fb
+## [2026-08-19 20:03] envelope-rejection | mismatch-role | report-sha256=a843be9eb226ddc3bb598f548d32f619244fabea6c4fb4875dbf3feab1b391fb
+## [2026-08-19 20:03] envelope-rejection | mismatch-taskFingerprint | report-sha256=a843be9eb226ddc3bb598f548d32f619244fabea6c4fb4875dbf3feab1b391fb
+## [2026-08-19 20:03] envelope-rejection | mismatch-contractHash | report-sha256=a843be9eb226ddc3bb598f548d32f619244fabea6c4fb4875dbf3feab1b391fb
+## [2026-08-19 20:03] envelope-rejection | malformed-envelope | report-sha256=3b70aa095d378c3d102f078ccbd856009e4e50e8689989279939ce9f4a31ea25
+## [2026-08-19 16:04] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/agents/evaluator.md
+## [2026-08-19 16:04] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 16:04] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/agents/explorer.md
+## [2026-08-19 16:04] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/agents/evaluator.md
+## [2026-08-19 16:04] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 16:05] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 20:06] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:06] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:06] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 20:06] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:09] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:09] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:09] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 20:09] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 16:13] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 16:14] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 20:15] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:15] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:15] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 20:15] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 12:30] build | reused supersession checker across positive and negative fixtures
+## [2026-08-19 20:18] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:18] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:18] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 20:18] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:18] envelope-rejection | mismatch-correlationId | report-sha256=85fb84e4c9fbb19f2db8c34ee121395b7f00c60fc6a0581075f090985b0797aa
+## [2026-08-19 16:19] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 16:20] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 16:20] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 20:20] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:20] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:20] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 20:20] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 12:45] build | closed continuation protocol and evaluator supersession integrity gaps
+## [2026-08-19 20:24] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:24] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:24] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 20:24] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 16:44] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 16:44] Write | /tmp/A3FF3F1F-builder-report.txt
+## [2026-08-19 16:44] Write | /tmp/A3FF3F1F-builder-report.txt
+- Contract amendment: added explorer and evaluator approved paths with required protocol statement; lint passed; hash f7ce7f20f00564f6eba07b2f75fafbf93a3b4d1f01a9e7400f56e6620a72274f.
+## [2026-08-19 16:47] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-19 20:48] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:48] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:48] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 20:48] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:50] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:50] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 20:50] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-19 20:50] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+- Contract digest synchronization: updated tests/contract-negotiation.sh to f7ce7f20f00564f6eba07b2f75fafbf93a3b4d1f01a9e7400f56e6620a72274f; negotiation passed; legacy suite remains 35/37 with criterion 21 failure.
+## [2026-08-20 14:51] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 14:51] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 14:51] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-20 14:51] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 10:52] Write | /tmp/A3FF3F1F-builder-report.txt
+## [2026-08-19 00:00] build | contract digest verification
+Confirmed requested digest already present in tests/contract-negotiation.sh; ran required checks.
+## [2026-08-20 14:55] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 14:55] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 14:55] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-20 14:55] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 10:59] Write | /tmp/modify.py
+## [2026-08-20 15:03] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 15:03] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 15:03] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-20 15:03] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 15:04] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 15:04] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 15:04] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-20 15:04] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-19 00:00] build | dynamic baseline path validation
+Validated every preexisting patch path, protected bytes, log prefix, shared supersessions, and missing-path rejection.
+## [2026-08-20 11:05] Write | /tmp/A3FF3F1F-builder-report.txt
+## [2026-08-20 15:07] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 15:07] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 15:07] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-20 15:07] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 11:15] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-19 00:00] build | corrected contract preservation clause
+Updated protected-file byte identity and evaluator supersession rules.
+## [2026-08-20 11:15] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-20 11:15] Write | /tmp/A3FF3F1F-builder-report
+## [2026-08-20 15:16] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 15:16] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 15:16] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-20 15:16] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 15:20] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 15:20] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 15:20] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-20 15:20] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 15:49] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 15:49] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 15:49] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-20 15:49] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 16:42] envelope-rejection | mismatch-role | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 16:42] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 16:42] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
+## [2026-08-20 16:42] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74

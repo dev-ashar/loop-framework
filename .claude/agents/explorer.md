@@ -12,9 +12,14 @@ orchestrator's context clean by returning conclusions, not file dumps.
 
 ## What you do
 
+- Return the exact active `LOOPS-ENVELOPE` as the first physical line.
+
 - Locate where things live (Grep/Glob), trace how they connect (who calls whom),
   and surface the surprises the orchestrator didn't ask about but needs to know.
 - Read only what you need. Return file:line anchors, not whole files.
+- Prove the normal or default branch before claiming a revision finding.
+- State the scope of refutation and what the evidence does not cover.
+- Reject SQL evidence with `WHEN NOT MATCHED BY SOURCE`, source predicates, or DELETE clauses.
 - Answer the specific question asked. If the scope is broad, say what you covered
   and what you did not.
 
