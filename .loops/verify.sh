@@ -156,6 +156,20 @@ IFS='|' IFS='|' read -r repo wt < <(make_fixture_repo in-scope-committed); print
 IFS='|' read -r repo wt < <(make_fixture_repo out-scope-committed); printf bad > "$wt/bad.txt"; git -C "$wt" add bad.txt; git -C "$wt" -c user.name=verify -c user.email=verify@example.test commit -q -m bad; set +e; output=$(bash run.sh scope-check "$wt" main ok.txt); status=$?; set -e; [ "$status" -ne 0 ]; printf '%s\n' "$output" | grep -qx bad.txt
 IFS='|' read -r repo wt < <(make_fixture_repo out-scope-uncommitted); printf bad > "$wt/bad.txt"; set +e; output=$(bash run.sh scope-check "$wt" main ok.txt); status=$?; set -e; [ "$status" -ne 0 ]; printf '%s\n' "$output" | grep -qx bad.txt
 IFS='|' read -r repo wt < <(make_fixture_repo out-scope-untracked); printf new > "$wt/new.txt"; set +e; output=$(bash run.sh scope-check "$wt" main ok.txt); status=$?; set -e; [ "$status" -ne 0 ]; printf '%s\n' "$output" | grep -qx new.txt
+# Every Git path state must report the offending destination path exactly.
+for state in staged modified deleted renamed copied; do
+  IFS='|' read -r repo wt < <(make_fixture_repo "out-scope-$state")
+  printf old > "$repo/d.txt"; git -C "$repo" add d.txt; git -C "$repo" -c user.name=verify -c user.email=verify@example.test commit -q -m d; git -C "$wt" reset --hard main >/dev/null
+  case "$state" in
+    staged) printf bad > "$wt/bad.txt"; git -C "$wt" add bad.txt ;;
+    modified) printf bad > "$wt/bad.txt"; git -C "$wt" add bad.txt; git -C "$wt" -c user.name=verify -c user.email=verify@example.test commit -q -m bad; printf changed > "$wt/bad.txt" ;;
+    deleted) rm "$wt/d.txt" ;;
+    renamed) git -C "$wt" mv d.txt bad.txt ;;
+    copied) cp "$wt/d.txt" "$wt/bad.txt"; git -C "$wt" add bad.txt ;;
+  esac
+  set +e; output=$(bash run.sh scope-check "$wt" main ok.txt); status=$?; set -e
+  expected=$([ "$state" = deleted ] && printf d.txt || printf bad.txt); [ "$state" = renamed ] && expected=$'bad.txt\nd.txt'; [ "$status" -ne 0 ] && [ "$(printf '%s\n' "$output")" = "$expected" ]
+done
 
 fail() { printf 'FAIL: %s\n' "$1" >&2; exit 1; }
 

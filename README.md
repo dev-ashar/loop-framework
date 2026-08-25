@@ -13,10 +13,31 @@ Claude Code *Getting Started with Loops* guide, and the LOOPKIT layout.
 
 ## Quickstart
 
+Prerequisites: Git, Bash, jq, Python 3, and Claude Code with an available configured model.
+
 ```bash
-./install.sh          # wires ~/.claude and puts `loops` on your PATH
-loops                 # interactive config
+git clone <repository>
+cd loops
+bash install.sh
 ```
+
+Then speak naturally in Claude Code, or invoke `/run-loop "make the ingestion pipeline idempotent"`.
+The orchestrator negotiates approval, creates jobs internally, validates them, executes them, evaluates them, and integrates them.
+Users do not need the internal `loops job` interface.
+
+Use `bash install.sh --dry-run` to preview actions without changing files.
+Reinstall to repair links after moving the clone. Keep the clone in place because installed links target it.
+The installer backs up managed paths under `~/.claude/backups/` and preserves unrelated settings, plugins, hooks, marketplaces, permissions, and lesson bytes.
+Restore managed paths by copying a backup into `~/.claude`, then reinstall if needed.
+
+```bash
+bash install.sh --dry-run
+bash install.sh
+```
+
+The approval pause occurs before builders start. State lives in `.loops/`; backups live in `~/.claude/backups/`.
+If a link is missing, reinstall from the clone. If a model is unavailable, configure an available model and retry.
+If a hook fails, inspect the hook output and restore the latest backup before reinstalling.
 
 Bare `loops` opens a picker over the roster and the engine:
 
@@ -121,7 +142,7 @@ loops score record <iter> <score> <verdict>
 loops score stall                      # exit 2 = score flat/regressing → restart
 loops reap                             # report a stale .running marker (>48h)
 loops multireport <repo-path>...       # loop state across several repos
-loops lesson record|check <text>       # global cross-repo lesson store
+run.sh lesson record|check <text>       # global cross-repo lesson store
 loops models list|available|set <role> <model>
 loops mem show [limit]                 # repo facts + this branch's journal
 loops mem fact "<text>"                # record a repo truth (any branch)

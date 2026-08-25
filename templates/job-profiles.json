@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "capabilities": ["read-source","write-source","run-tests","git-read","git-worktree","memory-read","memory-write"],
+  "profiles": {
+    "builder-default": {"role":"builder","capabilities":["read-source","write-source","run-tests","git-read","git-worktree"],"tiers":["sonnet","opus"],"models":{"sonnet":"claude-sonnet-5","opus":"claude-opus-5"},"escalation":{"sonnet":"opus"},"maxAttempts":2}
+  },
+  "lenses": {"correctness":"Correctness and acceptance evidence", "scope":"Exact scope and repository hygiene", "security":"Fail-closed and authorization boundaries", "integration":"Lifecycle and integration evidence"},
+  "outputSchemas": {
+    "exploration-report":"exploration-report", "contract-proposal":"contract-proposal", "builder-report":"builder-report", "evaluator-report":"evaluator-report"
+  }
+}
