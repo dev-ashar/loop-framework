@@ -43,7 +43,8 @@ PLAN:
   1. [explorer] <find/map task>
   2. [builder]  <edit task — files, intent>
   ...
-OPEN: <questions only a human can resolve — empty if none>
+OPEN: <trimmed-question>
+OPEN: unresolved blocks dispatch. OPEN: with no question permits approval checks.
 ```
 
 ## How to write

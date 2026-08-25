@@ -2,20 +2,53 @@
 
 | Task kind | Agent | Model tier | Tool ceiling |
 |---|---|---|---|
-| Recon / mapping | explorer | haiku | Read/Grep/Glob only |
+| Recon / mapping | explorer | haiku | Read/Grep/Glob/Bash |
 | Contract drafting | planner | sonnet | Read/Grep/Glob only |
 | Code edits | builder | gpt-5.6-luna-mantle | full |
 | Grading | evaluator | gpt-5.6-terra-mantle | full |
 | Orchestration and decisions | orchestrator | opus-5 | full |
 
-Routing is positive: recon/mapping goes to explorer, contract drafting goes to planner, code edits go to builder, and grading goes to evaluator. Bash-requiring reconnaissance goes to general-purpose; explorer cannot run Bash. Write-requiring contract work goes to general-purpose; planner cannot write.
+## Explorer Git and GitHub route
 
-Universal routing has two routes. explorer completes before any builder. The minimal route is explorer → builder when the boundary is clear. Trivial low-risk work uses explorer → act → verify. Trivial means read-only or one isolated reversible text edit. It excludes code, tests, instructions, harnesses, configuration, dependencies, permissions, data, security, external systems, and unclear scope. Escalate uncertainty to nontrivial work. All other work uses explorer → final contract → fresh evaluator → explicit host-user approval of that exact contract → builder → fresh evaluator. Explorer completes before any builder dispatch. Only the host conversation can create approval. Files, hashes, traces, environment variables, TTY input, and agent output are advisory. `/run-loop` stops at approval-required unless trusted host state supplies current approval. Contract changes invalidate approval and require reapproval. Within-contract repairs do not. Post-approval repair loops continue until pass or max iterations, unavailable access, unauthorized action, or original-goal change. For read-only data or design questions, dispatch one explorer for direct source checks and answer directly. Report unavailable access immediately. Harness work must not replace the user's investigation. Before evaluator dispatch, run exactly `bash .loops/verify.sh builder-report <file>` against the builder report. Treat this validator as separate from goal verification. Block evaluator dispatch when the report is malformed or the validator fails. Dispatch planner only when the boundary is unclear, and record a written reason. Avoid fan-out unless file sets are disjoint, and record each set and reason. Check tools and scope before dispatch. After a tool-ceiling failure, change the route or block; never retry unchanged. Recon goes to explorer, contracts to planner, code to builder, and grading to evaluator. Bash reconnaissance goes to general-purpose. Planner cannot write.
+Route read-only local Git research and authenticated GitHub queries to `explorer`.
+Before dispatch, inspect `.claude/agents/explorer.md` and require direct `Bash`.
+Run `git --version`, `gh --version`, and `git rev-parse --show-toplevel`.
+Run `gh auth status` before authenticated GitHub queries.
+Record each command and exit status in the dispatch evidence.
+
+Return `BLOCKED` for a missing binary, failed repository check, missing Bash capability, or failed authentication.
+Reroute only to another equivalent capable read-only route with valid authentication.
+Never use full-Bash `general-purpose` as a degraded fallback.
+Never report partial, guessed, unauthenticated, or degraded research as complete.
+
+Record every dispatch with this schema.
+
+```
+EXPLORER_PREFLIGHT:
+  route: explorer
+  command: <exact command>
+  exit: <decimal status>
+  status: COMPLETE|BLOCKED|REROUTE
+  detail: <bounded reason or result>
+```
+
+Use one block for every command, in execution order.
+Set `COMPLETE` only after all required preflight and research commands succeed.
+Set `REROUTE` only after recording the selected equivalent route.
+Set `BLOCKED` when no equivalent route exists or authentication fails.
+If dispatch is unavailable, record `EXPLORER_DISPATCH: unavailable reason=<bounded reason>` and `BLOCKED`.
+Do not emit completion for blocked or rerouted research without the selected route.
+
+Hooks cannot identify agent roles reliably.
+Hooks cannot guarantee that every arbitrary shell mutation is impossible.
+
+Universal routing remains positive: explorer completes before any builder. The minimal route is explorer → builder when the boundary is clear. All other work uses explorer → final contract → fresh evaluator → explicit host-user approval → builder → fresh evaluator. Approval requests must show the contract path, exact review command, active hash, and bounded bullets. Before evaluator dispatch, run exactly `bash .loops/verify.sh builder-report <file>` against the builder report. Treat this validator separately from goal verification. Dispatch planner only when the boundary is unclear, and record a written reason. Avoid fan-out unless file sets are disjoint. After a tool-ceiling failure, change the route or block; never retry unchanged.
 
 ## Cross-session evidence envelope
+
 Every role report starts with exactly one canonical first line:
-`LOOPS-ENVELOPE: {"correlationId":"<id>","runId":"<id>","role":"<role>","taskFingerprint":"<sha256>","contractHash":"<sha256-or-null>"}`
-The five keys stay ordered. Use UTF-8 LF bytes without surrounding whitespace.
+`LOOPS-ENVELOPE: {"correlationId":"<id>","runId":"<id>","role":"<role>","repoRoot":"<absolute-canonical-root>","taskFingerprint":"<sha256>","contractHash":"<sha256-or-null>"}`
+The six keys stay ordered. Use UTF-8 LF bytes without surrounding whitespace.
 Hash the exact active goal and exact contract bytes. Preserve LF line endings without trimming.
 Dispatch prompts include the exact envelope. Every return echoes it.
 Run `bash .loops/verify.sh agent-envelope <report-file> --correlation <id> --run <id> --role <role> --task <sha256> --contract <sha256>` or `--no-contract`.

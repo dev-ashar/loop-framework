@@ -22,7 +22,7 @@ Direct builder dispatches must state exact acceptance criteria. Name the verify 
 Treat builder reports as evidence only. Require a fresh evaluator for harness, instruction, ambiguous, or correctness-critical edits.
 Use the smallest level that fits. Start with one turn and verify.
 Use `/run-loop` for nontrivial, ambiguous, correctness-critical, or long-running work.
-`/run-loop "goal"` authorizes unattended negotiation, lock, build, grade, restart, and finish with zero mid-run gates. Stop only for max iterations, unavailable access, unauthorized destructive or outward-facing actions, or original-goal changes. Require approval for push, deploy, publish, destructive, and goal changes unless originally authorized.
+`/run-loop "goal"` authorizes unattended negotiation, build, grade, and restart only after explicit host approval of the exact contract. Stop before builder dispatch when approval is missing or stale. Stop for max iterations, unavailable access, unauthorized destructive or outward-facing actions, or original-goal changes. Require approval for push, deploy, publish, destructive, and goal changes unless originally authorized.
 Use `/goal` for one metric.
 Use `/loop` or `/schedule` for recurring triggers.
 ## State and memory
