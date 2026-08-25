@@ -671,3 +671,216 @@ Updated protected-file byte identity and evaluator supersession rules.
 ## [2026-08-20 16:42] envelope-rejection | mismatch-correlationId | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
 ## [2026-08-20 16:42] envelope-rejection | mismatch-contractHash | report-sha256=d9673a3ef5c65d9d2d7a45f25b76bd0913beb87208929527523c1e6544f7a27b
 ## [2026-08-20 16:42] envelope-rejection | mismatch-contractHash | report-sha256=791bcffca1c4ba19edf873ff43cefeeaea8b9a2102f4d33db09495feb7a41f74
+## [2026-08-20 14:25] Edit | /Users/devashar/.local/bin/herdr-open
+## [2026-08-20 16:00] Builder | /Users/devashar/.local/bin/herdr-open | Fixed nested Herdr workspace ID extraction and deterministic cwd deduplication.
+## [2026-08-24 17:02] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:00] Contract | mechanically bound verification gates
+## [2026-08-24 17:06] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:01] Contract | revised evaluator gates
+## [2026-08-24 20:58] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:02] Contract | host-hook approval boundary
+## [2026-08-24 21:05] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:03] Contract | protocol approval gate
+## [2026-08-24 21:08] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:08] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:08] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:08] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:04] Contract | post-build acceptance boundary
+## [2026-08-24 21:11] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:11] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:11] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:11] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:05] Contract | final evaluator gaps
+## [2026-08-25 01:13] envelope-rejection | malformed-envelope | report-sha256=1584609c696cce043577842ebf0016c7a3146e90bfd93029a2b2942eef75e822
+## [2026-08-24 21:14] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:14] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:14] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:14] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:06] Contract | pre-build versus post-build checks
+## [2026-08-24 21:14] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:14] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:07] Contract | authoritative live baseline
+## [2026-08-24 21:22] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:22] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:22] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:22] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:08] Contract | readable approval presentation
+## [2026-08-24 21:24] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:24] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:24] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 21:24] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:09] Contract | bounded approval summary
+
+## [2026-08-25 01:29] build | bound approval verifier and negotiation gates
+## [2026-08-24 21:30] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-24 21:30] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-25 01:30] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:30] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 01:30] envelope-rejection | malformed-envelope | report-sha256=7ba8b06c571a905ad7be984bf73e4a015dd862f916c02f811a1bea191282e8bf
+## [2026-08-24 21:30] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-25 01:30] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:31] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 01:31] envelope-rejection | malformed-envelope | report-sha256=7ba8b06c571a905ad7be984bf73e4a015dd862f916c02f811a1bea191282e8bf
+## [2026-08-24 21:31] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-25 01:31] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:31] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 01:31] envelope-rejection | malformed-envelope | report-sha256=7ba8b06c571a905ad7be984bf73e4a015dd862f916c02f811a1bea191282e8bf
+## [2026-08-24 21:31] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-25 01:31] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:31] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 01:31] envelope-rejection | malformed-envelope | report-sha256=7ba8b06c571a905ad7be984bf73e4a015dd862f916c02f811a1bea191282e8bf
+## [2026-08-25 01:32] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:32] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 01:32] envelope-rejection | malformed-envelope | report-sha256=7ba8b06c571a905ad7be984bf73e4a015dd862f916c02f811a1bea191282e8bf
+## [2026-08-24 21:34] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-24 21:34] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/CLAUDE.md
+## [2026-08-24 21:34] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-25 01:34] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:34] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 01:34] envelope-rejection | malformed-envelope | report-sha256=7ba8b06c571a905ad7be984bf73e4a015dd862f916c02f811a1bea191282e8bf
+## [2026-08-25 01:35] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:35] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 01:35] envelope-rejection | malformed-envelope | report-sha256=7ba8b06c571a905ad7be984bf73e4a015dd862f916c02f811a1bea191282e8bf
+## [2026-08-25 01:37] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:37] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 01:37] envelope-rejection | malformed-envelope | report-sha256=7ba8b06c571a905ad7be984bf73e4a015dd862f916c02f811a1bea191282e8bf
+## [2026-08-25 01:38] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:38] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 01:38] envelope-rejection | mismatch-contractHash | report-sha256=7817f6a17f866de0d856d001553a1dee56a32a7ada023ffbe6d4e39201e1cbb0
+## [2026-08-25 01:38] envelope-rejection | malformed-envelope | report-sha256=45cbacc26304087282eaa617614ec7e038436d997a0e2d9df0e401a91ae0f209
+## [2026-08-24 21:39] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-25 01:39] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:39] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 01:39] envelope-rejection | malformed-envelope | report-sha256=7ba8b06c571a905ad7be984bf73e4a015dd862f916c02f811a1bea191282e8bf
+## [2026-08-24 21:39] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-25 01:39] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:39] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 01:39] envelope-rejection | malformed-envelope | report-sha256=7ba8b06c571a905ad7be984bf73e4a015dd862f916c02f811a1bea191282e8bf
+## [2026-08-25 01:41] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:41] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 01:41] envelope-rejection | malformed-envelope | report-sha256=7ba8b06c571a905ad7be984bf73e4a015dd862f916c02f811a1bea191282e8bf
+## [2026-08-25 01:42] envelope-rejection | wrong-repository | report-sha256=6276473e32106fdba646552e77ccb29dd261e55b365489f5a383482c55659624
+## [2026-08-25 01:42] envelope-rejection | mismatch-contractHash | report-sha256=0b34d75c0602b03e5269519d076b3aca2b764abda46f051aa7e5e0ca769acca5
+## [2026-08-25 01:42] envelope-rejection | mismatch-correlationId | report-sha256=36aecfc1bde7a5febd2c3f8cdd07184cbfe7cdbbbbe766b5c3faa92aaeb7face
+## [2026-08-25 01:42] envelope-rejection | mismatch-runId | report-sha256=977d4cee97c95f981c7d423dc8e08d764aae5cd5858e7cebe4f807daeac9aa61
+## [2026-08-25 01:42] envelope-rejection | mismatch-role | report-sha256=f1514ffa0e7f80ed2305c823d62272190cc734095fa09fd52e0c33b5b14013df
+## [2026-08-25 01:42] envelope-rejection | mismatch-taskFingerprint | report-sha256=e6c8d27746fe9f42cf4d7be7377ea1ec9dbffd8387e857504aa4f6d8ffe2cc40
+## [2026-08-24 21:43] Write | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:43] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:45] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:45] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-25 01:45] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:45] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 01:46] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:46] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-24 21:48] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:49] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:49] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:49] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:49] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:49] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:49] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:49] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:49] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:49] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:51] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-25 01:51] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:51] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 01:52] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:52] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-24 21:54] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:54] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:55] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:55] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:55] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:55] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:56] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:56] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:56] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-24 21:57] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/contract-negotiation.sh
+## [2026-08-25 01:57] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:57] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 01:59] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 01:59] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 02:00] envelope-rejection | wrong-repository | report-sha256=bad7be88c6411716c14e72c2de8ffa199c8a27c5f2d6c34c9b4229de087e88d0
+## [2026-08-25 02:00] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-24 22:10] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 02:11] envelope-rejection | malformed-envelope | report-sha256=e290e6e243fc208b8b7503e6d3e4d36aeb298b97ae7b10a2c1d824d35213b561
+## [2026-08-25 02:11] envelope-rejection | malformed-envelope | report-sha256=e290e6e243fc208b8b7503e6d3e4d36aeb298b97ae7b10a2c1d824d35213b561
+## [2026-08-24 22:11] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 02:11] envelope-rejection | malformed-envelope | report-sha256=807343254ee6a83724c4cde6255cb6e68015080960acbe9d39d5ad6f21deedcb
+## [2026-08-24 22:11] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 02:11] envelope-rejection | malformed-envelope | report-sha256=e9d458d1ed117e499b984d526d243b33b804c980151640356e0f6296ae7dad1f
+
+## [2026-08-24 00:00] build | explorer Git and gh contract
+Wrote contract-only review boundary with explorer Bash policy, auth preflight, hook limits, dispatch reroute rules, baseline, and post-build commands.
+## [2026-08-25 02:12] envelope-rejection | wrong-repository | report-sha256=7e5fa2a91e0e2c9a0daba652e428209b10227219430cbd73c42c305e7840a682
+## [2026-08-25 02:12] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-24 22:14] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:14] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:14] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:14] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:14] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:01] revise | explorer Git and gh contract
+Added repository hook binding, authoritative route table, explorer result schema, exact hook fixtures, approval validation, dispatch evidence, and frozen baseline requirements.
+## [2026-08-25 02:14] envelope-rejection | wrong-repository | report-sha256=7c1818c3e74c3685c12b4bf65ad1fcdc7c52f9ae27129595b08e21270f0ed9ef
+## [2026-08-25 02:14] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-24 22:16] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:16] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:16] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:16] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:02] revise | explorer contract approval and baseline
+Specified exact approval generation and validation, unique criteria numbering, executable diff manifest comparison, post-build targets, and host approval pending state.
+## [2026-08-24 22:17] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:17] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:18] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:18] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:03] revise | explorer contract approval and log baseline
+Derived approval root and hash values, validated the exact approval command, excluded log from byte freeze, and required append-only log checks.
+## [2026-08-25 02:18] envelope-rejection | wrong-repository | report-sha256=c37ed224385ae11ecef126ae5b5e6d3a5e627c10a9a8412082e638476de3c316
+## [2026-08-25 02:18] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-24 22:20] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:20] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:04] revise | explorer contract task delta
+Defined task-attributable delta against the frozen manifest, overlap handling, frozen hash preservation, and append-only log rules.
+## [2026-08-25 02:21] envelope-rejection | wrong-repository | report-sha256=0c34b7c1ebaf75cbc7f38e8b7ccbd2770201341ba835642ecb927ccdf0119980
+## [2026-08-25 02:21] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-24 22:21] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:21] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:22] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:22] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:22] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:05] revise | explorer contract pending approval
+Changed pre-approval output to pending host review, deferred approval-request validation, and corrected task delta overlap attribution.
+## [2026-08-25 02:22] envelope-rejection | wrong-repository | report-sha256=e4ea9e87250b1a10db9692d94dda7fca98d70f9a1a16b59a7e91caa6332827b5
+## [2026-08-25 02:22] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-24 22:23] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:23] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:23] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:23] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:23] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-24 22:23] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+## [2026-08-24 00:06] revise | explorer contract scope attribution
+Removed raw final diff scope requirements and retained task-attributable delta, frozen hash, and whitespace-only checks.
+## [2026-08-25 02:24] envelope-rejection | wrong-repository | report-sha256=c0ecbba5c7dae90d760ff6b4ece173ceded492d728eabc3a53bfceaccd408e96
+## [2026-08-25 02:24] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-24 23:10] build | completed explorer Git and gh read-only research route
+## [2026-08-25 13:20] envelope-rejection | wrong-repository | report-sha256=c0ecbba5c7dae90d760ff6b4ece173ceded492d728eabc3a53bfceaccd408e96
+## [2026-08-25 13:20] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 09:23] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/hooks/pre-tool-use.sh

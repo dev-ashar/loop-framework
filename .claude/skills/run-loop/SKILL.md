@@ -20,6 +20,12 @@ The orchestrator dispatches agents and writes authoritative state. It does not r
 
 The final contract needs fresh evaluator review and explicit host-user approval.
 The orchestrator must present the exact contract hash and wait for the host response.
+Approval requests must include:
+- Contract summary: 1-5 bullets, each at most 20 words.
+- Contract path: .loops/contract.md.
+- Review command: git diff -- .loops/contract.md.
+- Contract SHA-256: the exact active hash.
+The summary must cover the goal, behavior changes, and verification boundary. A hash-only response cannot approve. The exact approval record binds repoRoot, contractHash, runId, correlationId, and role=builder. Non-empty planner OPEN blocks dispatch before this gate. Local records never prove approval.
 An orchestrator-provided approval observation may record that response, but it is advisory.
 A noninteractive invocation stops at `approval-required` without trusted current approval.
 Contract changes invalidate approval. Repairs inside the approved contract do not.
@@ -33,7 +39,7 @@ Stop on max iterations, unavailable access, unauthorized destructive or outward-
 - Run `loops trace start --task "<goal>"`; the orchestrator owns every lifecycle event.
 - Keep the returned `correlationId` in every `Agent` description.
 - Compute the exact goal SHA-256 and contract SHA-256, preserving LF bytes and no trimming.
-- Put the canonical five-key `LOOPS-ENVELOPE` line first in every dispatch and return.
+- Put the canonical six-key `LOOPS-ENVELOPE` line first in every dispatch and return.
 - Validate `agent-envelope` before report parsing, dispatch, state, follow-up, citation, approval, or completion.
 - Quarantine rejected temporary reports with only their reason and digest in `.loops/log.md`.
 

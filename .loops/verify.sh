@@ -1,136 +1,127 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd /Users/devashar/Documents/DS/workspace/loops
-root=$PWD
+root=$(git rev-parse --show-toplevel)
+contract_hash=$(sha256sum "$root/.loops/contract.md" | awk '{print $1}')
 test -f .loops/verify.sh || { echo "verify.sh missing — contract defect, not build fail" >&2; exit 1; }
 
 validate_builder_report() {
   local report="${1:-}"
   [ -n "$report" ] && [ -f "$report" ] || return 1
-  python3 - "$report" <<'PY'
-import re
-import sys
-import json
+  python3 - "$report" <<'PYTHON'
+import re, sys, json
 from pathlib import Path
-
 try:
-    text = Path(sys.argv[1]).read_bytes().decode("utf-8")
-except (OSError, UnicodeDecodeError):
-    raise SystemExit(1)
-if not text or "\r" in text or not text.endswith("\n"):
-    raise SystemExit(1)
-lines = text[:-1].split("\n")
+    text=Path(sys.argv[1]).read_bytes().decode("utf-8")
+except (OSError, UnicodeDecodeError): raise SystemExit(1)
+if not text or "\r" in text or not text.endswith("\n"): raise SystemExit(1)
+lines=text[:-1].split("\n")
 if lines and lines[0].startswith("LOOPS-ENVELOPE: "):
-    try: envelope = json.loads(lines.pop(0)[len("LOOPS-ENVELOPE: "):])
+    try: envelope=json.loads(lines.pop(0)[len("LOOPS-ENVELOPE: "):])
     except Exception: raise SystemExit(1)
-    if list(envelope) != ["correlationId", "runId", "role", "taskFingerprint", "contractHash"]:
-        raise SystemExit(1)
-    if any(not isinstance(envelope[k], str) or not envelope[k] for k in ("correlationId", "runId", "role", "taskFingerprint")):
-        raise SystemExit(1)
-    if envelope["contractHash"] is not None and not isinstance(envelope["contractHash"], str): raise SystemExit(1)
-    if not re.fullmatch(r"[0-9a-f]{64}", envelope["taskFingerprint"]): raise SystemExit(1)
-    if envelope["contractHash"] is not None and not re.fullmatch(r"[0-9a-f]{64}", envelope["contractHash"]): raise SystemExit(1)
-if any(line == "" for line in lines):
-    raise SystemExit(1)
-if lines[0] != "BUILT:":
-    raise SystemExit(1)
-if lines.count("BUILT:") != 1:
-    raise SystemExit(1)
-if len(lines) < 8:
-    raise SystemExit(1)
-
-files = re.fullmatch(r"  files: (\S(?:.*\S)?)", lines[1])
-changes = re.fullmatch(r"  changes: (\S(?:.*\S)?)", lines[2])
-if not files or not changes:
-    raise SystemExit(1)
-if any(token in files.group(1) or token in changes.group(1)
-       for token in ("<files>", "<changes>", "<path>", "<description>")):
-    raise SystemExit(1)
-if lines[3] != "  invariants:":
-    raise SystemExit(1)
-
-index = 4
-criteria = set()
+    if list(envelope) != ["correlationId","runId","role","repoRoot","taskFingerprint","contractHash"]: raise SystemExit(1)
+    if any(not isinstance(envelope[k], str) or not envelope[k] for k in ("correlationId","runId","role","repoRoot","taskFingerprint","contractHash")): raise SystemExit(1)
+    if not re.fullmatch(r"[0-9a-f]{64}", envelope["taskFingerprint"]) or not re.fullmatch(r"[0-9a-f]{64}", envelope["contractHash"]): raise SystemExit(1)
+if any(line == "" for line in lines): raise SystemExit(1)
+if not lines or lines[0] != "BUILT:" or lines.count("BUILT:") != 1 or len(lines) < 8: raise SystemExit(1)
+if not re.fullmatch(r"  files: (\S(?:.*\S)?)", lines[1]) or not re.fullmatch(r"  changes: (\S(?:.*\S)?)", lines[2]) or lines[3] != "  invariants:": raise SystemExit(1)
+if any(token in lines[1] or token in lines[2] for token in ("<files>","<changes>","<path>","<description>")): raise SystemExit(1)
+index=4; criteria=set()
 while index < len(lines) and lines[index].startswith("    - "):
-    item = re.fullmatch(r"    - (\S(?:.*\S)?): PASS — (\S(?:.*\S)?)", lines[index])
-    if not item:
-        raise SystemExit(1)
-    criterion, evidence = item.groups()
-    if criterion in criteria or criterion.startswith("<") or evidence.startswith("<"):
-        raise SystemExit(1)
-    criteria.add(criterion)
-    index += 1
-if not criteria or index >= len(lines):
-    raise SystemExit(1)
-
-scope = re.fullmatch(r"  within-plan: yes — (\S(?:.*\S)?)", lines[index])
-if not scope or scope.group(1).startswith("<"):
-    raise SystemExit(1)
-if index + 1 >= len(lines):
-    raise SystemExit(1)
-verify = re.fullmatch(r"  verify: (\S(?:.*\S)?) — exit 0 — (\S(?:.*\S)?)", lines[index + 1])
-if not verify:
-    raise SystemExit(1)
-command, output = verify.groups()
-if command.startswith("<") or output.startswith("<") or not re.search(r"[A-Za-z0-9]", command):
-    raise SystemExit(1)
-if index + 2 >= len(lines):
-    raise SystemExit(1)
-if not re.fullmatch(r"  follow-ups: (\S(?:.*\S)?)", lines[index + 2]):
-    raise SystemExit(1)
-if index + 3 != len(lines):
-    raise SystemExit(1)
-PY
+    item=re.fullmatch(r"    - (\S(?:.*\S)?): PASS — (\S(?:.*\S)?)", lines[index])
+    if not item or item.group(1) in criteria or item.group(1).startswith("<") or item.group(2).startswith("<"): raise SystemExit(1)
+    criteria.add(item.group(1)); index += 1
+if not criteria or index+3 != len(lines): raise SystemExit(1)
+scope=re.fullmatch(r"  within-plan: yes — (\S(?:.*\S)?)", lines[index])
+if not scope or scope.group(1).startswith("<"): raise SystemExit(1)
+verify=re.fullmatch(r"  verify: (\S(?:.*\S)?) — exit 0 — (\S(?:.*\S)?)", lines[index+1])
+if not verify or verify.group(1).startswith("<") or verify.group(2).startswith("<") or not re.search(r"[A-Za-z0-9]", verify.group(1)): raise SystemExit(1)
+if not re.fullmatch(r"  follow-ups: (\S(?:.*\S)?)", lines[index+2]): raise SystemExit(1)
+PYTHON
 }
+
 validate_agent_envelope() {
-  local report="${1:-}" correlation="" run="" role="" task="" contract="" mode=0
-  [ -f "$report" ] || return 1
-  shift
+  local report="${1:-}" correlation="" run="" role="" task="" contract=""
+  [ -f "$report" ] || return 1; shift
   while [ "$#" -gt 0 ]; do
     case "$1" in
-      --correlation) correlation="${2:-}"; shift 2;;
-      --run) run="${2:-}"; shift 2;;
-      --role) role="${2:-}"; shift 2;;
-      --task) task="${2:-}"; shift 2;;
-      --contract) [ "$mode" -eq 0 ] || return 1; mode=1; contract="${2:-}"; shift 2;;
-      --no-contract) [ "$mode" -eq 0 ] || return 1; mode=2; shift;;
-      *) return 1;;
+      --correlation) correlation="${2:-}"; shift 2;; --run) run="${2:-}"; shift 2;;
+      --role) role="${2:-}"; shift 2;; --task) task="${2:-}"; shift 2;;
+      --contract) contract="${2:-}"; shift 2;; --no-contract) return 1;; *) return 1;;
     esac
   done
-  [ -n "$correlation" ] && [ -n "$run" ] && [ -n "$role" ] && [ -n "$task" ] && [ "$mode" -ne 0 ] || return 1
-  [[ "$task" =~ ^[0-9a-f]{64}$ ]] || return 1
-  if [ "$mode" -eq 1 ]; then [[ "$contract" =~ ^[0-9a-f]{64}$ ]] || return 1; else contract=null; fi
+  [ -n "$correlation" ] && [ -n "$run" ] && [ -n "$role" ] && [ -n "$task" ] && [ -n "$contract" ] || return 1
+  [[ "$task" =~ ^[0-9a-f]{64}$ && "$contract" = "$contract_hash" ]] || return 1
   local reason digest status
   set +e
-  reason=$(python3 - "$report" "$correlation" "$run" "$role" "$task" "$contract" <<'PYTHON'
-import json, sys
+  reason=$(python3 - "$report" "$correlation" "$run" "$role" "$task" "$contract" "$root" "$contract_hash" <<'PYTHON'
+import json,sys,re
 from pathlib import Path
-p, ec, er, ero, et, eh = sys.argv[1:]
+p,ec,er,ero,et,eh,root,active=sys.argv[1:]
 try:
-    raw=Path(p).read_bytes(); text=raw.decode('utf-8'); lines=text.splitlines()
-    if not raw or b'\r' in raw or not text.endswith('\n') or len(lines)<2: raise ValueError('malformed-envelope')
-    if sum(x.startswith('LOOPS-ENVELOPE: ') for x in lines) != 1 or not lines[0].startswith('LOOPS-ENVELOPE: '): raise ValueError('malformed-envelope')
-    e=json.loads(lines[0][len('LOOPS-ENVELOPE: '):])
-    if list(e) != ['correlationId','runId','role','taskFingerprint','contractHash']: raise ValueError('malformed-envelope')
-    if any(not isinstance(e.get(k), str) or not e[k] for k in ['correlationId','runId','role','taskFingerprint']): raise ValueError('malformed-envelope')
-    if e['contractHash'] is not None and not isinstance(e['contractHash'], str): raise ValueError('malformed-envelope')
-    hashes=['taskFingerprint'] + ([] if e['contractHash'] is None else ['contractHash'])
-    if any(len(e[k]) != 64 or e[k] != e[k].lower() or any(c not in '0123456789abcdef' for c in e[k]) for k in hashes): raise ValueError('malformed-envelope')
-    for k,a,x in [('correlationId',e.get('correlationId'),ec),('runId',e.get('runId'),er),('role',e.get('role'),ero),('taskFingerprint',e.get('taskFingerprint'),et),('contractHash',e.get('contractHash'),None if eh=='null' else eh)]:
-        if a != x: raise ValueError('mismatch-'+k)
-    if lines[0] != 'LOOPS-ENVELOPE: '+json.dumps(e,separators=(',',':'),ensure_ascii=False): raise ValueError('malformed-envelope')
-except Exception as ex:
-    print(str(ex) or 'malformed-envelope'); raise SystemExit(1)
+ raw=Path(p).read_bytes(); text=raw.decode('utf-8'); lines=text.splitlines()
+ if not raw or b'\r' in raw or not text.endswith('\n') or len(lines)<2: raise ValueError('malformed-envelope')
+ if sum(x.startswith('LOOPS-ENVELOPE: ') for x in lines)!=1 or not lines[0].startswith('LOOPS-ENVELOPE: '): raise ValueError('malformed-envelope')
+ e=json.loads(lines[0][len('LOOPS-ENVELOPE: '):])
+ if list(e)!=['correlationId','runId','role','repoRoot','taskFingerprint','contractHash']: raise ValueError('malformed-envelope')
+ for k in ['correlationId','runId','role','repoRoot','taskFingerprint','contractHash']:
+  if not isinstance(e.get(k),str) or not e[k]: raise ValueError('malformed-envelope')
+ if not re.fullmatch(r'[0-9a-f]{64}',e['taskFingerprint']) or not re.fullmatch(r'[0-9a-f]{64}',e['contractHash']): raise ValueError('malformed-envelope')
+ for k,a,x in [('correlationId',e['correlationId'],ec),('runId',e['runId'],er),('role',e['role'],ero),('repoRoot',e['repoRoot'],root),('taskFingerprint',e['taskFingerprint'],et),('contractHash',e['contractHash'],eh),('contractHash',e['contractHash'],active)]:
+  if a!=x: raise ValueError('wrong-repository' if k=='repoRoot' else 'mismatch-'+k)
+ if lines[0] != 'LOOPS-ENVELOPE: '+json.dumps(e,separators=(',',':'),ensure_ascii=False): raise ValueError('malformed-envelope')
+except Exception as ex: print(str(ex)); raise SystemExit(1)
 PYTHON
-  )
-  status=$?
-  set -e
+  ); status=$?; set -e
   if [ "$status" -ne 0 ]; then
-    digest=$(shasum -a 256 "$report" 2>/dev/null | awk '{print $1}' || printf unavailable)
+    digest=$(shasum -a 256 "$report" | awk '{print $1}')
     printf '## [%s] envelope-rejection | %s | report-sha256=%s\n' "$(date -u '+%Y-%m-%d %H:%M')" "${reason:-malformed-envelope}" "$digest" >> "$root/.loops/log.md"
     return 1
   fi
 }
+
+validate_approval_request() {
+  local request="${1:-}" run="" correlation="" role="" planner_open=""
+  [ -f "$request" ] || return 1; shift
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --run) run="${2:-}"; shift 2;; --correlation) correlation="${2:-}"; shift 2;;
+      --role) role="${2:-}"; shift 2;; --open) planner_open="${2:-}"; shift 2;; *) return 1;;
+    esac
+  done
+  [ -n "$run" ] && [ -n "$correlation" ] && [ "$role" = builder ] || return 1
+  python3 - "$request" "$run" "$correlation" "$role" "$root" "$contract_hash" "$planner_open" <<'PYTHON'
+import hashlib,re,sys
+from pathlib import Path
+p,run,corr,role,root,active,open_arg=sys.argv[1:]
+text=Path(p).read_text()
+lines=text.splitlines()
+if open_arg.strip() and open_arg.strip() != 'OPEN:': raise SystemExit('open-question')
+if any(x.startswith('OPEN:') and x.strip() != 'OPEN:' for x in lines): raise SystemExit('open-question')
+if 'Contract summary:' not in lines: raise SystemExit('missing-summary')
+start=lines.index('Contract summary:')+1; bullets=[]
+while start < len(lines) and lines[start].startswith('- '): bullets.append(lines[start][2:]); start+=1
+if not 1 <= len(bullets) <= 5: raise SystemExit('summary-bullet-count')
+if any(len(x.split()) > 20 for x in bullets): raise SystemExit('summary-bullet-length')
+joined=' '.join(x.lower() for x in bullets)
+for token in ('goal','behavior','verification'):
+ if token not in joined: raise SystemExit('summary-missing-'+token)
+need={'Contract path: .loops/contract.md','Review command: git diff -- .loops/contract.md'}
+if not need.issubset(lines): raise SystemExit('presentation-field')
+sha=[x for x in lines if x.startswith('Contract SHA-256: ')]
+if sha != ['Contract SHA-256: '+active]: raise SystemExit('stale-contract-hash')
+approval=[x for x in lines if x.startswith('APPROVAL: ')]
+if len(approval)!=1: raise SystemExit('missing-approval')
+expected=f'APPROVAL: host-confirmed repoRoot={root} contractHash={active} runId={run} correlationId={corr} role={role}'
+if approval[0] != expected: raise SystemExit('approval-mismatch')
+print('APPROVAL_REQUEST_OK')
+PYTHON
+}
+
+if [ "${1:-}" = approval-request ]; then
+  shift
+  validate_approval_request "${1:-}" "${@:2}"
+  exit $?
+fi
 
 if [ "${1:-}" = agent-envelope ]; then
   shift
