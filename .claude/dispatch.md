@@ -21,6 +21,10 @@ Reroute only to another equivalent capable read-only route with valid authentica
 Never use full-Bash `general-purpose` as a degraded fallback.
 Never report partial, guessed, unauthenticated, or degraded research as complete.
 
+## Internal job adapter
+
+The adapter accepts one run-owned canonical context file. It resolves profile, tier, and model from `templates/job-profiles.json`, observes approval before builder creation, and validates envelope and builder report before verification, scope, evaluator, accounting, and integration gates. The context keys are `jobId role profile modelTier modelId dependsOn writeScope verify lenses runId dispatchId contractHash baseSha repositoryRoot worktreePath`. The adapter rejects unavailable models, failed gateway authentication, missing approval, stale hashes, invalid DAGs, malformed context, and adapter failures before process creation. Escalation follows profile bounds. Integration stops on conflict.
+
 Record every dispatch with this schema.
 
 ```

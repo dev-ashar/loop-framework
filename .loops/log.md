@@ -884,3 +884,307 @@ Removed raw final diff scope requirements and retained task-attributable delta, 
 ## [2026-08-25 13:20] envelope-rejection | wrong-repository | report-sha256=c0ecbba5c7dae90d760ff6b4ece173ceded492d728eabc3a53bfceaccd408e96
 ## [2026-08-25 13:20] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
 ## [2026-08-25 09:23] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/hooks/pre-tool-use.sh
+2026-08-25 contract negotiation: planner required because the goal spans DAG semantics, routing, parallel execution, merge policy, learning, and approval UX with unclear boundaries.
+## [2026-08-25 09:49] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 09:56] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+
+[2026-08-25T13:57:38Z] job-framework baseline command="bash tests/run_tests.sh" base=43cbc0c546d5e919d4047186546c625d0b55d525 exit=1 outputSha256=eaec73dca663792a2dc0e610a24fe43e1797c98080e1d7eea7346550876a99c6 result="35/37 passed" failures="14,21"
+baseline-output: [pass] criterion 1: all 37 test functions defined and invoked in order
+baseline-output: [pass] criterion 2: feature_list.json has empty metric.history array
+baseline-output: [pass] criterion 3: score record appends all four keys correctly
+baseline-output: [pass] criterion 4: stall correctly detects non-increasing scores
+baseline-output: [pass] criterion 5: step 2 contains score record/stall with no negation
+baseline-output: [pass] criterion 6: reap reports AWAITING with PASS verdict, read-only
+baseline-output: [pass] criterion 7: reap reports STALE with BLOCK verdict, read-only
+baseline-output: [pass] criterion 8: reap is read-only in all three modes
+baseline-output: [pass] criterion 9: lint validates all five contract structure checks
+baseline-output: [pass] criterion 10: lint accepts the real contract file
+baseline-output: [pass] criterion 11: Lock step contains run.sh lint with no negation
+baseline-output: [pass] criterion 12: log appends well-formed line
+baseline-output: [pass] criterion 13: lint validates all four log format fixtures
+baseline-output: [FAIL] criterion 14:  pre-tool-use.sh hash mismatch expected 3 hooks got 5
+baseline-output: [pass] criterion 15: multireport correct values, warning on B only, read-only
+baseline-output: [pass] criterion 16: lessons.jsonl created idempotently; seeded line survives a second install
+baseline-output: [pass] criterion 17: lesson record appends exactly one line, all fields round-trip
+baseline-output: [pass] criterion 18: threshold observable: 1-token overlap exits 1, 2-token overlap exits 0
+baseline-output: [pass] criterion 19: seeded C1 lessons: real query matches, unrelated and hard-negative queries stay quiet
+baseline-output: [pass] criterion 20: evaluator.md instructs recording a lesson on external-data-source, no negation
+baseline-output: [FAIL] criterion 21:  lesson-check-missing
+baseline-output: [pass] criterion 22: planner.md consults the lesson store, no negation
+baseline-output: [pass] criterion 23: adversarial framing survives (body-scoped, first 15 lines, sabotage-proven)
+baseline-output: [pass] criterion 24: worktree skill exists with correct structure
+baseline-output: ok
+baseline-output: On branch main
+baseline-output: Untracked files:
+baseline-output:   (use "git add <file>..." to include in what will be committed)
+baseline-output: 	.env
+baseline-output:
+baseline-output: nothing added to commit but untracked files present (use "git add" to track)
+baseline-output: [pass] criterion 25: worktree check emits correct hazard tokens
+baseline-output: [pass] criterion 26: provision fails-closed on hazards, succeeds when clean
+baseline-output: [pass] criterion 27: provision --force creates worktree and prints hazards
+baseline-output: [pass] criterion 28: fix remediates HARDCODED_HOOK_PATH correctly
+baseline-output: [pass] criterion 29: fix remediates HOOKS_PATH_ABSOLUTE
+baseline-output: [pass] criterion 30: secrets never staged or committed
+baseline-output: [pass] criterion 31: provision --pr creates commit, PR with correct body, logs URL
+baseline-output: [pass] criterion 32: reap reports orphans, prunes only with --prune
+baseline-output: [pass] criterion 33: no remediation against real repos (skipped: infrastructure)
+baseline-output: [pass] criterion 34: dispatch enforces explorer-before-builder routing
+baseline-output: [pass] criterion 35: dispatch gates planner and fresh evaluator
+baseline-output: [pass] criterion 36: run-loop handles reroute and fan-out rules
+baseline-output: [pass] criterion 37: lint reports all malformed criteria with line numbers
+baseline-output: [pass] criterion 38: no blanket staging: explicit paths only
+baseline-output: 35/37 passed
+## [2026-08-25 09:58] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 09:59] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 09:59] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 09:59] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 09:59] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 10:01] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 10:01] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 10:01] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 10:01] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 10:01] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 10:01] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 10:02] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 10:02] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 10:03] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 10:03] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 10:03] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 10:05] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 10:09] Write | /Users/devashar/Documents/DS/workspace/loops/templates/job-dag.schema.json
+## [2026-08-25 10:09] Write | /Users/devashar/Documents/DS/workspace/loops/templates/job-profiles.json
+## [2026-08-25 10:09] Write | /Users/devashar/Documents/DS/workspace/loops/tests/job-framework.sh
+## [2026-08-25 10:09] Write | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 10:09] Write | /Users/devashar/Documents/DS/workspace/loops/tests/job-framework-guards.tsv
+## [2026-08-25 10:09] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-08-25 10:10] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-08-25 10:10] Write | /Users/devashar/Documents/DS/workspace/loops/tests/job-framework.sh
+## [2026-08-25 10:10] Write | /Users/devashar/Documents/DS/workspace/loops/tests/job-framework-guards.tsv
+## [2026-08-25 10:10] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 10:11] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 14:11] envelope-rejection | wrong-repository | report-sha256=a0f9a74fbccf64766af1df1c8d25dfaf61c6c91aba2dfc33e6a67158ca709ec6
+## [2026-08-25 14:11] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 10:11] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 10:11] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 10:11] Write | /Users/devashar/Documents/DS/workspace/loops/tests/job-framework.sh
+## [2026-08-25 10:12] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-framework.sh
+## [2026-08-25 10:12] Write | /Users/devashar/Documents/DS/workspace/loops/tests/job-framework-guards.tsv
+## [2026-08-25 14:13] envelope-rejection | wrong-repository | report-sha256=a0f9a74fbccf64766af1df1c8d25dfaf61c6c91aba2dfc33e6a67158ca709ec6
+## [2026-08-25 14:13] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 10:15] Build | job framework initial implementation
+## [2026-08-25 14:15] envelope-rejection | wrong-repository | report-sha256=a0f9a74fbccf64766af1df1c8d25dfaf61c6c91aba2dfc33e6a67158ca709ec6
+## [2026-08-25 14:15] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 10:15] Edit | /Users/devashar/.claude/settings.json
+## [2026-08-25 14:18] envelope-rejection | wrong-repository | report-sha256=a0f9a74fbccf64766af1df1c8d25dfaf61c6c91aba2dfc33e6a67158ca709ec6
+## [2026-08-25 14:18] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 10:20] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/explorer-git-gh.sh
+## [2026-08-25 14:21] envelope-rejection | wrong-repository | report-sha256=a0f9a74fbccf64766af1df1c8d25dfaf61c6c91aba2dfc33e6a67158ca709ec6
+## [2026-08-25 14:21] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 10:20] Build | iteration 2 explorer guard and whitespace
+## [2026-08-25 10:23] Write | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 10:23] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-08-25 10:23] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-08-25 10:24] build | iteration 3 runtime partial; framework checks pass; complete contract remains blocked
+## [2026-08-25 10:25] Write | /Users/devashar/Documents/DS/workspace/loops/lib/job-executor.sh
+## [2026-08-25 10:25] Write | /Users/devashar/Documents/DS/workspace/loops/lib/job-integration.sh
+## [2026-08-25 10:25] Write | /Users/devashar/Documents/DS/workspace/loops/tests/job-executor.sh
+## [2026-08-25 10:25] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-integration.sh
+## [2026-08-25 10:25] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-integration.sh
+## [2026-08-25 10:25] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-executor.sh
+## [2026-08-25 10:25] Write | /Users/devashar/Documents/DS/workspace/loops/tests/job-integration.sh
+## [2026-08-25 10:25] Write | /Users/devashar/Documents/DS/workspace/loops/lib/job-dispatch.sh
+## [2026-08-25 10:25] Write | /Users/devashar/Documents/DS/workspace/loops/tests/job-dispatch.sh
+## [2026-08-25 10:25] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-integration.sh
+## [2026-08-25 10:25] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-dispatch.sh
+## [2026-08-25 10:25] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-integration.sh
+## [2026-08-25 10:25] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-dispatch.sh
+## [2026-08-25 10:25] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-executor.sh
+## [2026-08-25 10:25] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-executor.sh
+## [2026-08-25 10:26] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-dispatch.sh
+## [2026-08-25 10:26] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-executor.sh
+## [2026-08-25 10:26] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-integration.sh
+## [2026-08-25 10:26] build | job executor primitives
+Implemented atomic ledger, lock, transitions, reconciliation, scheduling, worktrees, scope paths, concurrency, snapshots, cleanup. Verification: bash -n lib/job-executor.sh tests/job-executor.sh; bash tests/job-executor.sh => JOB_EXECUTOR_OK.
+## [2026-08-25 14:26] builder job-dispatch | files=lib/job-dispatch.sh,tests/job-dispatch.sh | verify=bash -n lib/job-dispatch.sh tests/job-dispatch.sh; bash tests/job-dispatch.sh
+## [2026-08-25 10:26] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-integration.sh
+## [2026-08-25 10:26] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-integration.sh
+## [2026-08-25 10:26] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-integration.sh
+## [2026-08-25 10:26] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-integration.sh
+## [2026-08-25T14:26:39Z] Build | job integration slice
+## [2026-08-25 10:29] Write | /Users/devashar/Documents/DS/workspace/loops/lib/job-lifecycle.sh
+## [2026-08-25 10:30] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 10:30] Write | /Users/devashar/Documents/DS/workspace/loops/tests/job-lifecycle.sh
+## [2026-08-25 10:30] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-executor.sh
+## [2026-08-25 10:30] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 10:31] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-lifecycle.sh
+## [2026-08-25 10:31] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-lifecycle.sh
+## [2026-08-25 10:31] Write | /Users/devashar/Documents/DS/workspace/loops/tests/job-runtime.sh
+## [2026-08-25 10:31] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-lifecycle.sh
+## [2026-08-25 10:31] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-executor.sh
+## [2026-08-25 10:32] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-lifecycle.sh
+## [2026-08-25 10:32] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-executor.sh
+## [2026-08-25 10:32] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-runtime.sh
+## [2026-08-25 10:32] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-lifecycle.sh
+## [2026-08-25 10:32] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 10:32] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-runtime.sh
+## [2026-08-25 10:32] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-runtime.sh
+## [2026-08-25 10:32] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 10:32] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 10:33] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-runtime.sh
+## [2026-08-25 10:33] Build | runtime module integration
+## [2026-08-25 10:34] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-integration.sh
+## [2026-08-25 10:35] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-lifecycle.sh
+## [2026-08-25 14:35] envelope-rejection | wrong-repository | report-sha256=a0f9a74fbccf64766af1df1c8d25dfaf61c6c91aba2dfc33e6a67158ca709ec6
+## [2026-08-25 14:35] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 10:36] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-08-25 10:36] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-integration.sh
+## [2026-08-25 10:37] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-lifecycle.sh
+## [2026-08-25 10:38] Build | runtime lifecycle integration fixed
+## [2026-08-25 14:41] envelope-rejection | wrong-repository | report-sha256=a0f9a74fbccf64766af1df1c8d25dfaf61c6c91aba2dfc33e6a67158ca709ec6
+## [2026-08-25 14:41] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 10:43] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-lifecycle.sh
+## [2026-08-25 10:44] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-lifecycle.sh
+## [2026-08-25 10:45] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-lifecycle.sh
+## [2026-08-25 10:45] Write | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 10:45] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 10:45] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-lifecycle.sh
+## [2026-08-25 10:45] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-framework-guards.tsv
+## [2026-08-25 10:45] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-runtime.sh
+## [2026-08-25 10:46] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-runtime.sh
+## [2026-08-25 10:46] Write | /tmp/debug1.sh
+- 2026-08-25 builder: wired job runtime batch execution, approval observation, route argv, scope and integration gates; expanded runtime guards.
+## [2026-08-25 10:47] Write | /tmp/debug2.sh
+## [2026-08-25 10:47] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-lifecycle.sh
+## [2026-08-25 10:47] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-lifecycle.sh
+## [2026-08-25 10:47] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-lifecycle.sh
+## [2026-08-25 10:48] Write | /tmp/builder-report-job-lifecycle.txt
+- 2026-08-25 14:48 builder: fixed job-lifecycle integration to land the real merge on main after a clean disposable rehearsal (rehearsal is base-relative, not main-tip-relative), added real-merge conflict handling with full evidence, and fixed a test-fixture bug (untracked .loops/ dir and sha_before ordering); tests/job-lifecycle.sh: JOB_LIFECYCLE_OK, 32 passes, 3 clean runs.
+## [2026-08-25 10:50] Write | /tmp/debug_lesson.sh
+## [2026-08-25 14:51] envelope-rejection | wrong-repository | report-sha256=a0f9a74fbccf64766af1df1c8d25dfaf61c6c91aba2dfc33e6a67158ca709ec6
+## [2026-08-25 14:51] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 10:51] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-lifecycle.sh
+## [2026-08-25 10:52] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/job-lifecycle.sh
+## [2026-08-25 10:53] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 10:53] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-25 14:56] envelope-rejection | wrong-repository | report-sha256=a0f9a74fbccf64766af1df1c8d25dfaf61c6c91aba2dfc33e6a67158ca709ec6
+## [2026-08-25 14:56] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+[2026-08-25] Build | fixed job_scope_check to use git name-only paths and expanded exact-path six-state scope regression.
+## [2026-08-25 10:56] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+## [2026-08-25 10:57] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+[2026-08-25] Build | corrected six-state verifier fixtures to isolate path mutations from committed baseline; full verifier returned VERIFY_OK.
+## [2026-08-25 11:00] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 11:00] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/verify.sh
+[2026-08-25] Build | corrected rename scope handling to disable rename detection, reporting both old and new paths; strengthened rename regression.
+## [2026-08-25 15:05] envelope-rejection | wrong-repository | report-sha256=a0f9a74fbccf64766af1df1c8d25dfaf61c6c91aba2dfc33e6a67158ca709ec6
+## [2026-08-25 15:05] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 15:26] envelope-rejection | wrong-repository | report-sha256=a0f9a74fbccf64766af1df1c8d25dfaf61c6c91aba2dfc33e6a67158ca709ec6
+## [2026-08-25 15:26] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 11:28] Write | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 11:29] Edit | /Users/devashar/Documents/DS/workspace/loops/.loops/contract.md
+## [2026-08-25 11:31] Write | /Users/devashar/Documents/DS/workspace/loops/install.sh
+## [2026-08-25 11:31] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 11:31] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 11:31] Write | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/job-framework/SKILL.md
+## [2026-08-25 11:31] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/dispatch.md
+## [2026-08-25 11:31] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/agents/builder.md
+## [2026-08-25 11:31] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/skills/run-loop/SKILL.md
+## [2026-08-25 11:31] Edit | /Users/devashar/Documents/DS/workspace/loops/README.md
+## [2026-08-25 11:31] Write | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 11:31] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 11:31] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 11:32] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 11:32] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 11:32] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 15:34] envelope-rejection | wrong-repository | report-sha256=25818fecc805c7a1e77b82eaa40ad7b4199f9389e6b91ef3da95e86ba862e35a
+## [2026-08-25 15:34] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 11:35] Edit | /Users/devashar/Documents/DS/workspace/loops/install.sh
+## [2026-08-25 11:35] Edit | /Users/devashar/Documents/DS/workspace/loops/README.md
+2026-08-25 agent-experience: implemented transactional installer, job bridge/context, skill, adapter docs, README, and behavioral fixture.
+## [2026-08-25 11:37] Edit | /Users/devashar/Documents/DS/workspace/loops/install.sh
+## [2026-08-25 11:37] Edit | /Users/devashar/Documents/DS/workspace/loops/install.sh
+## [2026-08-25 11:37] Edit | /Users/devashar/Documents/DS/workspace/loops/install.sh
+## [2026-08-25 15:40] envelope-rejection | wrong-repository | report-sha256=25818fecc805c7a1e77b82eaa40ad7b4199f9389e6b91ef3da95e86ba862e35a
+## [2026-08-25 15:40] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+2026-08-25 agent-experience: fixed verifier permissions merge check and validated required BUILT report grammar.
+## [2026-08-25 15:44] envelope-rejection | wrong-repository | report-sha256=25818fecc805c7a1e77b82eaa40ad7b4199f9389e6b91ef3da95e86ba862e35a
+## [2026-08-25 15:44] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 11:47] Edit | /Users/devashar/Documents/DS/workspace/loops/install.sh
+## [2026-08-25 11:48] Edit | /Users/devashar/Documents/DS/workspace/loops/install.sh
+## [2026-08-25 11:48] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 11:49] Edit | /Users/devashar/Documents/DS/workspace/loops/install.sh
+## [2026-08-25 15:52] envelope-rejection | wrong-repository | report-sha256=25818fecc805c7a1e77b82eaa40ad7b4199f9389e6b91ef3da95e86ba862e35a
+## [2026-08-25 15:52] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+2026-08-25 agent-experience: fixed jq filter corruption and replaced mapfile with macOS-compatible read loop; full suite rerun.
+## [2026-08-25 15:57] envelope-rejection | wrong-repository | report-sha256=25818fecc805c7a1e77b82eaa40ad7b4199f9389e6b91ef3da95e86ba862e35a
+## [2026-08-25 15:57] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 12:02] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 12:02] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 12:02] Edit | /Users/devashar/Documents/DS/workspace/loops/install.sh
+## [2026-08-25 12:02] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:02] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 16:03] envelope-rejection | malformed-envelope | report-sha256=8af10efb74b23a9d86b1cc54eda31c7c62b7996ad2bafdbc47aec0bdd7c39131
+## [2026-08-25 16:03] envelope-rejection | malformed-envelope | report-sha256=8af10efb74b23a9d86b1cc54eda31c7c62b7996ad2bafdbc47aec0bdd7c39131
+## [2026-08-25 16:03] envelope-rejection | malformed-envelope | report-sha256=8af10efb74b23a9d86b1cc54eda31c7c62b7996ad2bafdbc47aec0bdd7c39131
+## [2026-08-25 16:04] envelope-rejection | malformed-envelope | report-sha256=8af10efb74b23a9d86b1cc54eda31c7c62b7996ad2bafdbc47aec0bdd7c39131
+## [2026-08-25 16:04] envelope-rejection | malformed-envelope | report-sha256=8af10efb74b23a9d86b1cc54eda31c7c62b7996ad2bafdbc47aec0bdd7c39131
+2026-08-25 agent-experience: rejected malformed settings before backup and validated staged DAG before atomic publish; expanded failure fixture.
+## [2026-08-25 16:06] envelope-rejection | wrong-repository | report-sha256=25818fecc805c7a1e77b82eaa40ad7b4199f9389e6b91ef3da95e86ba862e35a
+## [2026-08-25 16:06] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 12:10] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 12:10] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 12:10] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 12:10] Edit | /Users/devashar/Documents/DS/workspace/loops/install.sh
+## [2026-08-25 16:13] envelope-rejection | wrong-repository | report-sha256=25818fecc805c7a1e77b82eaa40ad7b4199f9389e6b91ef3da95e86ba862e35a
+## [2026-08-25 16:13] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 12:14] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 12:14] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 12:14] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+
+## [2026-08-25 12:12] build | agent experience rebuild: installer empty-settings handling, bridge tracked-file validation and adjacent hash metadata, canonical context validation and construction-bound adapter dispatch
+## [2026-08-25 16:16] envelope-rejection | wrong-repository | report-sha256=25818fecc805c7a1e77b82eaa40ad7b4199f9389e6b91ef3da95e86ba862e35a
+## [2026-08-25 16:16] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 12:19] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 12:19] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 12:19] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 12:20] Edit | /Users/devashar/Documents/DS/workspace/loops/install.sh
+## [2026-08-25 12:20] Edit | /Users/devashar/Documents/DS/workspace/loops/run.sh
+## [2026-08-25 00:00] build | agent-experience orchestration and bridge validation
+## [2026-08-25 12:22] Write | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:22] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:22] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:22] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:22] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 12:22] Edit | /Users/devashar/Documents/DS/workspace/loops/lib/job-framework.sh
+## [2026-08-25 12:23] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:23] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:24] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:24] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:24] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:24] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:25] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:25] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:25] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:26] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:26] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 12:26] Edit | /Users/devashar/Documents/DS/workspace/loops/tests/agent-experience.sh
+## [2026-08-25 16:28] envelope-rejection | wrong-repository | report-sha256=25818fecc805c7a1e77b82eaa40ad7b4199f9389e6b91ef3da95e86ba862e35a
+## [2026-08-25 16:28] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 16:30] envelope-rejection | wrong-repository | report-sha256=25818fecc805c7a1e77b82eaa40ad7b4199f9389e6b91ef3da95e86ba862e35a
+## [2026-08-25 16:30] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 16:31] envelope-rejection | wrong-repository | report-sha256=25818fecc805c7a1e77b82eaa40ad7b4199f9389e6b91ef3da95e86ba862e35a
+## [2026-08-25 16:31] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 16:32] envelope-rejection | wrong-repository | report-sha256=25818fecc805c7a1e77b82eaa40ad7b4199f9389e6b91ef3da95e86ba862e35a
+## [2026-08-25 16:32] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 12:35] build | tests/agent-experience.sh contract journey
+Rewrote behavioral coverage for install, DAG, context, gates, conflicts, README, and regression suites; fixed bridge metadata newline.
+## [2026-08-25 16:33] envelope-rejection | malformed-envelope | report-sha256=6c994949e39be38403599d8610e0b18ede4e149d9866fcf42d36f42de36d556d
+## [2026-08-25 16:33] envelope-rejection | malformed-envelope | report-sha256=6c994949e39be38403599d8610e0b18ede4e149d9866fcf42d36f42de36d556d
+## [2026-08-25 16:35] envelope-rejection | wrong-repository | report-sha256=25818fecc805c7a1e77b82eaa40ad7b4199f9389e6b91ef3da95e86ba862e35a
+## [2026-08-25 16:35] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 16:37] envelope-rejection | wrong-repository | report-sha256=25818fecc805c7a1e77b82eaa40ad7b4199f9389e6b91ef3da95e86ba862e35a
+## [2026-08-25 16:37] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608
+## [2026-08-25 13:23] Edit | /Users/devashar/Documents/DS/workspace/loops/.claude/settings.json
+## [2026-08-25 13:23] Edit | /Users/devashar/Documents/DS/workspace/loops/install.sh
+## [2026-08-25 17:25] envelope-rejection | wrong-repository | report-sha256=25818fecc805c7a1e77b82eaa40ad7b4199f9389e6b91ef3da95e86ba862e35a
+## [2026-08-25 17:25] envelope-rejection | mismatch-contractHash | report-sha256=58839cbd10be16a50e9e69fdf56f9d35c62dcc5611a9eb8fa66f4a84da6fa608

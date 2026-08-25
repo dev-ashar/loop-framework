@@ -39,7 +39,7 @@ chmod +x "$TMP/no-git/git"
 assert_preflight_blocked PATH="$TMP/no-git:$PATH"
 assert_preflight_blocked EXPLORER_GH_AUTH=0
 assert_preflight_reroute
-run_hook() { printf '%s' "{\"tool_input\":{\"command\":$(printf '%s' "$1" | jq -Rs .)}}" | bash "$HOOK" >"$TMP/out" 2>"$TMP/err"; }
+run_hook() { printf '%s' "{\"agent_id\":\"explorer-fixture\",\"tool_input\":{\"command\":$(printf '%s' "$1" | jq -Rs .)}}" | bash "$HOOK" >"$TMP/out" 2>"$TMP/err"; }
 assert_allow() { run_hook "$1"; test $? -eq 0 || { echo "FAIL ALLOW_READONLY: $1"; exit 1; }; echo "ALLOW_READONLY: $1 exit=0"; }
 assert_block() { run_hook "$1"; rc=$?; test "$rc" -eq 2 || { echo "FAIL BLOCK_MUTATION: $1 exit=$rc"; exit 1; }; echo "BLOCK_MUTATION: $1 exit=2"; }
 assert_allow 'git status --short'

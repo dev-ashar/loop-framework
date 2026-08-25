@@ -45,7 +45,8 @@ Stop on max iterations, unavailable access, unauthorized destructive or outward-
 
 ### 1. Negotiate and lock the contract  (invoke the `contract` skill)
 - Always dispatch `explorer` first and wait for completion before any builder dispatch.
-- For production-data incidents, require the explorer to run the cheapest decisive read-only direct check when access exists before planning or expanding theory. For object-freshness incidents, enumerate candidate relations, then compare latest timestamps and state. Reject plan-only returns when executable evidence was requested. Change the method or route before every retry.
+- For production-data incidents, require the explorer to run the cheapest decisive read-only direct check when access exists before planning or expanding theory.
+- After contract approval, use `.claude/skills/job-framework/SKILL.md` for two or more useful builder jobs. Keep one-job and no-DAG work on the legacy route. For object-freshness incidents, enumerate candidate relations, then compare latest timestamps and state. Reject plan-only returns when executable evidence was requested. Change the method or route before every retry.
 - For urgent work without a build, stop after the minimal explorer-only investigation. Any build still uses subagents and explorer-before-builder.
 - Use the minimal route `explorer → builder` when the boundary is clear and no evaluator trigger applies.
 - Dispatch `planner` only when the boundary is unclear, and record the written reason first.

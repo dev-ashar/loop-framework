@@ -461,23 +461,27 @@ case "$cmd" in
     shift
     cmd_engine "$@"
     ;;
+  job)
+    # Additive validated DAG commands. Legacy commands remain unchanged.
+    . "$SCRIPT_DIR/lib/job-framework.sh"
+    case "${2:-}" in
+      validate) job_validate_dag "${3:-}" ;;
+      profiles) job_validate_profiles ;;
+      route) [ "$#" -eq 4 ] || { echo 'usage: job route <profile> <tier>' >&2; exit 2; }; job_route_model "$3" "$4" ;;
+      orchestrate) [ "$#" -ge 4 ] && [ "$#" -le 5 ] || { echo 'usage: job orchestrate <goal> <planner-steps.json> [run-id]' >&2; exit 2; }; job_orchestrate "$3" "$4" "$(git rev-parse --show-toplevel)" "${5:-}" ;;
+      schedule) [ "$#" -eq 3 ] || { echo 'usage: job schedule <dag.json>' >&2; exit 2; }; job_schedule "$3" ;;
+      run) [ "$#" -ge 3 ] && [ "$#" -le 4 ] || { echo 'usage: job run <dag.json> [run-id]' >&2; exit 2; }; job_run "$3" "${4:-}" ;;
+      *) echo 'usage: job {validate|profiles|route|schedule|run}' >&2; exit 2 ;;
+    esac
+    ;;
   scope-check)
+    . "$SCRIPT_DIR/lib/job-framework.sh"
     worktree_path="${2:-}"
     base_ref="${3:-}"
     allowed_csv="${4:-}"
     [ -n "$worktree_path" ] && [ -n "$base_ref" ] && [ -n "$allowed_csv" ] || { echo "usage: $0 scope-check <worktree-path> <base-ref> <allowed-file-list>" >&2; exit 1; }
-    allowed_set="|$allowed_csv|"
-    merge_base="$(git -C "$worktree_path" merge-base "$base_ref" HEAD)"
-    offending=""
-    while IFS= read -r changed; do
-      [ -n "$changed" ] || continue
-      case "$allowed_set" in *"|$changed|"*) ;; *) offending="$offending$changed\n" ;; esac
-    done < <({ git -C "$worktree_path" diff --name-only "$merge_base"; git -C "$worktree_path" ls-files --others --exclude-standard; } | sort -u)
-    if [ -n "$offending" ]; then
-      printf '%b' "$offending"
-      exit 1
-    fi
-    exit 0
+    job_scope_check "$worktree_path" "$base_ref" "$allowed_csv"
+    exit $?
     ;;
   worktree)
     subcmd="${2:-}"
@@ -760,7 +764,7 @@ case "$cmd" in
     esac
     ;;
   *)
-    echo "usage: $0 {[no args: interactive config] | init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check} | models {list|available|set} | trace {start|emit|end|validate} | session {show|set} | mem {show|note|fact|path|reap} | engine {show|set|run} | scope-check <wt> <base> <files> | worktree {check|provision|fix|reap}}"
+    echo "usage: $0 {[no args: interactive config] | init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check} | job {validate|profiles|route|schedule} | models {list|available|set} | trace {start|emit|end|validate} | session {show|set} | mem {show|note|fact|path|reap} | engine {show|set|run} | scope-check <wt> <base> <files> | worktree {check|provision|fix|reap}}"
     exit 1
     ;;
 esac

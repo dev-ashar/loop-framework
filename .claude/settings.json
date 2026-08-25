@@ -8,7 +8,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-use.sh"
+            "command": "$HOME/.claude/hooks/pre-tool-use.sh"
           }
         ]
       }
