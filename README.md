@@ -31,8 +31,14 @@ Reinstall after moving the clone to repair links.
 | `explorer` | `gemini-3.1-flash-lite` | Map code, tests, dependencies, and read-only Git history. |
 | `architect` | `claude-opus-5` | Define design, scope, non-goals, and acceptance checks. |
 | `worker` | `gpt-5.6-luna-mantle` | Implement one scoped assignment. |
+| `worker` (fast tier) | `gemini-3.7-flash` | Implement many small parallel assignments. |
 | `reviewer` | `gpt-5.6-terra-mantle` | Independently test and challenge completed work. |
+| `reviewer` (secondary) | `gemini-3.1-pro` | Provide a decorrelated second review. |
 | `merge` | `gpt-5.6-terra-mantle` | Integrate approved parallel branches. |
+
+When Opus is genuinely uncertain about one major decision, it dispatches a single
+`gpt-5.6-sol-mantle` architect for a second opinion and then decides.
+Sol is never the default orchestrator, worker, reviewer, or merge model.
 
 ## Routing guide
 
@@ -65,7 +71,8 @@ It asks before destructive actions, outward actions, or goal changes.
 
 `loops models list` shows the configured role roster.
 `loops models set <role> <model>` changes a role model.
-`loops session set <model>` changes the session model and its context window.
+`loops session set <model>` changes the session model and its context window for this repository.
+Add `--user` to change the global default in `~/.claude/settings.json`.
 
 The role definitions live in `.claude/agents/`.
 The job profiles live in `templates/job-profiles.json`.
