@@ -438,10 +438,8 @@ case "$cmd" in
     cmd_models "$@"
     ;;
   trace)
-    # shellcheck source=lib/trace.sh
-    . "$SCRIPT_DIR/lib/trace.sh"
-    shift
-    cmd_trace "$@"
+    printf '%s\n' 'trace is retired; use durable contract and progress state' >&2
+    exit 2
     ;;
   mem)
     # shellcheck source=lib/mem.sh
@@ -764,7 +762,7 @@ case "$cmd" in
     esac
     ;;
   *)
-    echo "usage: $0 {[no args: interactive config] | init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check} | job {validate|profiles|route|schedule} | models {list|available|set} | trace {start|emit|end|validate} | session {show|set} | mem {show|note|fact|path|reap} | engine {show|set|run} | scope-check <wt> <base> <files> | worktree {check|provision|fix|reap}}"
+    echo "usage: $0 {[no args: interactive config] | init [\"goal\"] | status | score {record|stall} | reap | lint [path] | log \"<op>\" \"<title>\" | multireport <repo-path>... | lesson {record|check} | job {validate|profiles|route|schedule} | models {list|available|set} | session {show|set} | mem {show|note|fact|path|reap} | engine {show|set|run} | scope-check <wt> <base> <files> | worktree {check|provision|fix|reap}}"
     exit 1
     ;;
 esac

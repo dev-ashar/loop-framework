@@ -12,7 +12,7 @@ git -C "$repo" config user.email test@example.invalid; git -C "$repo" config use
 printf base >"$repo/base.txt"; git -C "$repo" add base.txt; git -C "$repo" commit -qm base
 base=$(git -C "$repo" rev-parse HEAD)
 cat >"$fixture/dag.json" <<'JSON'
-{"schemaVersion":1,"jobs":[{"id":"build","role":"builder","profile":"builder-default","modelTier":"sonnet","dependsOn":[],"writeScope":["result.txt"],"verify":"test -s result.txt","lenses":["correctness"]}]}
+{"schemaVersion":2,"jobs":[{"id":"build","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":[],"writeScope":["result.txt"],"verify":"test -s result.txt","lenses":["correctness"]}]}
 JSON
 run=$(job_executor_init "$repo" runtime-test "$fixture/dag.json") || bad init
 ledger="$run/jobs.json"

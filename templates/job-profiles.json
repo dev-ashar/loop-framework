@@ -1,11 +1,142 @@
 {
-  "schemaVersion": 1,
-  "capabilities": ["read-source","write-source","run-tests","git-read","git-worktree","memory-read","memory-write"],
+  "schemaVersion": 2,
+  "capabilities": [
+    "read-source",
+    "write-source",
+    "run-tests",
+    "git-read",
+    "git-worktree",
+    "memory-read",
+    "memory-write"
+  ],
   "profiles": {
-    "builder-default": {"role":"builder","capabilities":["read-source","write-source","run-tests","git-read","git-worktree"],"tiers":["sonnet","opus"],"models":{"sonnet":"claude-sonnet-5","opus":"claude-opus-5"},"escalation":{"sonnet":"opus"},"maxAttempts":2}
+    "architect-default": {
+      "role": "architect",
+      "capabilities": [
+        "read-source",
+        "run-tests",
+        "git-read",
+        "memory-read"
+      ],
+      "tiers": [
+        "primary",
+        "secondary"
+      ],
+      "models": {
+        "primary": "claude-opus-5",
+        "secondary": "gpt-5.6-sol-mantle"
+      },
+      "escalation": {},
+      "maxAttempts": 1
+    },
+    "worker-default": {
+      "role": "worker",
+      "capabilities": [
+        "read-source",
+        "write-source",
+        "run-tests",
+        "git-read",
+        "git-worktree",
+        "memory-read",
+        "memory-write"
+      ],
+      "tiers": [
+        "operational"
+      ],
+      "models": {
+        "operational": "gpt-5.6-luna-mantle"
+      },
+      "escalation": {},
+      "maxAttempts": 2
+    },
+    "worker-fast": {
+      "role": "worker",
+      "capabilities": [
+        "read-source",
+        "write-source",
+        "run-tests",
+        "git-read",
+        "git-worktree",
+        "memory-read",
+        "memory-write"
+      ],
+      "tiers": [
+        "fast"
+      ],
+      "models": {
+        "fast": "gemini-3.7-flash"
+      },
+      "escalation": {},
+      "maxAttempts": 2
+    },
+    "explorer-default": {
+      "role": "explorer",
+      "capabilities": [
+        "read-source",
+        "git-read",
+        "memory-read"
+      ],
+      "tiers": [
+        "primary"
+      ],
+      "models": {
+        "primary": "gemini-3.1-flash-lite"
+      },
+      "escalation": {},
+      "maxAttempts": 1
+    },
+    "reviewer-default": {
+      "role": "reviewer",
+      "capabilities": [
+        "read-source",
+        "run-tests",
+        "git-read",
+        "memory-read",
+        "memory-write"
+      ],
+      "tiers": [
+        "primary",
+        "secondary"
+      ],
+      "models": {
+        "primary": "gpt-5.6-terra-mantle",
+        "secondary": "gemini-3.1-pro"
+      },
+      "escalation": {},
+      "maxAttempts": 1
+    },
+    "merge-default": {
+      "role": "merge",
+      "capabilities": [
+        "read-source",
+        "write-source",
+        "run-tests",
+        "git-read",
+        "git-worktree",
+        "memory-read",
+        "memory-write"
+      ],
+      "tiers": [
+        "primary"
+      ],
+      "models": {
+        "primary": "gpt-5.6-terra-mantle"
+      },
+      "escalation": {},
+      "maxAttempts": 1
+    }
   },
-  "lenses": {"correctness":"Correctness and acceptance evidence", "scope":"Exact scope and repository hygiene", "security":"Fail-closed and authorization boundaries", "integration":"Lifecycle and integration evidence"},
+  "lenses": {
+    "correctness": "Correctness meets the acceptance checks",
+    "scope": "Change stays inside the assigned scope",
+    "security": "Authorization boundaries remain intact",
+    "integration": "Approved branches integrate cleanly"
+  },
   "outputSchemas": {
-    "exploration-report":"exploration-report", "contract-proposal":"contract-proposal", "builder-report":"builder-report", "evaluator-report":"evaluator-report"
+    "explorer-report": "explorer-report",
+    "architect-plan": "architect-plan",
+    "worker-report": "worker-report",
+    "review-report": "review-report",
+    "integration-report": "integration-report"
   }
 }

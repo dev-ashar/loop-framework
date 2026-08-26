@@ -31,7 +31,8 @@ merge_settings() {
     $e | .model = $k.model | .effortLevel = ($e.effortLevel // $k.effortLevel)
     | .hooks = ($e.hooks // {})
     | .hooks.PreToolUse = (($e.hooks.PreToolUse // []) | map(select(([.hooks[].command] | any(test("pre-tool-use.sh"))) | not)) + (($k.hooks.PreToolUse // []) | map(.hooks |= map(if .command == "$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-use.sh" then .command = "$HOME/.claude/hooks/pre-tool-use.sh" else . end))))
-    | .hooks.PostToolUse = (($e.hooks.PostToolUse // []) | map(select(([.hooks[].command] | any(test("post-tool-use.sh"))) | not)) + ($k.hooks.PostToolUse // []))
+    | .hooks.PostToolUse = (($e.hooks.PostToolUse // []) | map(select(([.hooks[].command] | any(test("post-tool-use.sh"))) | not)))
+    | if (.hooks.PostToolUse | length) == 0 then del(.hooks.PostToolUse) else . end
     | .hooks.Stop = (($e.hooks.Stop // []) | map(select(([.hooks[].command] | any(test("stop.sh|stop-mem.sh"))) | not)) + ($k.hooks.Stop // []))
     | .hooks.SessionStart = (($e.hooks.SessionStart // []) | map(select(([.hooks[].command] | any(test("session-start-mem.sh"))) | not)) + ($k.hooks.SessionStart // []))
     | .permissions = ($e.permissions // {})
@@ -103,7 +104,7 @@ for d in "$KIT"/skills/*/; do ln -sfn "${d%/}" "$DEST/skills/$(basename "${d%/}"
 for f in "$KIT"/hooks/*.sh; do chmod +x "$f"; ln -sfn "$f" "$DEST/hooks/$(basename "$f")"; done
 ln -sfn "$KIT/CLAUDE.md" "$DEST/CLAUDE.md"
 for old in flow autoresearch grill-me; do rm -f "$DEST/skills/$old"; done
-rm -f "$DEST/agents/reviewer.md"
+for old in builder evaluator field-guide general-purpose planner; do rm -f "$DEST/agents/$old.md"; done
 mkdir -p "$DEST/memory"
 [ -e "$DEST/memory/lessons.jsonl" ] || : > "$DEST/memory/lessons.jsonl"
 if [ -e "$HOME/.local/bin/loops" ] && [ ! -L "$HOME/.local/bin/loops" ]; then cp -a "$HOME/.local/bin/loops" "$BACKUP/.loops-cli"; fi

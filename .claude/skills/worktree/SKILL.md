@@ -5,7 +5,7 @@ description: Detect hazards in git worktrees, provision safe worktrees, remediat
 
 # worktree
 
-Detects and remediates git worktree hazards that block commit operations in fresh linked worktrees. Use for multi-repo health checks and for preparing parallel builder isolation.
+Detects and remediates git worktree hazards that block commit operations in fresh linked worktrees. Use for multi-repo health checks and for preparing parallel worker isolation.
 
 ## Subcommands
 

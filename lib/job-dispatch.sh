@@ -16,7 +16,7 @@ job_dispatch_init() {
   job_dispatch_state="$job_dispatch_root/.loops/runs/$job_dispatch_run/dispatch.json"
   job_dispatch_lock="$job_dispatch_state.lock"
   mkdir -p "$(dirname "$job_dispatch_state")"
-  [ -e "$job_dispatch_state" ] || printf '%s\n' '{"version":1,"sequence":0,"dispatches":{},"outputs":{},"consumptions":[],"final":null,"counters":{"dispatched":0,"useful":0,"duplicate":0,"rejected":0,"cancelled":0,"unconsumed":0,"acceptedOutputs":0,"consumptionRecords":0,"running":0,"builders":0}}' > "$job_dispatch_state"
+  [ -e "$job_dispatch_state" ] || printf '%s\n' '{"version":1,"sequence":0,"dispatches":{},"outputs":{},"consumptions":[],"final":null,"counters":{"dispatched":0,"useful":0,"duplicate":0,"rejected":0,"cancelled":0,"unconsumed":0,"acceptedOutputs":0,"consumptionRecords":0,"running":0,"workers":0}}' > "$job_dispatch_state"
 }
 
 _job_dispatch_update() {
@@ -46,7 +46,8 @@ if op=='create':
  profile=os.environ.get('JOB_DISPATCH_PROFILE',''); tier=os.environ.get('JOB_DISPATCH_TIER',''); model=os.environ.get('JOB_DISPATCH_MODEL','')
  if not all((did,owner,role,obj,schema,out,consumer,budget,stop,token)): fail('DISPATCH_FIELD_EMPTY')
  if did in s['dispatches']: fail('DISPATCH_DUPLICATE id='+did)
- if schema not in {'exploration-report','contract-proposal','builder-report','evaluator-report'}: fail('DISPATCH_OUTPUT_SCHEMA_UNKNOWN id='+schema)
+ profiles_path=os.path.abspath(os.path.join(os.getcwd(),'templates','job-profiles.json'))
+ if schema not in set(json.load(open(profiles_path))['outputSchemas']): fail('DISPATCH_OUTPUT_SCHEMA_UNKNOWN id='+schema)
  try: budget=int(budget); generation=int(generation)
  except: fail('DISPATCH_FIELD_INVALID')
  if budget<1 or generation<1: fail('DISPATCH_FIELD_INVALID')
@@ -55,15 +56,15 @@ if op=='create':
   if old['state'] in ('pending','active'):
    for field,a,b in [('objective',objectives,old['objective']),('output',out,old['output']),('schema',schema,old['schema']),('scope',scopes,old['scope'])]:
     if a==b and not (did in old.get('consumers',[]) or old['id'] in deps): fail(f'DISPATCH_OVERLAP field={field} left={old["id"]} right={did}')
- if role not in ('explorer','planner','builder','evaluator','orchestrator'): fail('DISPATCH_ROLE_INVALID')
+ if role not in ('explorer','architect','worker','reviewer','merge'): fail('DISPATCH_ROLE_INVALID')
  if int(s['counters'].get('running',0))>=4: fail('DISPATCH_GLOBAL_CAP')
- if role=='builder' and int(s['counters'].get('builders',0))>=4: fail('DISPATCH_BUILDER_CAP')
+ if role=='worker' and int(s['counters'].get('workers',0))>=4: fail('DISPATCH_WORKER_CAP')
  if any(d not in s['dispatches'] for d in deps.split(',') if d): fail('DISPATCH_DEPENDENCY_UNKNOWN')
  for d in deps.split(',') if deps else []:
   if s['dispatches'][d].get('consumer') not in ('',consumer) and d not in s['dispatches']: fail(f'DISPATCH_DEPENDENCY_DIRECTION producer={d} consumer={did}')
  rec={'id':did,'owner':owner,'role':role,'objective':objectives,'inputs':sorted(set(filter(None,inputs.split(',')))),'schema':schema,'output':out.lower(),'scope':scopes,'dependencies':sorted(set(filter(None,deps.split(',')))),'consumer':consumer,'budget':budget,'remainingBudget':budget,'stop':stop,'generation':generation,'token':token,'state':'active','attempt':1,'accepted':False,'cancelled':False,'profile':profile,'tier':tier,'model':model,'consumers':[]}
  s['dispatches'][did]=rec; counter('dispatched'); counter('running');
- if role=='builder': counter('builders')
+ if role=='worker': counter('workers')
  save(); print(token)
 elif op=='model':
  if len(args)!=2: fail('ROUTE_USAGE')
@@ -92,7 +93,7 @@ elif op=='result':
  if not r: fail(f'DISPATCH_LATE_RESULT dispatch={did} generation={generation} token={token}')
  if r['state']!='active' or str(r['generation'])!=str(generation) or r['token']!=token: fail(f'DISPATCH_LATE_RESULT dispatch={did} generation={generation} token={token}')
  if state not in ('passed','failed','blocked','conflicted','cancelled','rejected'): fail('DISPATCH_STATE_INVALID')
- r['state']=state; r['terminalSequence']=s['sequence']+1; r['outputSha']=output_sha; counter('running',-1); counter('builders',-1 if r['role']=='builder' else 0)
+ r['state']=state; r['terminalSequence']=s['sequence']+1; r['outputSha']=output_sha; counter('running',-1); counter('workers',-1 if r['role']=='worker' else 0)
  if state=='cancelled': r['cancelled']=True; counter('cancelled')
  elif state=='rejected': counter('rejected')
  save(); print('DISPATCH_TERMINAL_OK')
@@ -119,7 +120,7 @@ elif op=='cancel':
  if len(args)!=1: fail('CANCEL_USAGE')
  did=args[0]; r=s['dispatches'].get(did)
  if not r or r['state']!='active': fail('DISPATCH_CANCEL_INVALID')
- r['state']='cancelled'; r['cancelled']=True; counter('running',-1); counter('builders',-1 if r['role']=='builder' else 0); counter('cancelled'); save(); print('DISPATCH_CANCELLED')
+ r['state']='cancelled'; r['cancelled']=True; counter('running',-1); counter('workers',-1 if r['role']=='worker' else 0); counter('cancelled'); save(); print('DISPATCH_CANCELLED')
 elif op=='replace':
  if len(args)!=3: fail('REPLACE_USAGE')
  old,new,owner=args; r=s['dispatches'].get(old)

@@ -28,15 +28,15 @@ git -C "$r" show-ref --verify --quiet refs/heads/left && git -C "$r" show-ref --
 [ ! -d "$r/.loops/runs/real-conflict/integration-worktree" ] && pass || bad 'integration worktree cleanup'
 expect_token downstream-gate DOWNSTREAM_BLOCKED job_integration_gate_downstream conflicted
 # A local artifact cannot create approval, and test provenance cannot pass production.
-fixture_callback(){ printf 'host-control-plane\t%s\t%s\t%s\t%s\tbuilder\t2026-08-25T12:00:00Z\n' "$1" "$2" "$3" "$4"; }
+fixture_callback(){ printf 'host-control-plane\t%s\t%s\t%s\t%s\tworker\t2026-08-25T12:00:00Z\n' "$1" "$2" "$3" "$4"; }
 job_approval_test_adapter_new test-adapter fixture_callback >/dev/null
-expect_token fixture-rejected APPROVAL_OBSERVATION_INVALID job_approval_observe "$r" contract run correlation builder
-approval_callback(){ printf 'host-control-plane\t%s\t%s\t%s\t%s\tbuilder\t2026-08-25T12:00:00Z\n' "$1" "$2" "$3" "$4"; }
+expect_token fixture-rejected APPROVAL_OBSERVATION_INVALID job_approval_observe "$r" contract run correlation worker
+approval_callback(){ printf 'host-control-plane\t%s\t%s\t%s\t%s\tworker\t2026-08-25T12:00:00Z\n' "$1" "$2" "$3" "$4"; }
 job_approval_observer_new production approval_callback >/dev/null
-expect_token stale-contract APPROVAL_OBSERVATION_INVALID job_approval_observe "$r" contract run correlation evaluator
-expect_output good-observation APPROVAL_OBSERVATION_OK job_approval_observe "$r" contract run correlation builder
-bad_callback(){ printf 'file\t%s\t%s\t%s\t%s\tbuilder\t2026-08-25T12:00:00Z\n' "$1" "$2" "$3" "$4"; }
+expect_token stale-contract APPROVAL_OBSERVATION_INVALID job_approval_observe "$r" contract run correlation reviewer
+expect_output good-observation APPROVAL_OBSERVATION_OK job_approval_observe "$r" contract run correlation worker
+bad_callback(){ printf 'file\t%s\t%s\t%s\t%s\tworker\t2026-08-25T12:00:00Z\n' "$1" "$2" "$3" "$4"; }
 job_approval_observer_new production bad_callback >/dev/null
-expect_token bad-source APPROVAL_OBSERVATION_INVALID job_approval_observe "$r" contract run correlation builder
+expect_token bad-source APPROVAL_OBSERVATION_INVALID job_approval_observe "$r" contract run correlation worker
 if [ "$fail" -ne 0 ]; then printf 'JOB_INTEGRATION_FAIL failures=%s passes=%s\n' "$fail" "$ok"; exit 1; fi
 printf 'JOB_INTEGRATION_OK\n'

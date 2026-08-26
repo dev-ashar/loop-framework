@@ -1,9 +1,7 @@
 # Contract
 
-> The graded boundary. The planner negotiates this with the user BEFORE any code
-> is written. The evaluator grades ONLY against this file — not against vibes,
-> not against the chat history. If the build is wrong, fix the build. If this
-> file is wrong, that is the one time a human interrupts the loop.
+> Optional written boundary for unattended, ambiguous, destructive, or outward-facing work.
+> The architect defines it. A fresh reviewer checks completed work against it.
 
 ## Goal
 
@@ -16,7 +14,7 @@
 
 ## Acceptance criteria
 
-> Testable assertions. Aim for enough that the evaluator cannot rubber-stamp
+> Testable assertions. Aim for enough that the reviewer cannot rubber-stamp
 > (Karpathy: ~10 is usually too few; ~27 is a reasonable size for a small app).
 > Each must be checkable by running something, not by reading.
 
@@ -27,10 +25,10 @@
 ## Verify command
 
 ```
-<the exact command(s) the evaluator runs to grade — must emit observable results>
+<the exact command(s) the reviewer runs to grade — must emit observable results>
 ```
 
 ## Taste rubric (only if the goal is subjective)
 
 Weighted axes, each 0–1: design · originality · craft · functionality.
-Reference examples the evaluator is told are good: <...>. Told are slop: <...>.
+Reference examples the reviewer is told are good: <...>. Told are slop: <...>.
