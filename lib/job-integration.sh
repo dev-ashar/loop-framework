@@ -120,11 +120,11 @@ job_approval_test_adapter_new() {
 
 job_approval_observation_validate() {
   local root=$1 contract=$2 run_id=$3 correlation=$4 role=$5
-  [ "$role" = builder ] || { printf 'APPROVAL_OBSERVATION_INVALID field=role\n'; return 1; }
+  [ "$role" = worker ] || { printf 'APPROVAL_OBSERVATION_INVALID field=role\n'; return 1; }
   [ "${JOB_APPROVAL_OBSERVER_MODE:-}" = production ] || {
     printf 'APPROVAL_OBSERVATION_INVALID field=provenance\n'; return 1; }
   local observation
-  observation=$($JOB_APPROVAL_OBSERVER_CALLBACK "$root" "$contract" "$run_id" "$correlation" builder) || {
+  observation=$($JOB_APPROVAL_OBSERVER_CALLBACK "$root" "$contract" "$run_id" "$correlation" worker) || {
     printf 'APPROVAL_OBSERVATION_INVALID field=observation\n'; return 1; }
   local source got_root got_contract got_run got_corr got_role got_time extra
   IFS=$'\t' read -r source got_root got_contract got_run got_corr got_role got_time extra <<< "$observation"
@@ -134,7 +134,7 @@ job_approval_observation_validate() {
   [ "$got_contract" = "$contract" ] || { printf 'APPROVAL_OBSERVATION_INVALID field=contractHash\n'; return 1; }
   [ "$got_run" = "$run_id" ] || { printf 'APPROVAL_OBSERVATION_INVALID field=runId\n'; return 1; }
   [ "$got_corr" = "$correlation" ] || { printf 'APPROVAL_OBSERVATION_INVALID field=correlationId\n'; return 1; }
-  [ "$got_role" = builder ] || { printf 'APPROVAL_OBSERVATION_INVALID field=role\n'; return 1; }
+  [ "$got_role" = worker ] || { printf 'APPROVAL_OBSERVATION_INVALID field=role\n'; return 1; }
   [[ "$got_time" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]] || {
     printf 'APPROVAL_OBSERVATION_INVALID field=time\n'; return 1; }
   printf 'APPROVAL_OBSERVATION_OK\n'

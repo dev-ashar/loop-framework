@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shell primitives for executing validated builder DAG jobs.
+# Shell primitives for executing validated worker DAG jobs.
 # Callers own error policy and provide commands for worker processes.
 
 job_executor_root() {

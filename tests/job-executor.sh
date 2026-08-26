@@ -7,7 +7,7 @@ repo="$t/repo"; mkdir "$repo"; git -C "$repo" init -q; git -C "$repo" config use
 printf 'base\n' >"$repo/base.txt"; git -C "$repo" add base.txt; git -C "$repo" commit -qm base
 base=$(git -C "$repo" rev-parse HEAD)
 cat >"$t/dag.json" <<JSON
-{"schemaVersion":1,"jobs":[{"id":"a","role":"builder","profile":"builder-default","modelTier":"sonnet","dependsOn":[],"writeScope":["a.txt"],"verify":"true","lenses":["correctness"]},{"id":"b","role":"builder","profile":"builder-default","modelTier":"sonnet","dependsOn":[],"writeScope":["b.txt"],"verify":"true","lenses":["scope"]}]}
+{"schemaVersion":2,"jobs":[{"id":"a","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":[],"writeScope":["a.txt"],"verify":"true","lenses":["correctness"]},{"id":"b","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":[],"writeScope":["b.txt"],"verify":"true","lenses":["scope"]}]}
 JSON
 runid=run-test
 run=$(job_executor_init "$repo" "$runid" "$t/dag.json")

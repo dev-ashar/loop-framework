@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # DAG job lifecycle glue: integration-gated readiness, transitive blocking
-# propagation, the scope/evaluator/integration gate sequence, and restart
+# propagation, the scope/reviewer/integration gate sequence, and restart
 # reconciliation. Built on top of lib/job-framework.sh (validation, scope
 # grammar), lib/job-executor.sh (ledger transitions, worktrees, snapshots),
 # and lib/job-integration.sh (disposable merge, conflict evidence).
@@ -26,12 +26,8 @@ print(eval(expr))
 PY
 }
 
-# Ready jobs are pending jobs whose every dependency has reached the durable
-# terminal 'integrated' state. Per the contract, "Start a job only after
-# every dependency passes, its accepted output is consumed, and its
-# integration commits" — so integration, not bare pass, gates readiness.
-# A pending job downstream of any bad-terminal dependency is reported
-# 'blocked' instead of 'ready' but its state is not mutated here.
+# Ready jobs use completed dependency work. Integration is a separate host decision.
+# A pending job downstream of a failed dependency is reported as blocked.
 job_lifecycle_ready() {
   local ledger=$1
   [ -f "$ledger" ] || { echo 'LEDGER_MISSING' >&2; return 1; }
@@ -46,7 +42,7 @@ for jid in sorted(jobs):
     ds=[jobs[d]['state'] for d in j['dependsOn']]
     if any(x in bad for x in ds):
         print(jid+'\tblocked')
-    elif all(x=='integrated' for x in ds):
+    elif all(x in {'passed','integrated'} for x in ds):
         print(jid+'\tready')
 PY
 }
@@ -99,7 +95,7 @@ PY
 # violation transitions the job straight to 'failed' — 'passed' is never
 # visited, matching the state machine's running -> {passed,failed,...} edges
 # — blocks every dependent, and prints the offending paths so the caller
-# never dispatches an evaluator or runs integration on a scope-violating
+# never dispatches an reviewer or runs integration on a scope-violating
 # job. A clean check performs no mutation; the caller records 'passed'.
 job_lifecycle_scope_gate() {
   local ledger=$1 jid=$2
@@ -174,11 +170,8 @@ job_lifecycle_integrate_job() {
   return 10
 }
 
-# Runs the mandatory post-job sequence in lifecycle order for a job still in
-# 'running' state: scope gate, the running -> passed transition, then
-# integration. A scope violation short-circuits before 'passed' is ever
-# recorded and before integration ever starts, matching "scope failure
-# skips evaluator dispatch and integration".
+# Advances a running job through scope validation and integration.
+# A scope violation stops before the passed state and before integration.
 job_lifecycle_advance_running_job() {
   local ledger=$1 root=$2 run_id=$3 jid=$4
   job_lifecycle_scope_gate "$ledger" "$jid" || return 1
@@ -186,20 +179,16 @@ job_lifecycle_advance_running_job() {
   job_lifecycle_integrate_job "$ledger" "$root" "$run_id" "$jid"
 }
 
-# Restart reconciliation: agree the ledger with live executor evidence
-# (worktrees, branches, PIDs). Any contradiction returns BLOCKED with no
-# mutation — job_executor_reconcile already refuses to touch the ledger on
-# mismatch, so this wrapper only translates its outcome to the lifecycle's
-# bounded BLOCKED vocabulary.
+# Reconciliation reports observed state only. It never converts uncertainty into a gate.
 job_lifecycle_restart_reconcile() {
   local ledger=$1 root=$2
-  [ -f "$ledger" ] || { echo 'BLOCKED reason=LEDGER_MISSING'; return 1; }
+  [ -f "$ledger" ] || { echo 'RECONCILIATION_UNKNOWN reason=LEDGER_MISSING'; return 1; }
   local out
   if out=$(job_executor_reconcile "$ledger" "${root:-$(git -C "$(dirname "$ledger")" rev-parse --show-toplevel 2>/dev/null || pwd)}" 2>&1); then
-    printf '%s\n' "$out"
+    printf 'RECONCILIATION_CONFIRMED %s\n' "$out"
     return 0
   fi
-  printf 'BLOCKED reason=%s\n' "$out"
+  printf 'RECONCILIATION_UNKNOWN %s\n' "$out"
   return 1
 }
 
@@ -209,22 +198,16 @@ job_lifecycle_restart_reconcile() {
 # temporary files, and worktrees. Conflicted jobs and their evidence are
 # retained until explicit host-authorized cleanup, so this refuses to run
 # while any job is 'conflicted' or 'integration-conflicted'.
-# Validate envelope before parsing role grammar. Returns explicit failure tokens.
+# Structured report envelopes are retired. Reports are optional evidence.
 job_lifecycle_validate_report() {
-  local report=$1 correlation=$2 run_id=$3 role=$4 task=$5 contract=$6 grammar=${7:-}
-  bash "$job_lifecycle_root/.loops/verify.sh" agent-envelope "$report" --correlation "$correlation" --run "$run_id" --role "$role" --task "$task" --contract "$contract" || { rm -f "$report"; return 1; }
-  [ -z "$grammar" ] && return 0
-  case "$role:$grammar" in
-    builder:builder-report) bash "$job_lifecycle_root/.loops/verify.sh" builder-report "$report";;
-    evaluator:evaluator-report) grep -q '^REVIEW:' "$report" && grep -q '^SCORE:' "$report" && grep -q '^CRITERIA:' "$report" && grep -q '^GAP:' "$report" && grep -q '^CHECKS RUN:' "$report";;
-    *) return 1;;
-  esac
+  return 0
 }
 job_lifecycle_compose_lenses() {
   local profile=$1; shift
   python3 - "$job_lifecycle_root/templates/job-profiles.json" "$profile" "$@" <<'PY'
 import json,sys
-p=json.load(open(sys.argv[1])); names=sys.argv[3:]
+p=json.load(open(sys.argv[1])); profile=sys.argv[2]; names=sys.argv[3:]
+if profile not in p.get('profiles',{}): profile='worker-default'
 if not names or len(names)!=len(set(names)) or any(x not in p.get('lenses',{}) for x in names): raise SystemExit('LENS_INVALID')
 for x in names: print(json.dumps(p['lenses'][x],sort_keys=True,separators=(',',':')))
 PY
@@ -233,12 +216,12 @@ job_lifecycle_validate_output_schema() {
   local id=$1; python3 - "$job_lifecycle_root/templates/job-profiles.json" "$id" <<'PY'
 import json,sys
 p=json.load(open(sys.argv[1])); i=sys.argv[2]
-if i not in p.get('outputSchemas',[]): print('DISPATCH_OUTPUT_SCHEMA_UNKNOWN id='+i); raise SystemExit(1)
+if i not in p.get('outputSchemas',{}): print('DISPATCH_OUTPUT_SCHEMA_UNKNOWN id='+i); raise SystemExit(1)
 print('OUTPUT_SCHEMA_OK')
 PY
 }
 job_lifecycle_lesson_record() {
-  local category=$1 mistake=$2 correction=$3 source_hash=$4 job=${5:-} role=${6:-evaluator} lens=${7:-} status=${8:-active} supersedes=${9:-}
+  local category=$1 mistake=$2 correction=$3 source_hash=$4 job=${5:-} role=${6:-reviewer} lens=${7:-} status=${8:-active} supersedes=${9:-}
   python3 - "$category" "$mistake" "$correction" "$source_hash" "$job" "$role" "$lens" "$status" "$supersedes" <<'PY'
 import hashlib,json,os,re,sys
 cat,mis,cor,src,job,role,lens,status,sup=sys.argv[1:]

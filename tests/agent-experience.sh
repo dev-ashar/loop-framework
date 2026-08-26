@@ -36,7 +36,7 @@ printf 'outside\n' > "$outside/untouched"
 outside_before=$(sha "$outside/untouched")
 HOME="$home" bash "$repo/install.sh" >/dev/null
 [ -L "$home/.claude/CLAUDE.md" ] || fail 'CLAUDE.md link missing'
-[ -L "$home/.claude/agents/builder.md" ] || fail 'builder link missing'
+[ -L "$home/.claude/agents/worker.md" ] || fail 'worker link missing'
 [ -L "$home/.claude/skills/job-framework" ] || fail 'job-framework link missing'
 [ -L "$home/.claude/hooks/pre-tool-use.sh" ] || fail 'hook link missing'
 [ -L "$home/.local/bin/loops" ] || fail 'CLI link missing'
@@ -97,26 +97,25 @@ contract_hash=$(sha "$contract")
 run="$repo/.loops/runs/agent-experience"
 mkdir -p "$run"
 
-# 8 and 10-11. Natural two-job routing creates deterministic validated DAG metadata.
-printf '%s\n' '[{"id":"first","role":"builder","profile":"builder-default","modelTier":"sonnet","dependsOn":[],"writeScope":["README.md"],"verify":"true","lenses":["correctness"]},{"id":"second","role":"builder","profile":"builder-default","modelTier":"sonnet","dependsOn":["first"],"writeScope":["install.sh"],"verify":"true","lenses":["scope"]}]' > "$run/steps.json"
+# 8 and 10-11. Natural two-job routing creates a deterministic validated DAG.
+printf '%s\n' '[{"id":"first","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":[],"writeScope":["README.md"],"verify":"true","lenses":["correctness"]},{"id":"second","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":["first"],"writeScope":["install.sh"],"verify":"true","lenses":["scope"]}]' > "$run/steps.json"
 route=$(job_orchestrate 'make the fixture work' "$run/steps.json" "$repo" agent-experience)
 printf '%s\n' "$route" | grep -qx 'ORCHESTRATOR_ROUTE dag' || fail 'natural two-job route missing'
-[ -f "$run/job-dag.json" ] && [ -f "$run/job-dag.json.metadata.json" ] || fail 'DAG metadata missing'
-job_bridge_metadata_validate "$run/job-dag.json" "$run/job-dag.json.metadata.json" "$contract" >/dev/null
-first=$(sha "$run/job-dag.json"); job_contract_bridge "$contract" "$run/steps.json" "$run/job-dag-2.json" "$contract_hash" >/dev/null
-[ "$first" = "$(sha "$run/job-dag-2.json")" ] || fail 'bridge output is not deterministic'
-cp "$run/job-dag.json.metadata.json" "$run/meta.good"
-printf '{"schemaVersion":1,"contractHash":"tampered","dagSha256":"tampered"}\n' > "$run/job-dag.json.metadata.json"
-if job_bridge_metadata_validate "$run/job-dag.json" "$run/job-dag.json.metadata.json" "$contract" >/dev/null 2>&1; then fail 'tampered metadata accepted'; fi
-mv "$run/meta.good" "$run/job-dag.json.metadata.json"
-pass 'natural DAG, deterministic bridge, metadata tamper'
+[ -f "$run/job-dag.json" ] || fail 'DAG missing'
+first=$(sha "$run/job-dag.json"); job_assignments_to_dag "$run/steps.json" "$run/job-dag-2.json" >/dev/null
+[ "$first" = "$(sha "$run/job-dag-2.json")" ] || fail 'DAG output is not deterministic'
+[ ! -e "$run/job-dag.json.metadata.json" ] || fail 'contract-bound DAG metadata still created'
+pass 'natural deterministic DAG without contract metadata'
 
-# 9. One useful step stays on the legacy route and creates no DAG scratch.
+# 9. One useful step stays on the direct route and creates no DAG scratch.
 rm -rf "$repo/.loops/runs/legacy"
-printf '%s\n' '[{"id":"only","role":"builder","profile":"builder-default","modelTier":"sonnet","dependsOn":[],"writeScope":["README.md"],"verify":"true","lenses":["correctness"]}]' > "$run/one.json"
-[ "$(job_orchestrate 'one step' "$run/one.json" "$repo" legacy | head -1)" = 'ORCHESTRATOR_ROUTE legacy' ] || fail 'legacy route missing'
-[ ! -e "$repo/.loops/runs/legacy" ] || fail 'legacy route created DAG scratch'
-pass 'legacy one-step route'
+printf '%s\n' '[{"id":"only","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":[],"writeScope":["README.md"],"verify":"true","lenses":["correctness"]}]' > "$run/one.json"
+[ "$(job_orchestrate 'one step' "$run/one.json" "$repo" direct | head -1)" = 'ORCHESTRATOR_ROUTE direct' ] || fail 'direct route missing'
+[ ! -e "$repo/.loops/runs/direct" ] || fail 'direct route created DAG scratch'
+printf '%s\n' '[{"id":"broken","role":"worker"}]' > "$run/invalid-one.json"
+if job_orchestrate 'broken step' "$run/invalid-one.json" "$repo" direct-invalid >/dev/null 2>&1; then fail 'malformed direct assignment accepted'; fi
+[ ! -e "$repo/.loops/runs/direct-invalid" ] || fail 'invalid direct assignment created scratch'
+pass 'validated direct one-step route'
 
 # 12-14. Context contains exact values, rejects tampering, and ignores model overrides.
 base_sha=$(git -C "$repo" rev-parse HEAD)
@@ -124,12 +123,12 @@ job_context_create "$run/job-dag.json" first agent-experience dispatch-first "$r
 python3 - "$run/context.json" "$run/job-dag.json" "$repo" "$contract_hash" "$base_sha" <<'PY'
 import json,sys
 c=json.load(open(sys.argv[1])); d=json.load(open(sys.argv[2])); j=d['jobs'][0] if isinstance(d['jobs'],list) else d['jobs']['first']
-keys='jobId role profile modelTier modelId dependsOn writeScope verify lenses runId dispatchId contractHash baseSha repositoryRoot worktreePath'.split()
+keys='jobId role profile modelTier modelId dependsOn writeScope verify lenses runId dispatchId baseSha repositoryRoot worktreePath'.split()
 assert set(c)==set(keys)
 for k in ('role','profile','modelTier','dependsOn','writeScope','verify','lenses'):
  assert c[k]==j[k], k
 assert c['jobId']==j['id']
-assert c['runId']=='agent-experience' and c['dispatchId']=='dispatch-first' and c['contractHash']==sys.argv[4] and c['baseSha']==sys.argv[5]
+assert c['runId']=='agent-experience' and c['dispatchId']=='dispatch-first' and c['baseSha']==sys.argv[5]
 import os
 assert c['repositoryRoot']==os.path.realpath(sys.argv[3]) and c['worktreePath']==os.path.realpath(sys.argv[3])
 PY
@@ -137,20 +136,20 @@ cp "$run/context.json" "$run/context.tampered"; python3 - "$run/context.tampered
 import json,sys
 p=sys.argv[1]; x=json.load(open(p)); x['modelId']='attacker-model'; json.dump(x,open(p,'w'))
 PY
-if job_context_validate "$run/context.tampered" "$repo" "$repo" "$contract_hash" "$base_sha" >/dev/null 2>&1; then fail 'tampered context accepted'; fi
+if job_context_validate "$run/context.tampered" "$repo" "$repo" "$base_sha" >/dev/null 2>&1; then fail 'tampered context accepted'; fi
 JOB_DISPATCH_MODEL=attacker-model; export JOB_DISPATCH_MODEL
 observed_model=$(python3 - "$run/context.json" <<'PY'
 import json,sys
 print(json.load(open(sys.argv[1]))['modelId'])
 PY
 )
-[ "$observed_model" = 'claude-sonnet-5' ] || fail 'environment overrode model'
+[ "$observed_model" = 'gpt-5.6-luna-mantle' ] || fail 'environment overrode model'
 pass 'exact context, tamper rejection, model binding'
 
 # 15-17. Exercise the real approval, lifecycle, dependency, conflict, and gate order primitives.
-approval_cb() { printf 'host-control-plane\t%s\t%s\t%s\t%s\tbuilder\t2026-08-25T00:00:00Z\n' "$1" "$2" "$3" "$4"; }
+approval_cb() { printf 'host-control-plane\t%s\t%s\t%s\t%s\tworker\t2026-08-25T00:00:00Z\n' "$1" "$2" "$3" "$4"; }
 job_approval_observer_new production approval_cb >/dev/null
-job_approval_observe "$repo" "$contract_hash" agent-experience correlation builder >/dev/null
+job_approval_observe "$repo" "$contract_hash" agent-experience correlation worker >/dev/null
 ledger="$run/lifecycle.json"
 printf '%s\n' '{"runId":"agent-experience","root":"'"$repo"'","baseSha":"'"$base_sha"'","jobs":{"first":{"state":"pending","dependsOn":[],"scope":["README.md"],"worktree":"'"$repo"'","branch":"main"},"second":{"state":"pending","dependsOn":["first"],"scope":["install.sh"],"worktree":"'"$repo"'","branch":"main"}}}' > "$ledger"
 printf '%s\n' "$(job_lifecycle_ready "$ledger")" | grep -qx $'first\tready' || fail 'dependency predecessor not ready'
@@ -161,9 +160,15 @@ python3 - "$ledger" <<'PY'
 import json,sys
 x=json.load(open(sys.argv[1])); assert x['jobs']['first']['state']=='failed'; assert x['jobs']['second']['state']=='blocked'
 PY
-# Gate names stay ordered in the internal skill and dispatch contract.
-order='approval envelope builder report verification scope evaluator accounting integration'
-for token in $order; do grep -Fqi "$token" "$repo/.claude/skills/job-framework/SKILL.md" || fail "missing gate $token"; done
+# Role handoff stays ordered in the internal skill: explorer, architect, worker, reviewer, merge.
+order='explorer architect worker reviewer merge'
+last=0
+for token in $order; do
+  line=$(grep -n -m1 -i "$token" "$repo/.claude/skills/job-framework/SKILL.md" | cut -d: -f1)
+  [ -n "$line" ] || fail "missing gate $token"
+  [ "$line" -gt "$last" ] || fail "gate order broken at $token"
+  last=$line
+done
 pass 'approval, ordered gates, dependency blocking'
 
 # 16-17. Conflict rehearsal preserves source branches and keeps the main worktree clean.
@@ -191,8 +196,8 @@ for suite in job-framework.sh job-executor.sh job-dispatch.sh job-integration.sh
   output=$(bash "$repo/tests/$suite" 2>&1) || fail "$suite failed: $output"
 done
 bash "$repo/tests/run_tests.sh" >/dev/null 2>&1 || true
-bash "$repo/tests/contract-negotiation.sh" >/dev/null
+if bash "$repo/.loops/verify.sh" agent-envelope >/dev/null 2>&1; then fail 'retired agent-envelope command still accepted'; fi
 audit=$(git -C "$repo" diff --check); [ -z "$audit" ] || fail 'fixture diff check failed'
-pass 'six job suites and contract negotiation'
+pass 'six job suites and retired-command check'
 
 printf '%s\n' AGENT_EXPERIENCE_OK

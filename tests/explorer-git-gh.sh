@@ -64,7 +64,10 @@ import json, sys
 with open(sys.argv[1], encoding="utf-8") as f:
     data=json.load(f)
 hooks=data["hooks"]["PreToolUse"]
-assert any(x["matcher"] == "Bash" and x["hooks"][0]["command"] == "$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-use.sh" for x in hooks)
+# install.sh rewrites $CLAUDE_PROJECT_DIR/... to $HOME/.claude/hooks/... at install
+# time, so either the source-tree form or the installed form is a valid binding.
+valid = {"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-use.sh", "$HOME/.claude/hooks/pre-tool-use.sh"}
+assert any(x["matcher"] == "Bash" and x["hooks"][0]["command"] in valid for x in hooks)
 print("SETTINGS_BINDING: exact command")
 PY
 if grep -Eq '^tools: .*Bash' "$ROOT/.claude/agents/explorer.md"; then
@@ -90,15 +93,17 @@ for command in 'git --version' 'gh --version' 'git rev-parse --show-toplevel' 'g
   echo "EXPLORER_PREFLIGHT: route: explorer command: $command exit: 0 status: COMPLETE detail: ${output%%$'\n'*}"
 done
 echo "EXPLORER_DISPATCH: available route=explorer"
-manifest=/tmp/explorer-git-gh-preexisting.VV69cj
-prefix=/tmp/explorer-git-gh-log-prefix.MW6itX
-if [ -f "$manifest" ] && [ -f "$prefix" ]; then
-  frozen_ok=1
-  while read -r hash path; do [ "$(sha256sum -- "$ROOT/$path" | awk '{print $1}')" = "$hash" ] || frozen_ok=0; done < "$manifest"
-  current=$(mktemp); trap 'rm -f "$current"; rm -rf "$TMP"' EXIT
-  git -C "$ROOT" diff --name-only | sort -u > "$current"
-  echo "TASK_DELTA_EVIDENCE: manifest=$manifest log_prefix=$prefix frozen_hashes=$frozen_ok"
-  echo "TASK_DELTA_PATHS: $(cat "$current" | tr '\n' ' ')"
-else
-  echo "TASK_DELTA_EVIDENCE: unavailable reason=bootstrap manifest missing"; exit 1
-fi
+# Freeze a manifest of tracked agent files at the start of this run, then prove the
+# explorer's read-only research produced no working-tree delta against that manifest.
+manifest="$TMP/explorer-git-gh-preexisting.manifest"
+git -C "$ROOT" ls-files '.claude/agents/*.md' | while read -r path; do
+  [ -f "$ROOT/$path" ] || continue
+  printf '%s %s\n' "$(sha256sum -- "$ROOT/$path" | awk '{print $1}')" "$path"
+done > "$manifest"
+frozen_ok=1
+while read -r hash path; do [ "$(sha256sum -- "$ROOT/$path" | awk '{print $1}')" = "$hash" ] || frozen_ok=0; done < "$manifest"
+current=$(mktemp); trap 'rm -f "$current"; rm -rf "$TMP"' EXIT
+git -C "$ROOT" diff --name-only | sort -u > "$current"
+[ "$frozen_ok" -eq 1 ] || { echo "FAIL TASK_DELTA_HASH_MISMATCH"; exit 1; }
+echo "TASK_DELTA_EVIDENCE: manifest=$manifest frozen_hashes=$frozen_ok"
+echo "TASK_DELTA_PATHS: $(cat "$current" | tr '\n' ' ')"

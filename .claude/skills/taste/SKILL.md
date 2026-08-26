@@ -40,7 +40,7 @@ GAP: <one paragraph — the highest-leverage improvement>
 ## Use inside loops
 
 Drop the weighted score into `.loops/feature_list.json` as the metric for a native
-`/goal` run, or into `.loops/contract.md` as the taste rubric the `evaluator` uses.
+`/goal` run, or into `.loops/contract.md` as the taste rubric the `reviewer` uses.
 
 ## Do not
 

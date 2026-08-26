@@ -55,12 +55,11 @@ ready_out=$(job_lifecycle_ready "$ledger")
   && ! printf '%s\n' "$ready_out" | grep -q '^c' \
   && pass || bad 'initial readiness is deps-only, integration-gated'
 
-# Readiness requires 'integrated', not merely 'passed' — a dependency stuck
-# at 'passed' must not unblock its dependent.
+# Completed dependency work can unblock the next job before integration.
 python3 -c 'import json,sys
 p=sys.argv[1]; d=json.load(open(p)); d["jobs"]["a"]["state"]="passed"; json.dump(d,open(p,"w"),separators=(",",":"))' "$ledger"
 ready_out=$(job_lifecycle_ready "$ledger")
-! printf '%s\n' "$ready_out" | grep -q '^b' && pass || bad 'passed-but-not-integrated dependency incorrectly unblocked dependent'
+printf '%s\n' "$ready_out" | grep -qx $'b\tready' && pass || bad 'passed dependency did not unblock dependent'
 
 python3 -c 'import json,sys
 p=sys.argv[1]; d=json.load(open(p)); d["jobs"]["a"]["state"]="integrated"; json.dump(d,open(p,"w"),separators=(",",":"))' "$ledger"
@@ -193,7 +192,7 @@ sha_before=$(shasum -a 256 "$ledger" | awk '{print $1}')
 set +e
 reconcile_out=$(job_lifecycle_restart_reconcile "$ledger" "$repo" 2>&1); reconcile_rc=$?
 set -e
-[ "$reconcile_rc" -ne 0 ] && printf '%s\n' "$reconcile_out" | grep -q BLOCKED && pass || bad "restart reconciliation did not block on contradictory evidence: $reconcile_out"
+[ "$reconcile_rc" -ne 0 ] && printf '%s\n' "$reconcile_out" | grep -q RECONCILIATION_UNKNOWN && pass || bad "restart reconciliation did not report unknown evidence: $reconcile_out"
 sha_after=$(shasum -a 256 "$ledger" | awk '{print $1}')
 [ "$sha_before" = "$sha_after" ] && pass || bad 'blocked reconciliation mutated the ledger'
 
@@ -212,20 +211,17 @@ cleanup_out2=$(job_lifecycle_terminal_cleanup "$ledger" "$repo" "$runid")
 printf '%s\n' "$cleanup_out2" | grep -q CLEANUP_OK && pass || bad 'terminal cleanup did not proceed once unblocked'
 [ ! -d "$run_dir/worktrees" ] || [ -z "$(find "$run_dir/worktrees" -mindepth 1 -maxdepth 1 2>/dev/null)" ] && pass || bad 'terminal cleanup left worktrees behind'
 
-# --- envelope-before-grammar hook: reject before checking role grammar ---
+# --- report grammar is retired. Runtime treats reports as optional review evidence. ---
 export HOME="$t/home"; mkdir -p "$HOME"
-set +e
-job_lifecycle_validate_report "$t/no-such-report" corr1 "$runid" builder task1 contracthash builder-report >/dev/null 2>&1
-report_rc=$?
-set -e
-[ "$report_rc" -ne 0 ] && pass || bad 'validate_report accepted a missing envelope'
+job_lifecycle_validate_report "$t/no-such-report" corr1 "$runid" worker task1 contracthash worker-report >/dev/null 2>&1
+[ "$?" -eq 0 ] && pass || bad 'retired report validator rejected optional evidence'
 
-# --- evaluator lens/schema validation ---
-lens_out=$(job_lifecycle_compose_lenses builder correctness scope)
+# --- reviewer lens/schema validation ---
+lens_out=$(job_lifecycle_compose_lenses worker correctness scope)
 printf '%s\n' "$lens_out" | grep -q 'Correctness' && printf '%s\n' "$lens_out" | grep -q 'scope' \
   && pass || bad 'compose_lenses did not resolve known lens names'
-expect_token 'lens-unknown' LENS_INVALID job_lifecycle_compose_lenses builder no-such-lens
-expect_token 'lens-duplicate' LENS_INVALID job_lifecycle_compose_lenses builder correctness correctness
+expect_token 'lens-unknown' LENS_INVALID job_lifecycle_compose_lenses worker no-such-lens
+expect_token 'lens-duplicate' LENS_INVALID job_lifecycle_compose_lenses worker correctness correctness
 
 schema_id=$(python3 -c "import json;print(list(json.load(open('$root/templates/job-profiles.json'))['outputSchemas'].keys())[0])")
 job_lifecycle_validate_output_schema "$schema_id" | grep -q OUTPUT_SCHEMA_OK && pass || bad 'validate_output_schema rejected a known schema id'
@@ -234,8 +230,8 @@ expect_token 'schema-unknown' DISPATCH_OUTPUT_SCHEMA_UNKNOWN job_lifecycle_valid
 # --- canonical lesson events/IDs, bounded retrieval, generic/irrelevant
 # rejection, duplicate suppression, immutable supersession/invalidation,
 # deterministic query ordering ---
-eid1=$(job_lifecycle_lesson_record scope 'used wrong worktree' 'always resolve worktree from ledger' hash1 jobA builder)
-eid_dup=$(job_lifecycle_lesson_record scope 'used wrong worktree' 'always resolve worktree from ledger' hash2 jobB builder)
+eid1=$(job_lifecycle_lesson_record scope 'used wrong worktree' 'always resolve worktree from ledger' hash1 jobA worker)
+eid_dup=$(job_lifecycle_lesson_record scope 'used wrong worktree' 'always resolve worktree from ledger' hash2 jobB worker)
 [ "$eid1" = "$eid_dup" ] && pass || bad 'canonical event id was not stable across provenance-only differences'
 lesson_file="$HOME/.claude/memory/lessons.jsonl"
 [ "$(grep -c "\"eventId\":\"$eid1\"" "$lesson_file")" = 1 ] && pass || bad 'duplicate lesson content was appended again instead of suppressed'
@@ -247,7 +243,7 @@ query_out=$(job_lifecycle_lesson_query 'wrong worktree scope resolve')
 
 expect_token 'lesson-irrelevant' LESSON_IRRELEVANT job_lifecycle_lesson_query 'totally unrelated banana zephyr'
 
-eid2=$(job_lifecycle_lesson_record scope 'used wrong worktree' 'resolve worktree strictly from ledger.worktree field' hash3 jobA builder '' active "$eid1")
+eid2=$(job_lifecycle_lesson_record scope 'used wrong worktree' 'resolve worktree strictly from ledger.worktree field' hash3 jobA worker '' active "$eid1")
 [ -n "$eid2" ] && [ "$eid2" != "$eid1" ] && pass || bad 'superseding lesson record did not mint a new canonical id'
 query_out2=$(job_lifecycle_lesson_query 'wrong worktree scope resolve')
 printf '%s\n' "$query_out2" | grep -qx 'resolve worktree strictly from ledger.worktree field' \
@@ -261,7 +257,7 @@ run2=$(job_lifecycle_lesson_query 'wrong worktree scope resolve')
 
 # Bounded retrieval: never return more than 20 rows even with many matches.
 for i in $(seq 1 25); do
-  job_lifecycle_lesson_record scope "mistake $i worktree scope" "correction $i worktree scope resolve" "hash$i" "job$i" builder >/dev/null
+  job_lifecycle_lesson_record scope "mistake $i worktree scope" "correction $i worktree scope resolve" "hash$i" "job$i" worker >/dev/null
 done
 bounded_out=$(job_lifecycle_lesson_query 'worktree scope resolve mistake correction')
 [ "$(printf '%s\n' "$bounded_out" | wc -l | tr -d ' ')" -le 20 ] && pass || bad 'lesson query was not bounded to at most 20 results'

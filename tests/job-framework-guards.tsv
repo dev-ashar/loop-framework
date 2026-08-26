@@ -5,5 +5,4 @@ scope-overlap	tests/job-framework.sh	CROSS_JOB_SCOPE_OVERLAP
 dag-cycle	tests/job-framework.sh	DAG_CYCLE
 runtime-order	tests/job-runtime.sh	JOB_RUNTIME_OK
 runtime-approval	tests/job-runtime.sh	APPROVAL_OBSERVATION
-runtime-envelope	tests/job-runtime.sh	LOOPS-ENVELOPE
 runtime-concurrency	tests/job-runtime.sh	interval

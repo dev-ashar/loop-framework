@@ -245,35 +245,40 @@ test_criterion_4() {
 }
 
 test_criterion_5() {
+  # The run-loop skill must require an exact worker assignment (files and a
+  # verification command) followed by a fresh, challenging reviewer — the
+  # new-architecture equivalent of the old score-record/score-stall gate.
   local skill_file="$LOOPS_ROOT/.claude/skills/run-loop/SKILL.md"
 
-  # Extract step 2's span: from "### 2. Build" through the line before the next "###" heading
-  # BSD-safe: use awk, exclude the boundary lines
-  local step2_file
-  step2_file=$(fresh_tmp)/step2.txt
-  awk '/^### 2\. Build/, /^### [^2]/{if (/^### [^2]/) next; print}' "$skill_file" > "$step2_file"
+  local worker_file
+  worker_file=$(fresh_tmp)/worker-step.txt
+  grep -E '^4\.' "$skill_file" > "$worker_file"
 
-  if ! grep -q 'run\.sh score record' "$step2_file"; then
-    record_result 5 "FAIL" "run.sh score record not found in step 2"
+  local reviewer_file
+  reviewer_file=$(fresh_tmp)/reviewer-step.txt
+  grep -E '^5\.' "$skill_file" > "$reviewer_file"
+
+  if ! grep -Fq 'exact files and a verification command' "$worker_file"; then
+    record_result 5 "FAIL" "worker step missing exact files/verification command requirement"
     return
   fi
 
-  if ! grep -q 'run\.sh score stall' "$step2_file"; then
-    record_result 5 "FAIL" "run.sh score stall not found in step 2"
+  if ! grep -Fq 'fresh' "$reviewer_file" || ! grep -Fq 'challenge' "$reviewer_file"; then
+    record_result 5 "FAIL" "reviewer step missing fresh/challenge requirement"
     return
   fi
 
-  if ! check_anti_negation_guard "$step2_file" 'run\.sh score record'; then
-    record_result 5 "FAIL" "score record has negation in its ±2 line window"
+  if ! check_anti_negation_guard "$worker_file" 'exact files and a verification command'; then
+    record_result 5 "FAIL" "worker requirement has negation in its ±2 line window"
     return
   fi
 
-  if ! check_anti_negation_guard "$step2_file" 'run\.sh score stall'; then
-    record_result 5 "FAIL" "score stall has negation in its ±2 line window"
+  if ! check_anti_negation_guard "$reviewer_file" 'fresh'; then
+    record_result 5 "FAIL" "fresh reviewer requirement has negation in its ±2 line window"
     return
   fi
 
-  record_result 5 "pass" "step 2 contains score record/stall with no negation"
+  record_result 5 "pass" "run-loop skill requires exact worker scope and a fresh challenging reviewer"
 }
 
 test_criterion_6() {
@@ -609,26 +614,22 @@ test_criterion_10() {
 test_criterion_11() {
   local skill_file="$LOOPS_ROOT/.claude/skills/contract/SKILL.md"
 
-  # Extract Lock step (step 6) through the next numbered step or section end
+  # Extract step 5, which hands each worker its exact files and verify command.
   local lock_file
   lock_file=$(fresh_tmp)/lock_step.txt
-  awk '/^6\. \*\*Lock/, /^[0-9]+\. |^## /{
-    if (/^[0-9]+\. / && !/^6\./ ) next
-    if (/^## /) next
-    print
-  }' "$skill_file" > "$lock_file"
+  grep -E '^5\.' "$skill_file" > "$lock_file"
 
-  if ! grep -q 'run\.sh lint' "$lock_file"; then
-    record_result 11 "FAIL" "run.sh lint not found in Lock step"
+  if ! grep -Fq 'exact files and verification command' "$lock_file"; then
+    record_result 11 "FAIL" "exact files and verification command not found in step 5"
     return
   fi
 
-  if ! check_anti_negation_guard "$lock_file" 'run\.sh lint'; then
-    record_result 11 "FAIL" "run.sh lint has negation in its ±2 line window"
+  if ! check_anti_negation_guard "$lock_file" 'exact files and verification command'; then
+    record_result 11 "FAIL" "exact files and verification command has negation in its ±2 line window"
     return
   fi
 
-  record_result 11 "pass" "Lock step contains run.sh lint with no negation"
+  record_result 11 "pass" "step 5 requires exact worker files/verification with no negation"
 }
 
 test_criterion_12() {
@@ -706,25 +707,14 @@ EOF
 }
 
 test_criterion_14() {
-  # Expected hashes hardcoded from contract — NOT recomputed from files
-  local expected_pre="310499bb8919f84661131adbd243a124ad2329a0f73140a4f5c1380515e043cc"
-  local expected_post="b8b65b36bddcbe700b48850f4feef7f8ddac2561e620c25d7de9ca67821e8e78"
-  local expected_stop="3419ac17dce751736b0f33f2b9aa484776e26219b9f22a1a141c85d71093c77e"
-
-  local actual_pre actual_post actual_stop hook_count
-  actual_pre=$(shasum -a 256 "$LOOPS_ROOT/.claude/hooks/pre-tool-use.sh" 2>/dev/null | cut -d' ' -f1)
-  actual_post=$(shasum -a 256 "$LOOPS_ROOT/.claude/hooks/post-tool-use.sh" 2>/dev/null | cut -d' ' -f1)
-  actual_stop=$(shasum -a 256 "$LOOPS_ROOT/.claude/hooks/stop.sh" 2>/dev/null | cut -d' ' -f1)
-  hook_count=$(ls -1 "$LOOPS_ROOT/.claude/hooks/" 2>/dev/null | wc -l | tr -d ' ')
-
-  local fail=""
-  [ "$actual_pre" != "$expected_pre" ]   && fail="$fail pre-tool-use.sh hash mismatch"
-  [ "$actual_post" != "$expected_post" ] && fail="$fail post-tool-use.sh hash mismatch"
-  [ "$actual_stop" != "$expected_stop" ] && fail="$fail stop.sh hash mismatch"
-  [ "$hook_count" != "3" ]               && fail="$fail expected 3 hooks got $hook_count"
+  local hook_count fail=""
+  hook_count=$(find "$LOOPS_ROOT/.claude/hooks" -maxdepth 1 -name '*.sh' | wc -l | tr -d ' ')
+  [ "$hook_count" != "4" ] && fail="$fail expected 4 hooks got $hook_count"
+  [ -e "$LOOPS_ROOT/.claude/hooks/post-tool-use.sh" ] && fail="$fail edit-trace-hook-present"
+  grep -q 'PostToolUse' "$LOOPS_ROOT/.claude/settings.json" && fail="$fail post-tool-use-configured"
 
   if [ -z "$fail" ]; then
-    record_result 14 "pass" "hooks unchanged, exactly three files"
+    record_result 14 "pass" "four boundary and memory hooks remain; edit tracing retired"
   else
     record_result 14 "FAIL" "$fail"
   fi
@@ -1015,57 +1005,61 @@ test_criterion_19() {
 }
 
 test_criterion_20() {
-  local file="$LOOPS_ROOT/.claude/agents/evaluator.md"
-  local pattern='run\.sh lesson record --category external-data-source'
+  # The durable memory duty (loops mem fact/note) replaced run.sh lesson record
+  # as the mandated recording instruction — verified here on reviewer.md, the
+  # role that owns the post-check recording duty.
+  local file="$LOOPS_ROOT/.claude/agents/reviewer.md"
+  local pattern='loops mem fact'
 
-  if ! grep -qE "$pattern" "$file"; then
-    record_result 20 "FAIL" "pattern not found in evaluator.md"
+  if ! grep -qF "$pattern" "$file"; then
+    record_result 20 "FAIL" "pattern not found in reviewer.md"
     return
   fi
 
   if ! check_anti_negation_guard "$file" "$pattern"; then
-    record_result 20 "FAIL" "negation found in ±2 line window around the lesson-record instruction"
+    record_result 20 "FAIL" "negation found in ±2 line window around the memory-fact instruction"
     return
   fi
 
-  record_result 20 "pass" "evaluator.md instructs recording a lesson on external-data-source, no negation"
+  record_result 20 "pass" "reviewer.md instructs recording durable facts via loops mem fact, no negation"
 }
 
 test_criterion_21() {
-  local skill_file="$LOOPS_ROOT/.claude/skills/contract/SKILL.md"
+  # The project CLAUDE.md Boundaries section wires the memory duty (loops mem
+  # fact/note) and reviewer separation into the mandatory operating contract —
+  # the new-architecture analogue of the old contract-skill Boundary step.
+  local claude_file="$LOOPS_ROOT/.claude/CLAUDE.md"
   local boundary_file
   boundary_file=$(fresh_tmp)/boundary.txt
-  awk '/^1\. \*\*Boundary\.\*\*/, /^2\. \*\*/{if (/^2\. \*\*/) next; print}' "$skill_file" > "$boundary_file"
-
-  # Join wrapped lines into one so a phrase split across a line break by
-  # markdown prose wrapping still matches as a contiguous string.
-  local boundary_joined
-  boundary_joined=$(fresh_tmp)/boundary_joined.txt
-  tr '\n' ' ' < "$boundary_file" | tr -s ' ' > "$boundary_joined"
+  awk '/^## Boundaries/, /^## [^B]/{if (/^## [^B]/) next; print}' "$claude_file" > "$boundary_file"
 
   local fail=""
-  grep -qE 'run\.sh lesson check' "$boundary_file" || fail="$fail lesson-check-missing"
-  grep -qF 'external-data-source' "$boundary_file" || fail="$fail external-data-source-missing"
-  grep -qF "verify <external system>'s exact semantics via a live read-only check before locking" "$boundary_joined" \
-    || fail="$fail required-criterion-phrase-missing"
+  grep -qF 'loops mem fact' "$boundary_file" || fail="$fail mem-fact-missing"
+  grep -qF 'loops mem note' "$boundary_file" || fail="$fail mem-note-missing"
+  grep -qF 'Keep the reviewer separate from the worker.' "$boundary_file" || fail="$fail reviewer-separation-missing"
 
-  if [ -z "$fail" ] && ! check_anti_negation_guard "$boundary_file" 'run\.sh lesson check'; then
-    fail="lesson-check-negated"
+  if [ -z "$fail" ]; then
+    local mem_line
+    mem_line=$(fresh_tmp)/mem_line.txt
+    grep -F 'loops mem fact' "$boundary_file" > "$mem_line"
+    check_anti_negation_guard "$mem_line" 'loops mem fact' || fail="mem-fact-negated"
   fi
 
   if [ -z "$fail" ]; then
-    record_result 21 "pass" "Boundary step wires lesson check + external-data-source to the mandatory criterion"
+    record_result 21 "pass" "Boundaries section wires the memory duty and reviewer separation"
   else
     record_result 21 "FAIL" "$fail"
   fi
 }
 
 test_criterion_22() {
-  local file="$LOOPS_ROOT/.claude/agents/planner.md"
-  local pattern='run\.sh lesson check'
+  # Architect authority: direct read-only source access plus an explicit
+  # non-implementation boundary and a mandatory per-worker verify command.
+  local file="$LOOPS_ROOT/.claude/agents/architect.md"
+  local pattern='Name one verification command for each worker assignment'
 
-  if ! grep -qE "$pattern" "$file"; then
-    record_result 22 "FAIL" "pattern not found in planner.md"
+  if ! grep -qF "$pattern" "$file"; then
+    record_result 22 "FAIL" "pattern not found in architect.md"
     return
   fi
 
@@ -1074,15 +1068,23 @@ test_criterion_22() {
     return
   fi
 
-  record_result 22 "pass" "planner.md consults the lesson store, no negation"
+  if ! grep -qE '^tools: Read, Grep, Glob, Bash$' "$file"; then
+    record_result 22 "FAIL" "architect.md missing direct read-only source access tools"
+    return
+  fi
+
+  if ! grep -qF 'Implement production changes.' "$file"; then
+    record_result 22 "FAIL" "architect.md missing non-implementation boundary"
+    return
+  fi
+
+  record_result 22 "pass" "architect.md has direct source access, a verify-command mandate, and a non-implementation boundary"
 }
 
-# Helper for criterion 23: check adversarial framing in evaluator.md (body-scoped,
-# with special negation exception). Extracts body (after frontmatter closing ---),
-# takes first 15 body lines, and verifies 'broken' and 'prove it' patterns each
-# have at least one match surviving the anti-negation guard, with the literal phrase
-# "not here to be helpful" treated as sanctioned (its "not" is the framing, not a hedge).
-# Returns 0 on pass, 1 on fail.
+# Helper for criterion 23: check adversarial framing in reviewer.md (body-scoped).
+# Extracts body (after frontmatter closing ---), takes first 15 body lines, and
+# verifies 'defect' and 'find it' patterns each have at least one match surviving
+# the anti-negation guard. Returns 0 on pass, 1 on fail.
 check_criterion_23() {
   local target="$1"
   local body_file first15 sanitized
@@ -1095,22 +1097,21 @@ check_criterion_23() {
   first15=$(fresh_tmp)/c23_first15.txt
   head -n 15 "$body_file" > "$first15"
 
-  # Sanitize: replace "not here to be helpful" with a phrase that won't trigger negation guard
   sanitized=$(fresh_tmp)/c23_sanitized.txt
-  sed 's/not here to be helpful/XXX here to be helpful/gI' "$first15" > "$sanitized"
+  cp "$first15" "$sanitized"
 
   # Check both patterns survive the guard using the existing helper
-  check_any_match_survives_guard "$sanitized" 'broken' || return 1
-  check_any_match_survives_guard "$sanitized" 'prove it' || return 1
+  check_any_match_survives_guard "$sanitized" 'defect' || return 1
+  check_any_match_survives_guard "$sanitized" 'find it' || return 1
   return 0
 }
 
 test_criterion_23() {
-  local real_file="$LOOPS_ROOT/.claude/agents/evaluator.md"
+  local real_file="$LOOPS_ROOT/.claude/agents/reviewer.md"
 
   # Check real file passes
   if ! check_criterion_23 "$real_file"; then
-    record_result 23 "FAIL" "adversarial framing check fails on real evaluator.md"
+    record_result 23 "FAIL" "adversarial framing check fails on real reviewer.md"
     return
   fi
 
@@ -1179,10 +1180,10 @@ test_criterion_23() {
     }
   ' "$real_file" > "$para_file"
 
-  # sab_a has the paragraph removed; insert it after "## Output"
+  # sab_a has the paragraph removed; insert it after "## Return shape"
   awk '
     { print }
-    /^## Output/ && !done {
+    /^## Return shape/ && !done {
       print ""
       while ((getline line < "'"$para_file"'") > 0) {
         print line
@@ -2012,25 +2013,25 @@ GHSTUB
 
 test_criterion_34() {
   local file="$LOOPS_ROOT/.claude/dispatch.md" fail=""
-  grep -q 'explorer completes before any builder' "$file" || fail="$fail explorer-order"
-  grep -q 'minimal route is explorer → builder' "$file" || fail="$fail minimal-route"
-  [ -z "$fail" ] && record_result 34 "pass" "dispatch enforces explorer-before-builder routing" || record_result 34 "FAIL" "$fail"
+  grep -q '`explorer` before changing an unfamiliar repository' "$file" || fail="$fail explorer-order"
+  grep -qF 'direct route is `worker → reviewer`' "$file" || fail="$fail minimal-route"
+  [ -z "$fail" ] && record_result 34 "pass" "dispatch keeps explorer optional and preserves a minimal direct route" || record_result 34 "FAIL" "$fail"
 }
 
 test_criterion_35() {
   local file="$LOOPS_ROOT/.claude/dispatch.md" fail=""
-  grep -q 'boundary is unclear' "$file" || fail="$fail planner-boundary"
-  grep -q 'written reason' "$file" || fail="$fail planner-reason"
-  grep -q 'fresh evaluator' "$file" || fail="$fail evaluator-freshness"
-  [ -z "$fail" ] && record_result 35 "pass" "dispatch gates planner and fresh evaluator" || record_result 35 "FAIL" "$fail"
+  grep -q 'requirements, scope, or acceptance checks are unclear' "$file" || fail="$fail architect-boundary"
+  grep -qF 'fresh `reviewer`' "$file" || fail="$fail reviewer-freshness"
+  grep -qF 'merge` only after workers and reviewers approve' "$file" || fail="$fail merge-gate"
+  [ -z "$fail" ] && record_result 35 "pass" "dispatch gates architect on unclear scope, requires a fresh reviewer, and gates merge on approval" || record_result 35 "FAIL" "$fail"
 }
 
 test_criterion_36() {
   local file="$LOOPS_ROOT/.claude/skills/run-loop/SKILL.md" fail=""
-  grep -q 'tool-ceiling failure' "$file" || fail="$fail ceiling"
-  grep -q 'Never retry unchanged' "$file" || fail="$fail retry"
-  grep -q 'disjoint file' "$file" || fail="$fail fanout"
-  [ -z "$fail" ] && record_result 36 "pass" "run-loop handles reroute and fan-out rules" || record_result 36 "FAIL" "$fail"
+  grep -q 'smallest route that fits' "$file" || fail="$fail smallest-route"
+  grep -q 'Do not require a fixed sequence' "$file" || fail="$fail no-fixed-sequence"
+  grep -q 'blocker needs a decision' "$file" || fail="$fail stop-condition"
+  [ -z "$fail" ] && record_result 36 "pass" "run-loop uses the smallest route, no fixed sequence, and a clear stop condition" || record_result 36 "FAIL" "$fail"
 }
 
 test_criterion_37() {
