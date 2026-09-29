@@ -29,16 +29,14 @@ Reinstall after moving the clone to repair links.
 | Role | Model | Use |
 |---|---|---|
 | `explorer` | `gemini-3.1-flash-lite` | Map code, tests, dependencies, and read-only Git history. |
-| `architect` | `claude-opus-5` | Define design, scope, non-goals, and acceptance checks. |
-| `worker` | `gpt-5.6-luna-mantle` | Implement one scoped assignment. |
-| `worker` (fast tier) | `gemini-3.7-flash` | Implement many small parallel assignments. |
-| `reviewer` | `gpt-5.6-terra-mantle` | Independently test and challenge completed work. |
-| `reviewer` (secondary) | `gemini-3.1-pro` | Provide a decorrelated second review. |
+| `architect` | `kimi-k3` (trial) | Define scope and choose acceptance checks. Never implement. |
+| `worker` | `gpt-5.6-luna-mantle` (max) | Implement one scoped assignment. |
+| `reviewer` | `gpt-5.6-terra-mantle` (default), `kimi-k3` (trial) | Independently test and challenge completed work. |
+| `planner` (trial) | `kimi-k3` | Conditional planning capability when boundaries remain unclear. |
 | `merge` | `gpt-5.6-terra-mantle` | Integrate approved parallel branches. |
 
-When Opus is genuinely uncertain about one major decision, it dispatches a single
-`gpt-5.6-sol-mantle` architect for a second opinion and then decides.
-Sol is never the default orchestrator, worker, reviewer, or merge model.
+All AI routes use HAIP. Candidate models remain unroutable. `gpt-5.6-sol-mantle`
+and `claude-opus-5` are retired. OMP remains optional and experimental.
 
 ## Routing guide
 
@@ -89,3 +87,5 @@ If a model is unavailable, select an available model and retry.
 If a hook fails, inspect its output and restore the latest backup before reinstalling.
 
 Restore a managed path by copying it from `~/.claude/backups/pre-loops-*` into `~/.claude`.
+
+# Offline evaluation fixtures are validated locally; no paid or network evaluation runs.

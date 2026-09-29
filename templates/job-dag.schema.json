@@ -13,14 +13,16 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "role", "profile", "modelTier", "dependsOn", "writeScope", "verify", "lenses"],
+        "required": ["id", "role", "profile", "modelTier", "dependsOn", "writeScope", "objective", "verify", "lenses"],
         "properties": {
           "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,62}$"},
-          "role": {"enum": ["architect", "worker", "reviewer", "merge", "explorer"]},
+          "role": {"enum": ["architect", "planner", "worker", "reviewer", "merge", "explorer"]},
           "profile": {"type": "string"},
           "modelTier": {"type": "string"},
           "dependsOn": {"type": "array", "maxItems": 15, "uniqueItems": true, "items": {"type": "string"}},
           "writeScope": {"type": "array", "maxItems": 64, "uniqueItems": true, "items": {"type": "string"}},
+          "readScope": {"type": "array", "maxItems": 64, "uniqueItems": true, "items": {"type": "string"}},
+          "objective": {"type": "string", "minLength": 1, "maxLength": 2048, "pattern": "^\\S(?:.*\\S)?$"},
           "verify": {"type": "string", "minLength": 1, "maxLength": 1024},
           "lenses": {"type": "array", "maxItems": 8, "uniqueItems": true, "items": {"type": "string"}}
         },
@@ -31,7 +33,7 @@
           },
           {
             "if": {"properties": {"role": {"const": "reviewer"}}},
-            "then": {"properties": {"lenses": {"minItems": 1}}}
+            "then": {"properties": {"writeScope": {"maxItems": 0}, "readScope": {"minItems": 1}, "lenses": {"minItems": 1}}}
           }
         ]
       }

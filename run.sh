@@ -84,7 +84,7 @@ ui_roster() {
 
 ui_config() {
   local roster selected status role current options choice new_model engine current_engine engine_choice FZF
-  local claude_path opencode_path confirm
+  local claude_path opencode_path omp_path confirm
   if [ ! -t 0 ]; then
     printf 'loops: interactive configuration requires a TTY; use loops models set <role> <model>\n' >&2
     return 1
@@ -111,9 +111,11 @@ ui_config() {
     [ -f "$LOOPDIR/engine" ] && current_engine=$(cat "$LOOPDIR/engine" 2>/dev/null || printf '%s' claude)
     claude_path=$(command -v claude 2>/dev/null || true)
     opencode_path=$(command -v opencode 2>/dev/null || true)
+    omp_path=$(command -v omp 2>/dev/null || true)
     engine_choice=''
     [ -n "$claude_path" ] && engine_choice="${engine_choice}$( [ "$current_engine" = claude ] && printf '> ' || printf '  ')claude\\t$claude_path\\n"
     [ -n "$opencode_path" ] && engine_choice="${engine_choice}$( [ "$current_engine" = opencode ] && printf '> ' || printf '  ')opencode\\t$opencode_path\\n"
+    [ -n "$omp_path" ] && engine_choice="${engine_choice}$( [ "$current_engine" = omp ] && printf '> ' || printf '  ')omp\\t$omp_path\\n"
     if [ -z "$engine_choice" ]; then printf 'loops: no engine binaries found\n' >&2; return 1; fi
     if engine_choice=$(printf '%b' "$engine_choice" | "$FZF" --prompt='engine> ' --header='Choose engine' --height=30% --no-multi --layout=reverse --preview="printf '%s\\n' '$roster'"); then :; else status=$?; return "$status"; fi
     engine=$(printf '%s\n' "$engine_choice" | awk '{print $1}')

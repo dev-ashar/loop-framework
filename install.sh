@@ -11,7 +11,7 @@ DRY=0
 [ "${1:-}" = "--dry-run" ] && DRY=1
 
 say() { printf '  %s\n' "$*"; }
-managed=(CLAUDE.md settings.json agents skills hooks)
+managed=(CLAUDE.md settings.json agents skills hooks output-styles)
 
 require_sources() {
   local f d
@@ -21,6 +21,7 @@ require_sources() {
   [ -d "$KIT/agents" ] && [ -n "$(find "$KIT/agents" -maxdepth 1 -name '*.md' -print -quit)" ] || { echo "ERROR: required agent sources missing" >&2; return 1; }
   [ -d "$KIT/skills" ] && [ -n "$(find "$KIT/skills" -mindepth 1 -maxdepth 1 -type d -print -quit)" ] || { echo "ERROR: required skill sources missing" >&2; return 1; }
   [ -d "$KIT/hooks" ] && [ -n "$(find "$KIT/hooks" -maxdepth 1 -name '*.sh' -print -quit)" ] || { echo "ERROR: required hook sources missing" >&2; return 1; }
+  [ -d "$KIT/output-styles" ] && [ -n "$(find "$KIT/output-styles" -maxdepth 1 -name '*.md' -print -quit)" ] || { echo "ERROR: required output-style sources missing" >&2; return 1; }
   command -v jq >/dev/null 2>&1 || { echo 'ERROR: jq is required for the settings merge.' >&2; return 1; }
 }
 
@@ -28,7 +29,7 @@ merge_settings() {
   local existing="$1" output="$2" kit="$KIT/settings.json"
   jq -s '
     .[0] as $e | .[1] as $k |
-    $e | .model = $k.model | .effortLevel = ($e.effortLevel // $k.effortLevel)
+    $e | .model = $k.model | .effortLevel = $k.effortLevel | .outputStyle = $k.outputStyle
     | .hooks = ($e.hooks // {})
     | .hooks.PreToolUse = (($e.hooks.PreToolUse // []) | map(select(([.hooks[].command] | any(test("pre-tool-use.sh"))) | not)) + (($k.hooks.PreToolUse // []) | map(.hooks |= map(if .command == "$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-use.sh" then .command = "$HOME/.claude/hooks/pre-tool-use.sh" else . end))))
     | .hooks.PostToolUse = (($e.hooks.PostToolUse // []) | map(select(([.hooks[].command] | any(test("post-tool-use.sh"))) | not)))
@@ -67,6 +68,7 @@ printf '%s\n' '3. Link agents, skills, hooks, and CLAUDE.md'
 for f in "$KIT"/agents/*.md; do say "link $DEST/agents/$(basename "$f")"; done
 for d in "$KIT"/skills/*/; do say "link $DEST/skills/$(basename "${d%/}")"; done
 for f in "$KIT"/hooks/*.sh; do say "link $DEST/hooks/$(basename "$f")"; done
+for f in "$KIT"/output-styles/*.md; do say "link $DEST/output-styles/$(basename "$f")"; done
 say "link $DEST/CLAUDE.md"
 printf '%s\n' '4. Preserve or create lessons store'
 say "preserve/create $DEST/memory/lessons.jsonl"
@@ -74,7 +76,7 @@ printf '%s\n' '5. Link CLI'
 say "ln -sfn '$SCRIPT_DIR/run.sh' '$HOME/.local/bin/loops'"
 [ "$DRY" = 1 ] && exit 0
 
-mkdir -p "$DEST" "$DEST/backups" "$DEST/agents" "$DEST/skills" "$DEST/hooks" "$HOME/.local/bin"
+mkdir -p "$DEST" "$DEST/backups" "$DEST/agents" "$DEST/skills" "$DEST/hooks" "$DEST/output-styles" "$HOME/.local/bin"
 mkdir -p "$BACKUP"
 for item in "${managed[@]}"; do
   if [ -e "$DEST/$item" ] || [ -L "$DEST/$item" ]; then cp -a "$DEST/$item" "$BACKUP/$item"; fi
@@ -102,9 +104,11 @@ mv -f "$tmp_settings" "$DEST/settings.json"
 for f in "$KIT"/agents/*.md; do ln -sfn "$f" "$DEST/agents/$(basename "$f")"; done
 for d in "$KIT"/skills/*/; do ln -sfn "${d%/}" "$DEST/skills/$(basename "${d%/}")"; done
 for f in "$KIT"/hooks/*.sh; do chmod +x "$f"; ln -sfn "$f" "$DEST/hooks/$(basename "$f")"; done
+for f in "$KIT"/output-styles/*.md; do ln -sfn "$f" "$DEST/output-styles/$(basename "$f")"; done
 ln -sfn "$KIT/CLAUDE.md" "$DEST/CLAUDE.md"
 for old in flow autoresearch grill-me; do rm -f "$DEST/skills/$old"; done
-for old in builder evaluator field-guide general-purpose planner; do rm -f "$DEST/agents/$old.md"; done
+# Keep current role projections, including planner, across reinstall.
+for old in builder evaluator field-guide general-purpose; do rm -f "$DEST/agents/$old.md"; done
 mkdir -p "$DEST/memory"
 [ -e "$DEST/memory/lessons.jsonl" ] || : > "$DEST/memory/lessons.jsonl"
 if [ -e "$HOME/.local/bin/loops" ] && [ ! -L "$HOME/.local/bin/loops" ]; then cp -a "$HOME/.local/bin/loops" "$BACKUP/.loops-cli"; fi

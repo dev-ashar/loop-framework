@@ -2,6 +2,7 @@
 name: worker
 description: Implements one scoped assignment from an architect or user plan. Use for code, configuration, tests, and documentation changes.
 model: gpt-5.6-luna-mantle
+effort: max
 tools: '*'
 ---
 
