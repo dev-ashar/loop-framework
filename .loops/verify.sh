@@ -22,6 +22,9 @@ expected='.loops/contract.md
 [ "$tracked" = "$expected" ] || { echo "FAIL: .loops/ tracks more than the durable five:"; printf '%s\n' "$tracked"; exit 1; }
 
 bash -n run.sh lib/job-*.sh
+bash tests/engine.sh
+bash tests/job-omp.sh
+bash tests/bench/validate.sh
 bash tests/job-framework.sh
 bash tests/job-executor.sh
 bash tests/job-dispatch.sh

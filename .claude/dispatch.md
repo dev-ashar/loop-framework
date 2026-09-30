@@ -5,7 +5,7 @@ Use the smallest team that can complete the work.
 | Task | Role | Model | Tools |
 |---|---|---|---|
 | Repository mapping and read-only research | `explorer` | `gemini-3.1-flash-lite` | Read, Grep, Glob, Bash |
-| Design, contracts, and plan review | `architect` | `claude-opus-5` | Read, Grep, Glob, Bash |
+| Design, contracts, and plan review | `architect` | `kimi-k3` (trial) | Read, Grep, Glob, Bash |
 | Scoped implementation | `worker` | `gpt-5.6-luna-mantle` | full |
 | Independent verification | `reviewer` | `gpt-5.6-terra-mantle` | full |
 | Branch integration and conflicts | `merge` | `gpt-5.6-terra-mantle` | full |
@@ -13,10 +13,19 @@ Use the smallest team that can complete the work.
 ## Route selection
 
 1. Use `explorer` before changing an unfamiliar repository.
-2. Use `architect` when requirements, scope, or acceptance checks are unclear.
-3. Give each `worker` exact files, acceptance checks, and one verify command.
-4. Dispatch a fresh `reviewer` after correctness-critical or multi-file work.
-5. Use `merge` only after workers and reviewers approve parallel branches.
+2. Keep `explorer` on locating and mapping. Route full schema extraction,
+   multi-file summary, and cross-pull-request synthesis to a read-only `worker`.
+3. Treat investigation as delegated work, not orchestrator work. List every question
+   first, send the whole list to one read-only `worker`, and read only the answers.
+   Follow up yourself only on a genuine surprise. This covers data, logs, and history,
+   not just source code.
+4. Use `architect` when requirements, scope, or acceptance checks are unclear.
+5. Give each `worker` exact files, acceptance checks, and one verify command.
+6. Dispatch a fresh `reviewer` after correctness-critical or multi-file work.
+7. Use `merge` only after workers and reviewers approve parallel branches.
+8. Before dispatching two or more workers at once, write the assignments and run
+   `bash run.sh job orchestrate "<goal>" <assignments.json>`. It rejects overlapping
+   `writeScope` before any worker starts. One worker needs no DAG.
 
 The common route is `explorer → worker → reviewer`.
 The direct route is `worker → reviewer` when the repository and scope are already clear.
@@ -43,14 +52,9 @@ Use plain reports with changed files, commands, results, and blockers.
 
 ## Model routing
 
-Workers run on `gpt-5.6-luna-mantle` by default and `gemini-3.7-flash` for the fast
-parallel tier. Never route an implementation leaf to `claude-opus-5` or
-`gpt-5.6-sol-mantle`. Opus is an architect-only model, not a worker escalation target.
+Workers run on `gpt-5.6-luna-mantle` at max effort. The outer Claude Code
+orchestrator uses `claude-opus-5-5` at low effort and never implements.
 
-The main/default orchestrator remains `claude-opus-5`.
-Architecture uses `claude-opus-5`. When Opus is genuinely uncertain about one major
-decision, dispatch one `gpt-5.6-sol-mantle` architect for a second opinion. Opus makes
-the final decision and continues. Sol is never the default orchestrator, worker,
-reviewer, or merge model.
-
-Reviewers run on `gpt-5.6-terra-mantle` by default. Use `gemini-3.1-pro` as the secondary review route.
+Architecture uses the Kimi K3 trial route as the conditional planner capability. Opus 5.5 remains the low-effort outer orchestrator and never appears in job roles.
+Kimi K3 is trial-only for planning and review. Reviewers use `gpt-5.6-terra-mantle` by default, with Kimi K3 as the trial route. Candidate models
+are not routable. Sol and Opus 5 are retired.

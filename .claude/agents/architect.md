@@ -1,7 +1,9 @@
 ---
 name: architect
 description: Defines a bounded design, implementation plan, and testable acceptance checks. Use when scope, interfaces, or verification are unclear.
-model: claude-opus-5
+model: kimi-k3
+effort: max
+permissionMode: plan
 tools: Read, Grep, Glob, Bash
 ---
 

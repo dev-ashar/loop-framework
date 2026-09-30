@@ -43,7 +43,7 @@ src,out,base,runid,root=sys.argv[1:]
 with open(src) as f: d=json.load(f)
 jobs={}
 for j in d['jobs']:
- jobs[j['id']]={'state':'pending','attempt':0,'pid':None,'baseSha':base,'branch':f"loops/{runid}/{j['id']}",'worktree':os.path.join(root,'.loops','runs',runid,'worktrees',j['id']),'scope':j['writeScope'],'verify':j['verify'],'dependsOn':j['dependsOn'],'startedAt':None,'finishedAt':None,'cleanup':None}
+ jobs[j['id']]={'state':'pending','attempt':0,'pid':None,'baseSha':base,'branch':f"loops/{runid}/{j['id']}" if j['role']!='reviewer' else None,'worktree':os.path.join(root,'.loops','runs',runid,'worktrees',j['id']),'scope':j['writeScope'],'verify':j['verify'],'dependsOn':j['dependsOn'],'startedAt':None,'finishedAt':None,'cleanup':None}
 state={'runId':runid,'root':root,'baseSha':base,'jobs':jobs}
 fd,tmp=tempfile.mkstemp(dir=os.path.dirname(out),prefix='.jobs.',text=True)
 with os.fdopen(fd,'w') as f: json.dump(state,f,separators=(',',':')); f.flush(); os.fsync(f.fileno())
@@ -114,6 +114,108 @@ job_executor_worktree_create() {
   git -C "$root" worktree add --detach "$wt" "$base" >/dev/null || return 1
   git -C "$wt" switch -c "$br" >/dev/null || { git -C "$root" worktree remove --force "$wt"; return 1; }
   printf '%s\t%s\n' "$br" "$wt"
+}
+
+# Reviewers receive a detached snapshot at the dependency's worker commit.
+# This deliberately creates no reviewer branch and never reuses the worker
+# worktree. The caller enforces read-only behavior by rejecting any snapshot
+# delta after the reviewer adapter returns.
+job_executor_review_worktree_create() {
+  local root=$1 runid=$2 jid=$3 commit=$4 wt
+  wt="$root/.loops/runs/$runid/review-worktrees/$jid"
+  [ ! -e "$wt" ] || return 1
+  mkdir -p "$(dirname "$wt")" || return 1
+  git -C "$root" worktree add --detach "$wt" "$commit" >/dev/null || return 1
+  printf '%s\t%s\n' "$commit" "$wt"
+}
+
+# Snapshot all repository-visible state, including ignored and untracked files.
+# The output is only an integrity record; it is kept outside the reviewed tree.
+job_executor_snapshot_worktree() {
+  local wt=$1 out=$2
+  {
+    printf 'HEAD\n'
+    git -C "$wt" rev-parse HEAD
+    printf 'STATUS\n'
+    git -C "$wt" status --porcelain=v1 --untracked-files=all --ignored
+    printf 'DIFF\n'
+    git -C "$wt" diff --binary HEAD
+    printf 'UNTRACKED_IGNORED_MANIFEST\n'
+    python3 - "$wt" <<'PY'
+import hashlib
+import json
+import os
+import stat
+import subprocess
+import sys
+
+wt = sys.argv[1]
+
+
+def git_paths(*args):
+    result = subprocess.run(
+        ["git", "-C", wt, *args],
+        check=True,
+        stdout=subprocess.PIPE,
+    )
+    return result.stdout.split(b"\0")[:-1]
+
+
+entries = set()
+for kind, args in (
+    ("untracked", ("ls-files", "--others", "--exclude-standard", "-z")),
+    ("ignored", ("ls-files", "--others", "--ignored", "--exclude-standard", "-z")),
+):
+    for raw_path in git_paths(*args):
+        entries.add((kind, os.fsdecode(raw_path)))
+
+
+def metadata(st):
+    return {
+        "mode": stat.S_IMODE(st.st_mode),
+        "size": st.st_size,
+        "mtime_ns": st.st_mtime_ns,
+        "ctime_ns": st.st_ctime_ns,
+        "uid": st.st_uid,
+        "gid": st.st_gid,
+    }
+
+
+for kind, path in sorted(entries):
+    full_path = os.path.join(wt, path)
+    st = os.lstat(full_path)
+    record = {"kind": kind, "path": path, **metadata(st)}
+    if stat.S_ISREG(st.st_mode):
+        record["type"] = "file"
+        digest = hashlib.sha256()
+        with open(full_path, "rb") as stream:
+            for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                digest.update(chunk)
+        record["sha256"] = digest.hexdigest()
+    elif stat.S_ISLNK(st.st_mode):
+        record["type"] = "symlink"
+        record["target"] = os.readlink(full_path)
+    elif stat.S_ISDIR(st.st_mode):
+        record["type"] = "directory"
+    else:
+        record["type"] = "special"
+    print(json.dumps(record, ensure_ascii=True, sort_keys=True, separators=(",", ":")))
+PY
+  } >"$out"
+}
+
+job_executor_worktree_unchanged() {
+  local wt=$1 before=$2 now rc
+  now=$(mktemp) || return 1
+  job_executor_snapshot_worktree "$wt" "$now" || { rm -f "$now"; return 1; }
+  if cmp -s "$before" "$now"; then
+    rc=0
+  else
+    printf 'REVIEWER_DELTA worktree=%s\n' "$wt" >&2
+    rc=1
+  fi
+  rm -f "$now"
+  return "$rc"
 }
 
 job_executor_git_paths() {

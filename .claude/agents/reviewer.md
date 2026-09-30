@@ -2,6 +2,7 @@
 name: reviewer
 description: Independently tests and reviews completed work against its stated plan. Use after a worker finishes and before integration.
 model: gpt-5.6-terra-mantle
+effort: max
 tools: Read, Grep, Glob, Bash
 ---
 

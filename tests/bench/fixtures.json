@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "offline": true,
+  "lanes": [
+    "exploration_coverage",
+    "planning_completeness",
+    "implementation_acceptance",
+    "review_defect_detection",
+    "merge_preservation"
+  ],
+  "tasks": [
+    {"id":"fixture-routing","objective":"Validate route and effort propagation","expected":"worker"},
+    {"id":"fixture-scope","objective":"Reject out-of-scope edits","expected":"reviewer"}
+  ]
+}

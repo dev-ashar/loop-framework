@@ -1,0 +1,29 @@
+# Isolated LOOPS provider configuration for can1357/oh-my-pi.
+# HAIP credentials stay in the environment and never enter this repository.
+providers:
+  haip:
+    baseUrl: __HAIP_BASE_URL__/v1
+    api: anthropic-messages
+    apiKey: __HAIP_TOKEN_ENV__
+    authHeader: true
+    models:
+      - id: claude-opus-5-5
+        name: LOOPS HAIP orchestrator
+        contextWindow: 200000
+        maxTokens: 32000
+      - id: gpt-5.6-luna-mantle
+        name: LOOPS HAIP worker
+        contextWindow: 200000
+        maxTokens: 32000
+      - id: gpt-5.6-terra-mantle
+        name: LOOPS HAIP reviewer
+        contextWindow: 200000
+        maxTokens: 32000
+      - id: gemini-3.1-flash-lite
+        name: LOOPS HAIP explorer
+        contextWindow: 200000
+        maxTokens: 32000
+      - id: kimi-k3
+        name: LOOPS HAIP trial planner reviewer
+        contextWindow: 200000
+        maxTokens: 32000

@@ -12,20 +12,16 @@ expect_token(){ local n=$1 token=$2; shift 2; local out; out=$($@ 2>&1); local r
 
 t=$(mktemp -d); trap 'rm -rf "$t"' EXIT
 cat > "$t/valid.json" <<'JSON'
-{"schemaVersion":2,"jobs":[{"id":"build-a","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":[],"writeScope":["lib/a.sh"],"verify":"true","lenses":["correctness"]},{"id":"build-b","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":["build-a"],"writeScope":["lib/b.sh"],"verify":"true","lenses":["scope"]}]}
+{"schemaVersion":2,"jobs":[{"id":"build-a","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":[],"writeScope":["lib/a.sh"],"objective":"implement requested change","verify":"true","lenses":["correctness"]},{"id":"build-b","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":["build-a"],"writeScope":["lib/b.sh"],"objective":"implement requested change","verify":"true","lenses":["scope"]},{"id":"review-a","role":"reviewer","profile":"reviewer-default","modelTier":"primary","dependsOn":["build-a"],"writeScope":[],"readScope":["lib/a.sh"],"objective":"review build a","verify":"true","lenses":["correctness"]},{"id":"review-b","role":"reviewer","profile":"reviewer-default","modelTier":"primary","dependsOn":["build-b"],"writeScope":[],"readScope":["lib/b.sh"],"objective":"review build b","verify":"true","lenses":["scope"]}]}
 JSON
 expect_ok valid-dag bash run.sh job validate "$t/valid.json"
-[ "$(bash run.sh job schedule "$t/valid.json" 2>/dev/null)" = $'build-a\nbuild-b' ] && ok || bad schedule
+[ "$(bash run.sh job schedule "$t/valid.json" 2>/dev/null)" = $'build-a\nbuild-b\nreview-a\nreview-b' ] && ok || bad schedule
 [ "$(bash run.sh job route worker-default operational 2>/dev/null)" = gpt-5.6-luna-mantle ] && ok || bad route
-[ "$(bash run.sh job route architect-default primary 2>/dev/null)" = claude-opus-5 ] && ok || bad architect-primary-route
-[ "$(bash run.sh job route architect-default secondary 2>/dev/null)" = gpt-5.6-sol-mantle ] && ok || bad architect-challenger-route
-[ "$(jq -r '.profiles["architect-default"].models.secondary' templates/job-profiles.json)" = gpt-5.6-sol-mantle ] && ok || bad architect-secondary-profile
-grep -Fq 'genuinely uncertain about one major' .claude/dispatch.md && grep -Fq 'Opus makes' .claude/dispatch.md && grep -Fq 'the final decision and continues' .claude/dispatch.md && ok || bad sol-second-opinion-policy
-grep -Fq 'Sol is never the default orchestrator, worker,' .claude/dispatch.md && grep -Fq 'reviewer, or merge model' .claude/dispatch.md && ok || bad sol-boundary
+[ "$(bash run.sh job route architect-default trial 2>/dev/null)" = kimi-k3 ] && ok || bad architect-primary-route
 expect_fail unknown-tier bash run.sh job route worker-default unknown
 
 cat > "$t/profile-mismatch.json" <<'JSON'
-{"schemaVersion":2,"jobs":[{"id":"review","role":"reviewer","profile":"worker-default","modelTier":"operational","dependsOn":[],"writeScope":["x"],"verify":"true","lenses":["correctness"]}]}
+{"schemaVersion":2,"jobs":[{"id":"review","role":"reviewer","profile":"worker-default","modelTier":"operational","dependsOn":[],"writeScope":["x"],"objective":"review change","verify":"true","lenses":["correctness"]}]}
 JSON
 expect_token profile-mismatch ROUTE_INVALID bash run.sh job validate "$t/profile-mismatch.json"
 cat > "$t/unknown.json" <<'JSON'
@@ -37,11 +33,11 @@ expect_token duplicate-key DAG_DUPLICATE_KEY bash run.sh job validate "$t/duplic
 for version in 0 1; do jq --argjson v "$version" '.schemaVersion=$v' "$t/valid.json" > "$t/v.json"; expect_token "version-$version" DAG_SCHEMA_INVALID bash run.sh job validate "$t/v.json"; done
 
 cat > "$t/self.json" <<'JSON'
-{"schemaVersion":2,"jobs":[{"id":"a","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":["a"],"writeScope":["x"],"verify":"true","lenses":["correctness"]}]}
+{"schemaVersion":2,"jobs":[{"id":"a","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":["a"],"writeScope":["x"],"objective":"review change","verify":"true","lenses":["correctness"]}]}
 JSON
 expect_token self-dependency DAG_SELF_DEPENDENCY bash run.sh job validate "$t/self.json"
 cat > "$t/cycle.json" <<'JSON'
-{"schemaVersion":2,"jobs":[{"id":"a","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":["b"],"writeScope":["x"] ,"verify":"true","lenses":["correctness"]},{"id":"b","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":["a"],"writeScope":["y"],"verify":"true","lenses":["correctness"]}]}
+{"schemaVersion":2,"jobs":[{"id":"a","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":["b"],"writeScope":["x"],"objective":"cycle test" ,"verify":"true","lenses":["correctness"]},{"id":"b","role":"worker","profile":"worker-default","modelTier":"operational","dependsOn":["a"],"writeScope":["y"],"objective":"review change","verify":"true","lenses":["correctness"]}]}
 JSON
 expect_token cycle DAG_CYCLE bash run.sh job validate "$t/cycle.json"
 for p in '../bad' '/absolute' 'a//b' 'dir/' 'a/./b' 'a/../b'; do jq --arg p "$p" '.jobs[0].writeScope=[$p]' "$t/valid.json" > "$t/path.json"; expect_fail "path-$p" bash run.sh job validate "$t/path.json"; done

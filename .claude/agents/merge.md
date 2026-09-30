@@ -2,6 +2,7 @@
 name: merge
 description: Integrates independently reviewed branches and stops at repository conflicts. Use only for parallel approved work.
 model: gpt-5.6-terra-mantle
+effort: max
 tools: '*'
 ---
 

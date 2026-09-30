@@ -1,6 +1,7 @@
 {
-  "model": "claude-opus-5",
-  "effortLevel": "medium",
+  "model": "claude-opus-5-5",
+  "effortLevel": "low",
+  "outputStyle": "terse-orchestrator",
   "hooks": {
     "PreToolUse": [
       {
@@ -62,5 +63,8 @@
       "Bash(loops engine show:*)",
       "Bash(loops worktree check:*)"
     ]
+  },
+  "env": {
+    "CLAUDE_CODE_MAX_CONTEXT_TOKENS": "272000"
   }
 }

@@ -1,142 +1,34 @@
 {
-  "schemaVersion": 2,
-  "capabilities": [
-    "read-source",
-    "write-source",
-    "run-tests",
-    "git-read",
-    "git-worktree",
-    "memory-read",
-    "memory-write"
-  ],
+  "schemaVersion": 3,
+  "modelRegistry": {
+    "claude-opus-5-5": {"provider":"haip","lifecycle":"active","roles":["orchestrator"],"efforts":["low"],"routes":[]},
+    "gpt-5.6-luna-mantle": {"provider":"haip","lifecycle":"active","roles":["worker"],"efforts":["max"],"routes":[{"profile":"worker-default","tier":"operational"},{"profile":"worker-fast","tier":"fast"}]},
+    "gpt-5.6-terra-mantle": {"provider":"haip","lifecycle":"active","roles":["reviewer","merge"],"efforts":["medium","max"],"routes":[{"profile":"reviewer-default","tier":"primary"},{"profile":"merge-default","tier":"primary"}]},
+    "gemini-3.1-flash-lite": {"provider":"haip","lifecycle":"active","roles":["explorer"],"efforts":["low","medium"],"routes":[{"profile":"explorer-default","tier":"primary"}]},
+    "glm-5": {"provider":"haip","lifecycle":"candidate","roles":["planner","reviewer"],"efforts":["medium","max"],"routes":[]},
+    "glm-5.2": {"provider":"haip","lifecycle":"candidate","roles":["planner","reviewer"],"efforts":["medium","max"],"routes":[]},
+    "kimi-k3": {"provider":"haip","lifecycle":"trial","roles":["architect","planner","reviewer"],"efforts":["max"],"routes":[{"profile":"architect-default","tier":"trial"},{"profile":"planner-default","tier":"trial"},{"profile":"reviewer-default","tier":"trial"}]},
+    "claude-opus-5": {"provider":"haip","lifecycle":"retired","roles":[],"efforts":[],"routes":[]},
+    "gpt-5.6-sol-mantle": {"provider":"haip","lifecycle":"retired","roles":[],"efforts":[],"routes":[]}
+  },
+  "projections": {
+    "architect": {"profile":"architect-default","tier":"trial"},
+    "worker": {"profile":"worker-default","tier":"operational"},
+    "reviewer": {"profile":"reviewer-default","tier":"primary"},
+    "merge": {"profile":"merge-default","tier":"primary"},
+    "explorer": {"profile":"explorer-default","tier":"primary"},
+    "planner": {"profile":"planner-default","tier":"trial"}
+  },
+  "capabilities": ["read-source","write-source","run-tests","git-read","git-worktree","memory-read","memory-write"],
   "profiles": {
-    "architect-default": {
-      "role": "architect",
-      "capabilities": [
-        "read-source",
-        "run-tests",
-        "git-read",
-        "memory-read"
-      ],
-      "tiers": [
-        "primary",
-        "secondary"
-      ],
-      "models": {
-        "primary": "claude-opus-5",
-        "secondary": "gpt-5.6-sol-mantle"
-      },
-      "escalation": {},
-      "maxAttempts": 1
-    },
-    "worker-default": {
-      "role": "worker",
-      "capabilities": [
-        "read-source",
-        "write-source",
-        "run-tests",
-        "git-read",
-        "git-worktree",
-        "memory-read",
-        "memory-write"
-      ],
-      "tiers": [
-        "operational"
-      ],
-      "models": {
-        "operational": "gpt-5.6-luna-mantle"
-      },
-      "escalation": {},
-      "maxAttempts": 2
-    },
-    "worker-fast": {
-      "role": "worker",
-      "capabilities": [
-        "read-source",
-        "write-source",
-        "run-tests",
-        "git-read",
-        "git-worktree",
-        "memory-read",
-        "memory-write"
-      ],
-      "tiers": [
-        "fast"
-      ],
-      "models": {
-        "fast": "gemini-3.7-flash"
-      },
-      "escalation": {},
-      "maxAttempts": 2
-    },
-    "explorer-default": {
-      "role": "explorer",
-      "capabilities": [
-        "read-source",
-        "git-read",
-        "memory-read"
-      ],
-      "tiers": [
-        "primary"
-      ],
-      "models": {
-        "primary": "gemini-3.1-flash-lite"
-      },
-      "escalation": {},
-      "maxAttempts": 1
-    },
-    "reviewer-default": {
-      "role": "reviewer",
-      "capabilities": [
-        "read-source",
-        "run-tests",
-        "git-read",
-        "memory-read",
-        "memory-write"
-      ],
-      "tiers": [
-        "primary",
-        "secondary"
-      ],
-      "models": {
-        "primary": "gpt-5.6-terra-mantle",
-        "secondary": "gemini-3.1-pro"
-      },
-      "escalation": {},
-      "maxAttempts": 1
-    },
-    "merge-default": {
-      "role": "merge",
-      "capabilities": [
-        "read-source",
-        "write-source",
-        "run-tests",
-        "git-read",
-        "git-worktree",
-        "memory-read",
-        "memory-write"
-      ],
-      "tiers": [
-        "primary"
-      ],
-      "models": {
-        "primary": "gpt-5.6-terra-mantle"
-      },
-      "escalation": {},
-      "maxAttempts": 1
-    }
+    "architect-default": {"role":"architect","capabilities":["read-source","run-tests","git-read","memory-read"],"tiers":["trial"],"models":{"trial":"kimi-k3"},"effort":{"trial":"max"},"escalation":{},"maxAttempts":1},
+    "planner-default": {"role":"planner","capabilities":["read-source","run-tests","git-read","memory-read"],"tiers":["trial"],"models":{"trial":"kimi-k3"},"effort":{"trial":"max"},"escalation":{},"maxAttempts":1},
+    "worker-default": {"role":"worker","capabilities":["read-source","write-source","run-tests","git-read","git-worktree","memory-read","memory-write"],"tiers":["operational"],"models":{"operational":"gpt-5.6-luna-mantle"},"effort":{"operational":"max"},"escalation":{},"maxAttempts":2},
+    "worker-fast": {"role":"worker","capabilities":["read-source","write-source","run-tests","git-read","git-worktree","memory-read","memory-write"],"tiers":["fast"],"models":{"fast":"gpt-5.6-luna-mantle"},"effort":{"fast":"max"},"escalation":{},"maxAttempts":2},
+    "explorer-default": {"role":"explorer","capabilities":["read-source","git-read","memory-read"],"tiers":["primary"],"models":{"primary":"gemini-3.1-flash-lite"},"effort":{"primary":"low"},"escalation":{},"maxAttempts":1},
+    "reviewer-default": {"role":"reviewer","capabilities":["read-source","run-tests","git-read","memory-read","memory-write"],"tiers":["primary","trial"],"models":{"primary":"gpt-5.6-terra-mantle","trial":"kimi-k3"},"effort":{"primary":"max","trial":"max"},"escalation":{},"maxAttempts":1},
+    "merge-default": {"role":"merge","capabilities":["read-source","write-source","run-tests","git-read","git-worktree","memory-read","memory-write"],"tiers":["primary"],"models":{"primary":"gpt-5.6-terra-mantle"},"effort":{"primary":"max"},"escalation":{},"maxAttempts":1}
   },
-  "lenses": {
-    "correctness": "Correctness meets the acceptance checks",
-    "scope": "Change stays inside the assigned scope",
-    "security": "Authorization boundaries remain intact",
-    "integration": "Approved branches integrate cleanly"
-  },
-  "outputSchemas": {
-    "explorer-report": "explorer-report",
-    "architect-plan": "architect-plan",
-    "worker-report": "worker-report",
-    "review-report": "review-report",
-    "integration-report": "integration-report"
-  }
+  "lenses": {"correctness":"Correctness meets the acceptance checks","scope":"Change stays inside the assigned scope","security":"Authorization boundaries remain intact","integration":"Approved branches integrate cleanly"},
+  "outputSchemas": {"explorer-report":"explorer-report","architect-plan":"architect-plan","worker-report":"worker-report","review-report":"review-report","integration-report":"integration-report"}
 }

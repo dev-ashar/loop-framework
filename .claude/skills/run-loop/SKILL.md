@@ -11,8 +11,8 @@ Use this skill for a nontrivial repository change.
 1. Dispatch `explorer` when repository behavior is not already known.
 2. Dispatch `architect` when scope, interfaces, or acceptance checks are unclear.
 3. Ask the user for approval before destructive, outward-facing, or goal-changing work.
-4. Dispatch `worker` with exact files and a verification command.
-5. Dispatch a fresh `reviewer` to run the checks and challenge the result.
+4. Dispatch `worker` with exact files and a verification command, plus the objective and constraints. Workers use Luna at max effort.
+5. After substantive worker changes, dispatch a fresh read-only `reviewer` to run the checks and challenge the result.
 6. Dispatch `merge` only for independently reviewed parallel branches.
 
 Use the smallest route that fits.

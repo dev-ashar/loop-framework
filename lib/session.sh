@@ -12,7 +12,7 @@
 # All three measured 2026-08-13: Max Input Tokens=272000.
 session_measured_window() {
   case "$1" in
-    gpt-5.6-sol-mantle|gpt-5.6-luna-mantle|gpt-5.6-terra-mantle) printf '272000\n' ;;
+    gpt-5.6-luna-mantle|gpt-5.6-terra-mantle) printf '272000\n' ;;
     *) return 1 ;;
   esac
 }
@@ -68,6 +68,7 @@ session_settings_path() {
 
 cmd_session() {
   local subcommand="${1-}"
+  local profiles_file="${LOOPS_PROFILES_FILE:-$SCRIPT_DIR/templates/job-profiles.json}"
   shift || true
 
   case "$subcommand" in
@@ -98,6 +99,13 @@ cmd_session() {
         printf 'usage: cmd_session set <model-id> [--user]\n' >&2
         return 2
       fi
+      if ! python3 - "$profiles_file" "$id" <<'PY'
+import json,sys
+p=json.load(open(sys.argv[1])); m=p['modelRegistry'].get(sys.argv[2])
+if not m or m['provider']!='haip' or m['lifecycle']!='active' or 'orchestrator' not in m.get('roles',[]):
+ print('loops: model is not an active HAIP orchestrator route',file=sys.stderr); raise SystemExit(1)
+PY
+      then return 1; fi
       if ! resolved=$(session_window "$id"); then
         return 1
       fi
