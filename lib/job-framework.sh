@@ -278,7 +278,8 @@ job_default_adapter() {
  role=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["role"])' "$context") || return 1
  case "$role" in
   worker) [ "$model" = gpt-5.6-luna-mantle ] && [ "$effort" = max ] || { echo 'UNSUPPORTED_EFFORT_ROUTE' >&2; return 1; } ;;
-  planner|reviewer) [ "$model" = gpt-5.6-terra-mantle ] || [ "$model" = kimi-k3 ] || { echo 'UNSUPPORTED_READONLY_ROUTE' >&2; return 1; } ;;
+  architect|planner) [ "$model" = claude-sonnet-5 ] || { echo 'UNSUPPORTED_READONLY_ROUTE' >&2; return 1; } ;;
+  reviewer) [ "$model" = gpt-5.6-terra-mantle ] || [ "$model" = kimi-k3 ] || { echo 'UNSUPPORTED_READONLY_ROUTE' >&2; return 1; } ;;
   *) echo 'UNSUPPORTED_EFFORT_ROUTE' >&2; return 1 ;;
  esac
  command -v claude >/dev/null 2>&1 || { echo 'CLAUDE_ENGINE_MISSING' >&2; return 1; }

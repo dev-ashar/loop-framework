@@ -15,15 +15,19 @@ providers:
         name: LOOPS HAIP worker
         contextWindow: 200000
         maxTokens: 32000
+      - id: claude-sonnet-5
+        name: LOOPS HAIP architect planner
+        contextWindow: 200000
+        maxTokens: 32000
       - id: gpt-5.6-terra-mantle
         name: LOOPS HAIP reviewer
         contextWindow: 200000
         maxTokens: 32000
       - id: gemini-3.1-flash-lite
-        name: LOOPS HAIP explorer
+        name: LOOPS HAIP keyword search
         contextWindow: 200000
         maxTokens: 32000
       - id: kimi-k3
-        name: LOOPS HAIP trial planner reviewer
+        name: LOOPS HAIP trial reviewer
         contextWindow: 200000
         maxTokens: 32000

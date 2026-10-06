@@ -17,7 +17,7 @@ JSON
 expect_ok valid-dag bash run.sh job validate "$t/valid.json"
 [ "$(bash run.sh job schedule "$t/valid.json" 2>/dev/null)" = $'build-a\nbuild-b\nreview-a\nreview-b' ] && ok || bad schedule
 [ "$(bash run.sh job route worker-default operational 2>/dev/null)" = gpt-5.6-luna-mantle ] && ok || bad route
-[ "$(bash run.sh job route architect-default trial 2>/dev/null)" = kimi-k3 ] && ok || bad architect-primary-route
+[ "$(bash run.sh job route architect-default primary 2>/dev/null)" = claude-sonnet-5 ] && ok || bad architect-primary-route
 expect_fail unknown-tier bash run.sh job route worker-default unknown
 
 cat > "$t/profile-mismatch.json" <<'JSON'

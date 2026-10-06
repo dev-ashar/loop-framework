@@ -4,8 +4,8 @@ Use the smallest team that can complete the work.
 
 | Task | Role | Model | Tools |
 |---|---|---|---|
-| Repository mapping and read-only research | `explorer` | `gemini-3.1-flash-lite` | Read, Grep, Glob, Bash |
-| Design, contracts, and plan review | `architect` | `kimi-k3` (trial) | Read, Grep, Glob, Bash |
+| Repository mapping and read-only research | `explorer` | `gpt-5.6-luna-mantle` | Read, Grep, Glob, Bash |
+| Design, contracts, and plan review | `architect` | `claude-sonnet-5` (max) | Read, Grep, Glob, Bash |
 | Scoped implementation | `worker` | `gpt-5.6-luna-mantle` | full |
 | Independent verification | `reviewer` | `gpt-5.6-terra-mantle` | full |
 | Branch integration and conflicts | `merge` | `gpt-5.6-terra-mantle` | full |
@@ -55,6 +55,6 @@ Use plain reports with changed files, commands, results, and blockers.
 Workers run on `gpt-5.6-luna-mantle` at max effort. The outer Claude Code
 orchestrator uses `claude-opus-5-5` at low effort and never implements.
 
-Architecture uses the Kimi K3 trial route as the conditional planner capability. Opus 5.5 remains the low-effort outer orchestrator and never appears in job roles.
-Kimi K3 is trial-only for planning and review. Reviewers use `gpt-5.6-terra-mantle` by default, with Kimi K3 as the trial route. Candidate models
+Architecture and planning use `claude-sonnet-5` at max effort. Opus 5.5 remains the low-effort outer orchestrator and never appears in job roles.
+The trial route is reserved for reviewers. Reviewers use `gpt-5.6-terra-mantle` by default, with Kimi K3 as the trial route. Candidate models
 are not routable. Sol and Opus 5 are retired.

@@ -33,9 +33,9 @@ results. Running the twentieth query yourself is the failure mode, not diligence
 
 | Need | Role | Model |
 |---|---|---|
-| Map code, dependencies, or Git history | `explorer` | `gemini-3.1-flash-lite` |
+| Map code, dependencies, or Git history | `explorer` | `gpt-5.6-luna-mantle` |
 | Extract a schema, summarize many files, or synthesize pull requests | `worker` (read-only) | `gpt-5.6-luna-mantle` |
-| Define a design or hard boundary | `architect` | `kimi-k3` (trial) |
+| Define a design or hard boundary | `architect` | `claude-sonnet-5` (max) |
 | Implement a scoped change | `worker` | `gpt-5.6-luna-mantle` at max effort |
 | Test and challenge a completed change | `reviewer` | `gpt-5.6-terra-mantle` |
 | Integrate approved parallel work | `merge` | `gpt-5.6-terra-mantle` |

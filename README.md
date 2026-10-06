@@ -28,11 +28,11 @@ Reinstall after moving the clone to repair links.
 
 | Role | Model | Use |
 |---|---|---|
-| `explorer` | `gemini-3.1-flash-lite` | Map code, tests, dependencies, and read-only Git history. |
-| `architect` | `kimi-k3` (trial) | Define scope and choose acceptance checks. Never implement. |
+| `explorer` | `gpt-5.6-luna-mantle` | Map code, tests, dependencies, and read-only Git history. |
+| `architect` | `claude-sonnet-5` (max) | Define scope and choose acceptance checks. Never implement. |
 | `worker` | `gpt-5.6-luna-mantle` (max) | Implement one scoped assignment. |
 | `reviewer` | `gpt-5.6-terra-mantle` (default), `kimi-k3` (trial) | Independently test and challenge completed work. |
-| `planner` (trial) | `kimi-k3` | Conditional planning capability when boundaries remain unclear. |
+| `planner` | `claude-sonnet-5` (max) | Conditional planning capability when boundaries remain unclear. |
 | `merge` | `gpt-5.6-terra-mantle` | Integrate approved parallel branches. |
 
 All AI routes use HAIP. Candidate models remain unroutable. `gpt-5.6-sol-mantle`
