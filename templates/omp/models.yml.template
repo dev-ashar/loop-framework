@@ -9,25 +9,17 @@ providers:
     models:
       - id: claude-opus-5-5
         name: LOOPS HAIP orchestrator
-        contextWindow: 200000
+        contextWindow: 1000000
         maxTokens: 32000
-      - id: gpt-5.6-luna-mantle
-        name: LOOPS HAIP worker
-        contextWindow: 200000
+      - id: claude-sonnet-5-5
+        name: LOOPS HAIP architect worker
+        contextWindow: 1000000
         maxTokens: 32000
-      - id: claude-sonnet-5
-        name: LOOPS HAIP architect planner
-        contextWindow: 200000
+      - id: gpt-6-luna
+        name: LOOPS HAIP explorer
+        contextWindow: 1000000
         maxTokens: 32000
-      - id: gpt-5.6-terra-mantle
-        name: LOOPS HAIP reviewer
-        contextWindow: 200000
-        maxTokens: 32000
-      - id: gemini-3.1-flash-lite
-        name: LOOPS HAIP keyword search
-        contextWindow: 200000
-        maxTokens: 32000
-      - id: kimi-k3
-        name: LOOPS HAIP trial reviewer
-        contextWindow: 200000
+      - id: gpt-6.1-sol
+        name: LOOPS HAIP reviewer merge
+        contextWindow: 1000000
         maxTokens: 32000

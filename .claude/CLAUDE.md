@@ -33,12 +33,12 @@ results. Running the twentieth query yourself is the failure mode, not diligence
 
 | Need | Role | Model |
 |---|---|---|
-| Map code, dependencies, or Git history | `explorer` | `gpt-5.6-luna-mantle` |
-| Extract a schema, summarize many files, or synthesize pull requests | `worker` (read-only) | `gpt-5.6-luna-mantle` |
-| Define a design or hard boundary | `architect` | `claude-sonnet-5` (max) |
-| Implement a scoped change | `worker` | `gpt-5.6-luna-mantle` at max effort |
-| Test and challenge a completed change | `reviewer` | `gpt-5.6-terra-mantle` |
-| Integrate approved parallel work | `merge` | `gpt-5.6-terra-mantle` |
+| Map code, dependencies, or Git history | `explorer` | `gpt-6-luna` (low) |
+| Extract a schema, summarize many files, or synthesize pull requests | `worker` (read-only) | `claude-sonnet-5-5` (medium) |
+| Define a design or hard boundary | `architect` | `claude-sonnet-5-5` (high) |
+| Implement a scoped change | `worker` | `claude-sonnet-5-5` at medium effort |
+| Test and challenge a completed change | `reviewer` | `gpt-6.1-sol` at high effort |
+| Integrate approved parallel work | `merge` | `gpt-6.1-sol` at high effort |
 
 The outer Claude Code orchestrator uses `claude-opus-5-5` at low effort. Opus remains outer-only; job roles use their registry routes.
 

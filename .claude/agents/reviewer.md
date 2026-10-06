@@ -1,8 +1,8 @@
 ---
 name: reviewer
 description: Independently tests and reviews completed work against its stated plan. Use after a worker finishes and before integration.
-model: gpt-5.6-terra-mantle
-effort: max
+model: gpt-6.1-sol
+effort: high
 tools: Read, Grep, Glob, Bash
 ---
 

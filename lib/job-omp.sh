@@ -44,7 +44,7 @@ omp_engine_run() {
   fi
   local profiles_file="${OMP_PROFILES_FILE:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/templates/job-profiles.json}"
   local tools
-  [ "$role" = worker ] && [ "$profile" = worker-default ] && [ "$model_id" = gpt-5.6-luna-mantle ] || { echo 'ROUTE_INVALID' >&2; return 1; }
+  [ "$role" = worker ] && [ "$profile" = worker-default ] || { echo 'ROUTE_INVALID' >&2; return 1; }
   tools=$(omp_tools_for_profile "$profiles_file" "$profile") || return 1
   [ "$role" = "$(python3 - "$profiles_file" "$profile" <<'PY'
 import json,sys; print(json.load(open(sys.argv[1]))['profiles'][sys.argv[2]]['role'])
@@ -60,7 +60,7 @@ print(q['effort'][q['tiers'][0]])
 PY
   ) || { echo 'ROUTE_INVALID' >&2; return 1; }
   local tmp=${stream:-$(mktemp)} rc=0
-  [ -n "$model_id" ] || model_id=gpt-5.6-luna-mantle
+  [ -n "$model_id" ] || { echo "ROUTE_INVALID" >&2; return 1; }
   PI_CODING_AGENT_DIR="$config_dir" omp --no-session -p "$prompt" --model "haip/$model_id" --tools "$tools" --effort "$resolved_effort" >"$tmp" 2>&1 || rc=$?
   cat "$tmp"
   [ "$rc" -eq 0 ] || { rm -f "$tmp"; return "$rc"; }

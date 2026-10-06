@@ -132,7 +132,7 @@ assert set(c)==set(keys)
 for k in ('role','profile','modelTier','objective','dependsOn','writeScope','verify','lenses'):
  assert c[k]==j[k], k
 assert c['jobId']==j['id']
-assert c['provider']=='haip' and c['lifecycle']=='active' and c['effort']=='max'
+assert c['provider']=='haip' and c['lifecycle']=='active' and c['effort']=='medium'
 assert c['runId']=='context-test' and c['dispatchId']=='dispatch-first' and c['baseSha']==sys.argv[5]
 import os
 assert c['repositoryRoot']==os.path.realpath(sys.argv[3]) and c['worktreePath']==os.path.realpath(sys.argv[3])
@@ -148,7 +148,7 @@ import json,sys
 print(json.load(open(sys.argv[1]))['modelId'])
 PY
 )
-[ "$observed_model" = 'gpt-5.6-luna-mantle' ] || fail 'environment overrode model'
+[ "$observed_model" = 'claude-sonnet-5-5' ] || fail 'environment overrode model'
 pass 'exact context, tamper rejection, model binding'
 
 # 15-17. Exercise the real approval, lifecycle, dependency, conflict, and gate order primitives.

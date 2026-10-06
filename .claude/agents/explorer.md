@@ -1,7 +1,7 @@
 ---
 name: explorer
 description: Fast read-only codebase search and mapping.
-model: gpt-5.6-luna-mantle
+model: gpt-6-luna
 effort: low
 tools: Read, Grep, Glob, Bash
 ---

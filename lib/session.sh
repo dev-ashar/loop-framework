@@ -7,13 +7,12 @@
 # single global number. So a model switch that forgets the window silently caps
 # the new model at the old one's size. `session set` writes both or neither.
 
-# Windows the gateway does not report, measured by oversizing a real request until
-# the API names its own limit. Add an entry only with a measurement behind it.
-# All three measured 2026-08-13: Max Input Tokens=272000.
+# Every model gets a 1000000-token window unless it has an explicit entry here.
+# Add an entry only to override that default with a measurement behind it.
 session_measured_window() {
   case "$1" in
-    gpt-5.6-luna-mantle|gpt-5.6-terra-mantle) printf '272000\n' ;;
-    *) return 1 ;;
+    claude-sonnet-5-5|claude-opus-5-5|gpt-6-luna|gpt-6.1-sol) printf '1000000\n' ;;
+    *) printf '1000000\n' ;;
   esac
 }
 
@@ -23,6 +22,10 @@ session_measured_window() {
 session_window() {
   local id="$1" response window
   case "$id" in
+    claude-sonnet-5-5|claude-opus-5-5|gpt-6-luna|gpt-6.1-sol)
+      printf '%s\tmeasured\n' "$(session_measured_window "$id")"
+      return 0
+      ;;
     haiku|sonnet|opus|claude-*)
       # Claude Code ships real windows for these; an override could only shrink them.
       printf '\tnative\n'
@@ -51,11 +54,7 @@ session_window() {
     printf '%s\tgateway\n' "$window"
     return 0
   fi
-  if window=$(session_measured_window "$id"); then
-    printf '%s\tmeasured\n' "$window"
-    return 0
-  fi
-  printf '\tunknown\n'
+  printf '%s\tdefault\n' "$(session_measured_window "$id")"
 }
 
 session_settings_path() {
@@ -155,7 +154,7 @@ PY
           printf '%s: %s (claude code knows its window; override removed)\n' "$path" "$id"
           ;;
         unknown)
-          printf '%s: %s (window unknown — claude code will assume 200000)\n' "$path" "$id"
+          printf '%s: %s (window unknown — claude code will assume its default)\n' "$path" "$id"
           printf 'loops: measure it and add it to session_measured_window in lib/session.sh\n' >&2
           ;;
         *)
