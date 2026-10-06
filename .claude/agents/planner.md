@@ -1,8 +1,8 @@
 ---
 name: planner
 description: Plans unclear interfaces and acceptance checks without implementing.
-model: kimi-k3
-effort: max
+model: claude-sonnet-5-5
+effort: high
 tools: Read, Grep, Glob, Bash
 ---
 

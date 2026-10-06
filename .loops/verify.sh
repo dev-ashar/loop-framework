@@ -23,6 +23,7 @@ expected='.loops/contract.md
 
 bash -n run.sh lib/job-*.sh
 bash tests/engine.sh
+bash tests/models.sh
 bash tests/job-omp.sh
 bash tests/bench/validate.sh
 bash tests/job-framework.sh

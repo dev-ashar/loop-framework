@@ -276,11 +276,14 @@ job_default_adapter() {
  model=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["modelId"])' "$context") || return 1
  effort=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["effort"])' "$context") || return 1
  role=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["role"])' "$context") || return 1
- case "$role" in
-  worker) [ "$model" = gpt-5.6-luna-mantle ] && [ "$effort" = max ] || { echo 'UNSUPPORTED_EFFORT_ROUTE' >&2; return 1; } ;;
-  planner|reviewer) [ "$model" = gpt-5.6-terra-mantle ] || [ "$model" = kimi-k3 ] || { echo 'UNSUPPORTED_READONLY_ROUTE' >&2; return 1; } ;;
-  *) echo 'UNSUPPORTED_EFFORT_ROUTE' >&2; return 1 ;;
- esac
+ python3 - "$job_profiles_file" "$role" "$model" "$effort" <<'PY' || return 1
+import json,sys
+p=json.load(open(sys.argv[1],encoding='utf8')); role,model,effort=sys.argv[2:5]
+e=p.get('modelRegistry',{}).get(model)
+if not e or e.get('lifecycle') not in ('active','trial'): print('UNSUPPORTED_MODEL_ROUTE',file=sys.stderr); raise SystemExit(1)
+if role not in e.get('roles',[]): print('UNSUPPORTED_ROLE_ROUTE',file=sys.stderr); raise SystemExit(1)
+if effort not in e.get('efforts',[]): print('UNSUPPORTED_EFFORT_ROUTE',file=sys.stderr); raise SystemExit(1)
+PY
  command -v claude >/dev/null 2>&1 || { echo 'CLAUDE_ENGINE_MISSING' >&2; return 1; }
  claude --model "$model" --effort "$effort" --agent "$role" -p "$(cat "$context")"
 }

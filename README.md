@@ -28,15 +28,14 @@ Reinstall after moving the clone to repair links.
 
 | Role | Model | Use |
 |---|---|---|
-| `explorer` | `gemini-3.1-flash-lite` | Map code, tests, dependencies, and read-only Git history. |
-| `architect` | `kimi-k3` (trial) | Define scope and choose acceptance checks. Never implement. |
-| `worker` | `gpt-5.6-luna-mantle` (max) | Implement one scoped assignment. |
-| `reviewer` | `gpt-5.6-terra-mantle` (default), `kimi-k3` (trial) | Independently test and challenge completed work. |
-| `planner` (trial) | `kimi-k3` | Conditional planning capability when boundaries remain unclear. |
-| `merge` | `gpt-5.6-terra-mantle` | Integrate approved parallel branches. |
+| `explorer` | `gpt-6-luna` (low) | Map code, tests, dependencies, and read-only Git history. |
+| `architect` | `claude-sonnet-5-5` (high) | Define scope and choose acceptance checks. Never implement. |
+| `worker` | `claude-sonnet-5-5` (medium) | Implement one scoped assignment. |
+| `reviewer` | `gpt-6.1-sol` (high) | Independently test and challenge completed work. |
+| `planner` | `claude-sonnet-5-5` (high) | Conditional planning capability when boundaries remain unclear. |
+| `merge` | `gpt-6.1-sol` (high) | Integrate approved parallel branches. |
 
-All AI routes use HAIP. Candidate models remain unroutable. `gpt-5.6-sol-mantle`
-and `claude-opus-5` are retired. OMP remains optional and experimental.
+All AI routes use HAIP. Candidate models remain unroutable. Role models are chosen with `loops models set`. OMP remains optional and experimental.
 
 ## Routing guide
 
@@ -68,7 +67,10 @@ It asks before destructive actions, outward actions, or goal changes.
 ## Configuration
 
 `loops models list` shows the configured role roster.
-`loops models set <role> <model>` changes a role model.
+`loops models set <role>` fetches the live HAIP model list, prints a numbered menu (current model marked), and applies your choice from stdin.
+`loops models set <role> <model> [--force] [--effort <level>]` validates the id against the live list (`--force` skips this when HAIP is unreachable).
+Applying a model registers it if missing, repoints the role's profile, and updates the agent frontmatter. Effort is kept unless `--effort` is given. A model left with no roles is pruned from the registry.
+Every model has a 1000000-token context window unless `lib/session.sh` holds an explicit entry.
 `loops session set <model>` changes the session model and its context window for this repository.
 Add `--user` to change the global default in `~/.claude/settings.json`.
 

@@ -4,11 +4,11 @@ Use the smallest team that can complete the work.
 
 | Task | Role | Model | Tools |
 |---|---|---|---|
-| Repository mapping and read-only research | `explorer` | `gemini-3.1-flash-lite` | Read, Grep, Glob, Bash |
-| Design, contracts, and plan review | `architect` | `kimi-k3` (trial) | Read, Grep, Glob, Bash |
-| Scoped implementation | `worker` | `gpt-5.6-luna-mantle` | full |
-| Independent verification | `reviewer` | `gpt-5.6-terra-mantle` | full |
-| Branch integration and conflicts | `merge` | `gpt-5.6-terra-mantle` | full |
+| Repository mapping and read-only research | `explorer` | `gpt-6-luna` (low) | Read, Grep, Glob, Bash |
+| Design, contracts, and plan review | `architect` | `claude-sonnet-5-5` (high) | Read, Grep, Glob, Bash |
+| Scoped implementation | `worker` | `claude-sonnet-5-5` (medium) | full |
+| Independent verification | `reviewer` | `gpt-6.1-sol` (high) | full |
+| Branch integration and conflicts | `merge` | `gpt-6.1-sol` (high) | full |
 
 ## Route selection
 
@@ -52,9 +52,10 @@ Use plain reports with changed files, commands, results, and blockers.
 
 ## Model routing
 
-Workers run on `gpt-5.6-luna-mantle` at max effort. The outer Claude Code
+Workers run on `claude-sonnet-5-5` at medium effort. The outer Claude Code
 orchestrator uses `claude-opus-5-5` at low effort and never implements.
 
-Architecture uses the Kimi K3 trial route as the conditional planner capability. Opus 5.5 remains the low-effort outer orchestrator and never appears in job roles.
-Kimi K3 is trial-only for planning and review. Reviewers use `gpt-5.6-terra-mantle` by default, with Kimi K3 as the trial route. Candidate models
-are not routable. Sol and Opus 5 are retired.
+Architecture and planning use `claude-sonnet-5-5` at high effort. Opus 5.5 remains the low-effort outer orchestrator and never appears in job roles.
+Reviewers and merge use `gpt-6.1-sol` at high effort. Change a role model with `loops models set <role>` (interactive numbered menu from the live HAIP list)
+or `loops models set <role> <model-id> [--force] [--effort <level>]`. The registry holds only models
+that a role uses; a model is pruned when its last role moves away. Context window defaults to 1000000.

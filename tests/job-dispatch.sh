@@ -8,7 +8,7 @@ source "$ROOT/lib/job-dispatch.sh"
 t=$(mktemp -d); trap 'rm -rf "$t"' EXIT
 job_dispatch_init dispatch-test "$t"
 model=$(job_dispatch_model worker-default operational)
-[ "$model" = gpt-5.6-luna-mantle ]
+[ "$model" = claude-sonnet-5-5 ]
 export JOB_DISPATCH_PROFILE=worker-default JOB_DISPATCH_TIER=operational JOB_DISPATCH_MODEL="$model"
 token=$(job_dispatch_create d1 agent-1 worker 'write source' input-1 worker-report result-one lib/a.sh '' final 3 stop 1)
 job_dispatch_result d1 passed 1 "$token" deadbeef

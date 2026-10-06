@@ -16,8 +16,8 @@ cat > "$t/valid.json" <<'JSON'
 JSON
 expect_ok valid-dag bash run.sh job validate "$t/valid.json"
 [ "$(bash run.sh job schedule "$t/valid.json" 2>/dev/null)" = $'build-a\nbuild-b\nreview-a\nreview-b' ] && ok || bad schedule
-[ "$(bash run.sh job route worker-default operational 2>/dev/null)" = gpt-5.6-luna-mantle ] && ok || bad route
-[ "$(bash run.sh job route architect-default trial 2>/dev/null)" = kimi-k3 ] && ok || bad architect-primary-route
+[ "$(bash run.sh job route worker-default operational 2>/dev/null)" = claude-sonnet-5-5 ] && ok || bad route
+[ "$(bash run.sh job route architect-default primary 2>/dev/null)" = claude-sonnet-5-5 ] && ok || bad architect-primary-route
 expect_fail unknown-tier bash run.sh job route worker-default unknown
 
 cat > "$t/profile-mismatch.json" <<'JSON'
@@ -55,6 +55,26 @@ expect_fail repeated-dependency bash run.sh job validate "$t/repeat.json"
 # Manifest is a strict three-column TSV with unique guard IDs.
 awk -F '\t' 'NF!=3 || $1=="" || $2=="" || $3=="" {bad=1} {ids[$1]++} END{for(i in ids)if(ids[i]>1)bad=1; exit bad}' tests/job-framework-guards.tsv && ok || bad guard-manifest
 for token in DAG_CYCLE CROSS_JOB_SCOPE_OVERLAP DAG_SELF_DEPENDENCY DAG_SCHEMA_INVALID DAG_DUPLICATE_KEY ROUTE_INVALID; do grep -Rqs "$token" run.sh lib templates && ok || bad "diagnostic-$token"; done
+
+# Adapter guard is registry-driven: model in registry, role in roles, effort in efforts.
+guard_tmp=$(mktemp -d); trap 'rm -rf "$guard_tmp"' EXIT
+printf '#!/usr/bin/env bash\nexit 0\n' > "$guard_tmp/claude"; chmod +x "$guard_tmp/claude"
+guard_case(){ # role model effort registry-mutation -> rc
+  python3 - "$root/templates/job-profiles.json" "$guard_tmp/p.json" "$4" <<'PY'
+import json,sys
+x=json.load(open(sys.argv[1])); r=x['modelRegistry']
+if sys.argv[3]=='newmodel': r['x-new']={'provider':'haip','lifecycle':'active','roles':['worker'],'efforts':['max'],'routes':[]}
+json.dump(x,open(sys.argv[2],'w'))
+PY
+  printf '{"modelId":"%s","effort":"%s","role":"%s"}' "$2" "$3" "$1" > "$guard_tmp/ctx.json"
+  ( . "$root/lib/job-framework.sh"; job_profiles_file="$guard_tmp/p.json"; PATH="$guard_tmp:$PATH" ANTHROPIC_BASE_URL=https://haip.test ANTHROPIC_AUTH_TOKEN=fake job_default_adapter "$guard_tmp/ctx.json" ) >/dev/null 2>&1
+}
+guard_case worker claude-sonnet-5-5 medium none && ok || bad guard-worker-ok
+guard_case reviewer gpt-6.1-sol high none && ok || bad guard-reviewer-ok
+guard_case worker x-new max newmodel && ok || bad guard-registry-model-ok
+guard_case worker unknown-model medium none && bad guard-unknown-model || ok
+guard_case worker gpt-6-luna low none && bad guard-wrong-role || ok
+guard_case worker claude-sonnet-5-5 max none && bad guard-wrong-effort || ok
 
 if [ "$fail" -ne 0 ]; then printf 'JOB_FRAMEWORK_FAIL failures=%s passes=%s\n' "$fail" "$pass"; exit 1; fi
 printf 'JOB_FRAMEWORK_OK\n'
